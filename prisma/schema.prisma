@@ -1,0 +1,252 @@
+// FlowPay Prisma Schema
+// This file defines the complete database structure for FlowPay MVP
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CORE ENTITIES
+// ============================================
+
+model Customer {
+  id             String        @id @default(cuid())
+  crmCustomerId  String?       @unique
+  firstName      String
+  lastName       String
+  email          String
+  phone          String
+  addressLine1   String?
+  addressLine2   String?
+  city           String?
+  state          String?
+  postalCode     String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  
+  jobs           Job[]
+  applications   Application[]
+  
+  @@index([email])
+  @@index([phone])
+  @@index([crmCustomerId])
+}
+
+model Job {
+  id             String        @id @default(cuid())
+  crmJobId       String?       @unique
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  estimateAmount Decimal       @db.Decimal(10,2)
+  status         String        @default("pending")
+  technicianId   String?
+  serviceType    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  
+  applications   Application[]
+  
+  @@index([customerId])
+  @@index([crmJobId])
+  @@index([status])
+}
+
+// ============================================
+// FINANCING WORKFLOW
+// ============================================
+
+model Application {
+  id             String        @id @default(cuid())
+  jobId          String
+  job            Job           @relation(fields: [jobId], references: [id])
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  token          String        @unique
+  tokenExpiresAt DateTime
+  status         String        @default("initiated") // initiated, submitted, approved, declined, funded
+  
+  // Snapshot data from integrations (JSONB)
+  plaidData      Json?
+  personaData    Json?
+  creditData     Json?
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  
+  decision       Decision?
+  loan           Loan?
+  
+  @@index([token])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Decision {
+  id                String        @id @default(cuid())
+  applicationId     String        @unique
+  application       Application   @relation(fields: [applicationId], references: [id])
+  
+  score             Int?
+  decisionStatus    String        // approved, pending, declined, manual_review
+  decisionReason    String?
+  ruleHits          Json?         // Array of rule IDs that triggered
+  evaluatorVersion  String        @default("v1.0")
+  decidedAt         DateTime      @default(now())
+  decidedBy         String?       // "system" or user_id
+  
+  offers            Offer[]
+  manualReview      ManualReview?
+  
+  @@index([decisionStatus])
+  @@index([decidedAt])
+}
+
+model Offer {
+  id               String        @id @default(cuid())
+  decisionId       String
+  decision         Decision      @relation(fields: [decisionId], references: [id])
+  
+  termMonths       Int
+  apr              Decimal       @db.Decimal(5,2)
+  monthlyPayment   Decimal       @db.Decimal(10,2)
+  downPayment      Decimal       @db.Decimal(10,2) @default(0)
+  originationFee   Decimal       @db.Decimal(10,2) @default(0)
+  totalAmount      Decimal       @db.Decimal(10,2)
+  
+  lenderId         String?
+  routingType      String        @default("AUTO") // AUTO, MANUAL
+  
+  selected         Boolean       @default(false)
+  selectedAt       DateTime?
+  
+  createdAt        DateTime      @default(now())
+  
+  @@index([decisionId])
+}
+
+model Loan {
+  id               String        @id @default(cuid())
+  applicationId    String        @unique
+  application      Application   @relation(fields: [applicationId], references: [id])
+  
+  lenderLoanId     String?
+  lenderName       String?
+  fundedAmount     Decimal       @db.Decimal(10,2)
+  fundingDate      DateTime?
+  
+  paymentSchedule  Json?         // Array of {date, amount, status}
+  
+  status           String        @default("pending") // pending, funded, repaying, paid_off, defaulted
+  
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  @@index([status])
+  @@index([lenderLoanId])
+}
+
+// ============================================
+// DECISIONING & MANUAL REVIEW
+// ============================================
+
+model ManualReview {
+  id             String        @id @default(cuid())
+  decisionId     String        @unique
+  decision       Decision      @relation(fields: [decisionId], references: [id])
+  
+  reason         String        // "thin_file", "fraud_flag", "borderline_score"
+  priority       Int           @default(1) // 1=high, 2=medium, 3=low
+  assignedTo     String?       // user_id
+  status         String        @default("pending") // pending, in_review, resolved
+  
+  notes          String?
+  resolution     String?       // "approved", "declined", "approved_with_conditions"
+  resolvedBy     String?
+  resolvedAt     DateTime?
+  
+  createdAt      DateTime      @default(now())
+  
+  @@index([status])
+  @@index([priority])
+  @@index([assignedTo])
+}
+
+model PricingRule {
+  id                  String    @id @default(cuid())
+  name                String
+  description         String?
+  
+  // JSON predicate: {field: "credit_score", operator: ">=", value: 700}
+  predicate           Json
+  
+  // JSON adjustments: {apr_adjustment: 2.0, max_term: 48}
+  pricingAdjustments  Json
+  
+  priority            Int       @default(100)
+  active              Boolean   @default(true)
+  
+  createdBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  @@index([active])
+  @@index([priority])
+}
+
+// ============================================
+// AUDIT & COMPLIANCE
+// ============================================
+
+model AuditLog {
+  id          String    @id @default(cuid())
+  entityType  String    // "application", "decision", "loan", "user"
+  entityId    String
+  
+  actor       String    // user_id or "system"
+  action      String    // "created", "updated", "approved", "viewed_pii"
+  
+  // Snapshot of changes
+  payload     Json?
+  
+  ipAddress   String?
+  userAgent   String?
+  
+  timestamp   DateTime  @default(now())
+  
+  @@index([entityType, entityId])
+  @@index([actor])
+  @@index([timestamp])
+}
+
+// ============================================
+// CRM SYNC
+// ============================================
+
+model CrmSyncLog {
+  id              String    @id @default(cuid())
+  crmType         String    @default("fieldroutes")
+  direction       String    // "inbound" (CRM → FlowPay) or "outbound" (FlowPay → CRM)
+  
+  entityType      String    // "customer", "job", "financing_status"
+  entityId        String
+  crmEntityId     String?
+  
+  status          String    // "success", "failed", "retrying"
+  errorMessage    String?
+  
+  requestPayload  Json?
+  responsePayload Json?
+  
+  attemptCount    Int       @default(1)
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([status])
+  @@index([crmType, entityType])
+  @@index([createdAt])
+}
