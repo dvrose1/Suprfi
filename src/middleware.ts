@@ -6,8 +6,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/apply/(.*)',  // Borrower application flow
-  '/api/v1/crm/(.*)',  // CRM integration endpoints
-  '/api/v1/webhooks/(.*)',  // Webhook endpoints
+  '/api/v1/(.*)',  // All v1 API endpoints (CRM, webhooks, test)
 ])
 
 export default clerkMiddleware(async (auth, request) => {

@@ -1,0 +1,132 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
+import { prisma } from '@/lib/prisma'
+
+interface RouteParams {
+  params: Promise<{
+    id: string
+  }>
+}
+
+/**
+ * POST /api/v1/admin/applications/:id/decline
+ * 
+ * Manually decline an application
+ */
+export async function POST(request: NextRequest, { params }: RouteParams) {
+  try {
+    // Check authentication
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json({
+        success: false,
+        error: 'Unauthorized',
+      }, { status: 401 })
+    }
+
+    const user = await currentUser()
+    const { id } = await params
+    const body = await request.json()
+    const { reason } = body
+
+    if (!reason) {
+      return NextResponse.json({
+        success: false,
+        error: 'Decline reason is required',
+      }, { status: 400 })
+    }
+
+    console.log('📝 Manual decline requested for application:', id)
+
+    // Fetch application
+    const application = await prisma.application.findUnique({
+      where: { id },
+      include: {
+        decision: true,
+      },
+    })
+
+    if (!application) {
+      return NextResponse.json({
+        success: false,
+        error: 'Application not found',
+      }, { status: 404 })
+    }
+
+    // Check if already declined
+    if (application.status === 'declined') {
+      return NextResponse.json({
+        success: false,
+        error: 'Application already declined',
+      }, { status: 400 })
+    }
+
+    // Update application status
+    await prisma.application.update({
+      where: { id },
+      data: { status: 'declined' },
+    })
+
+    console.log('✅ Application declined:', id)
+
+    // If no decision exists yet, create one
+    if (!application.decision) {
+      await prisma.decision.create({
+        data: {
+          applicationId: id,
+          score: null,
+          decisionStatus: 'declined',
+          decisionReason: reason,
+          decidedBy: user?.emailAddresses[0]?.emailAddress || userId,
+        },
+      })
+
+      console.log('✅ Decision created with declined status')
+    } else {
+      // Update existing decision
+      await prisma.decision.update({
+        where: { id: application.decision.id },
+        data: {
+          decisionStatus: 'declined',
+          decisionReason: reason,
+          decidedBy: user?.emailAddresses[0]?.emailAddress || userId,
+        },
+      })
+
+      console.log('✅ Decision updated to declined')
+    }
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        entityType: 'application',
+        entityId: id,
+        actor: userId,
+        action: 'manual_decline',
+        payload: {
+          reason,
+          declinedBy: user?.emailAddresses[0]?.emailAddress || userId,
+          previousStatus: application.status,
+        },
+      },
+    })
+
+    console.log('✅ Audit log created')
+
+    return NextResponse.json({
+      success: true,
+      message: 'Application declined successfully',
+      application: {
+        id,
+        status: 'declined',
+      },
+    })
+  } catch (error) {
+    console.error('❌ Error declining application:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to decline application',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    }, { status: 500 })
+  }
+}
