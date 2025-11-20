@@ -1,5 +1,5 @@
-// FlowPay Prisma Schema
-// This file defines the complete database structure for FlowPay MVP
+// SuprFi Prisma Schema
+// This file defines the complete database structure for SuprFi MVP
 
 generator client {
   provider = "prisma-client-js"
@@ -231,7 +231,7 @@ model AuditLog {
 model CrmSyncLog {
   id              String    @id @default(cuid())
   crmType         String    @default("fieldroutes")
-  direction       String    // "inbound" (CRM → FlowPay) or "outbound" (FlowPay → CRM)
+  direction       String    // "inbound" (CRM → SuprFi) or "outbound" (SuprFi → CRM)
   
   entityType      String    // "customer", "job", "financing_status"
   entityId        String
@@ -249,5 +249,47 @@ model CrmSyncLog {
   
   @@index([status])
   @@index([crmType, entityType])
+  @@index([createdAt])
+}
+
+// ============================================
+// WAITLIST
+// ============================================
+
+model Waitlist {
+  id              String    @id @default(cuid())
+  
+  // User type
+  type            String    // "homeowner" or "contractor"
+  
+  // Common fields
+  email           String
+  name            String?
+  phone           String?
+  
+  // Homeowner-specific
+  zipCode         String?
+  repairType      String?   // "hvac", "plumbing", "electrical", "other"
+  
+  // Contractor-specific
+  businessName    String?
+  serviceType     String?   // "hvac", "plumbing", "electrical", "general"
+  state           String?
+  
+  // Metadata
+  source          String?   // "home_page", "contractor_page", etc.
+  referrer        String?
+  utmParams       Json?
+  
+  // Status
+  status          String    @default("active")  // "active", "converted", "unsubscribed"
+  emailSent       Boolean   @default(false)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([email])
+  @@index([type])
+  @@index([status])
   @@index([createdAt])
 }
