@@ -31,13 +31,9 @@ export default function ComingSoon() {
         </div>
 
         {/* Tagline */}
-        <h1 className="text-4xl md:text-5xl font-bold text-navy font-display mb-4">
+        <h1 className="text-4xl md:text-5xl font-bold text-navy font-display mb-12">
           Financing that works as fast as you need it.
         </h1>
-        
-        <p className="text-xl text-medium-gray mb-12">
-          Home repair financing in under 60 seconds.
-        </p>
 
         {/* Coming Soon Badge */}
         <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-primary text-white font-semibold">
