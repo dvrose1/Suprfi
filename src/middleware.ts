@@ -5,6 +5,16 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
+  '/how-it-works',
+  '/about',
+  '/contact',
+  '/contractors',
+  '/homeowners',
+  '/waitlist',
+  '/rates',
+  '/help',
+  '/privacy',
+  '/terms',
   '/apply/(.*)',  // Borrower application flow
   '/api/v1/(.*)',  // All v1 API endpoints (CRM, webhooks, test)
 ])
