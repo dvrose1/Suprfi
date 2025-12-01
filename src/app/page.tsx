@@ -32,7 +32,7 @@ export default function ComingSoon() {
 
         {/* Tagline */}
         <h1 className="text-4xl md:text-5xl font-bold text-navy font-display mb-12">
-          Financing that works as fast as you need it.
+          Financing that works just as fast as you do.
         </h1>
 
         {/* Coming Soon Badge */}
