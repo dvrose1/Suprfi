@@ -89,7 +89,7 @@ export async function sendApplicationLink(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'
   const link = `${appUrl}/apply/${token}`
 
-  const message = `Hi ${customerName}! Apply for financing with FlowPay: ${link}\n\nThis link expires in 24 hours.`
+  const message = `Hi ${customerName}! Apply for financing with SuprFi: ${link}\n\nThis link expires in 24 hours.`
 
   return await sendSMS({ to: phone, message })
 }

@@ -12,7 +12,7 @@ export async function GET() {
     customer: {
       first_name: 'Doug',
       last_name: 'Test',
-      email: 'doug@flowpay.com',
+      email: 'doug@suprfi.com',
       phone: '+15162432868', // Your phone number
       address: {
         line1: '123 Main St',

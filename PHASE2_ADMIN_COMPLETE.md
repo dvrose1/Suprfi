@@ -189,7 +189,7 @@ Click **"View Details"** on any application
 - ❌ No actions available
 - ❌ Not production-ready
 
-### **After (FlowOps Dashboard):**
+### **After (SuprOps Dashboard):**
 - ✅ Beautiful, professional UI
 - ✅ All relationships visible
 - ✅ Human-readable display

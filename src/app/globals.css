@@ -1,8 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* Primary Colors */
+  --color-navy: #0F2D4A;
+  --color-teal: #2A9D8F;
+  --color-mint: #6EC6A7;
+  --color-cyan: #40C4D3;
+  
+  /* Neutrals */
+  --color-white: #FFFFFF;
+  --color-warm-white: #FAFAFA;
+  --color-light-gray: #F5F7F9;
+  --color-medium-gray: #8B9AAB;
+  --color-dark-gray: #374151;
+  
+  /* Semantic Colors */
+  --color-success: #10B981;
+  --color-warning: #FFB84D;
+  --color-error: #FF6B6B;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #0F2D4A 0%, #2A9D8F 100%);
+  --gradient-accent: linear-gradient(90deg, #2A9D8F 0%, #6EC6A7 100%);
+  
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+}
 
 @layer base {
   * {
@@ -10,35 +54,37 @@
   }
   
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply bg-warm-white text-dark-gray antialiased;
+    font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
+    font-family: var(--font-display), 'Plus Jakarta Sans', system-ui, sans-serif;
+    @apply font-semibold text-navy;
   }
 
   h1 {
-    @apply text-5xl md:text-6xl;
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold leading-tight;
   }
 
   h2 {
-    @apply text-4xl md:text-5xl;
+    @apply text-3xl md:text-4xl font-semibold leading-tight;
   }
 
   h3 {
-    @apply text-3xl md:text-4xl;
+    @apply text-2xl md:text-3xl font-semibold;
   }
 
   h4 {
-    @apply text-2xl md:text-3xl;
+    @apply text-xl md:text-2xl font-medium;
   }
 
   h5 {
-    @apply text-xl md:text-2xl;
+    @apply text-lg md:text-xl font-medium;
   }
 
   h6 {
-    @apply text-lg md:text-xl;
+    @apply text-base md:text-lg font-medium;
   }
 }
 
@@ -67,13 +113,29 @@
     text-wrap: balance;
   }
 
-  /* Gradient text */
+  /* Gradient text - Updated for new brand */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-accent-500;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #0F2D4A 0%, #2A9D8F 100%);
   }
 
   /* Glass morphism effect */
   .glass {
     @apply bg-white/80 backdrop-blur-sm;
+  }
+
+  /* Primary gradient background */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #0F2D4A 0%, #2A9D8F 100%);
+  }
+
+  /* Accent gradient background */
+  .bg-gradient-accent {
+    background: linear-gradient(90deg, #2A9D8F 0%, #6EC6A7 100%);
+  }
+
+  /* Monospace for financial figures */
+  .font-financial {
+    font-family: var(--font-mono), 'JetBrains Mono', monospace;
   }
 }

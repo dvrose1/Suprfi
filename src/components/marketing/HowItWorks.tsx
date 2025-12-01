@@ -1,95 +1,65 @@
-// ABOUTME: How It Works section showing 3-step process for getting financing
-// ABOUTME: Visual step-by-step guide with icons and descriptions
-
 import React from 'react';
 
 const HowItWorks: React.FC = () => {
   const steps = [
-    {
-      number: '1',
-      title: 'Your Contractor Offers SuprFi',
-      description: 'When you need financing for a repair, your technician sends you a secure link via text or email.',
+    { 
+      step: '01', 
+      title: 'Tell us about your project',
+      desc: 'Quick 2-minute application. We just need the basics to show you options.',
       icon: (
-        <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
-      ),
+      )
     },
-    {
-      number: '2',
-      title: 'Apply in Minutes',
-      description: 'Answer a few questions, connect your bank securely, and get an instant decision. No lengthy paperwork.',
+    { 
+      step: '02', 
+      title: 'See your options instantly',
+      desc: 'Get approved in under 60 seconds with rates and terms tailored to you.',
       icon: (
-        <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-      ),
+      )
     },
-    {
-      number: '3',
-      title: 'Choose Your Terms',
-      description: 'Pick the payment plan that works for you. Your contractor gets paid directly so they can start the work.',
+    { 
+      step: '03', 
+      title: 'Get the work done',
+      desc: 'We pay your contractor directly when the job is complete. Easy.',
       icon: (
-        <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
         </svg>
-      ),
+      )
     },
   ];
 
   return (
-    <section className="section bg-white">
-      <div className="container-custom">
-        {/* Section header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            How It Works
+    <section className="py-20 px-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold mb-4 text-navy font-display">
+            From quote to done in three steps
           </h2>
-          <p className="text-xl text-gray-600">
-            Get financing for your home repair in three simple steps
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            We made financing as simple as it should be. Tell us what you need, see your options, get it done.
           </p>
         </div>
-
-        {/* Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
-          {steps.map((step, index) => (
-            <div key={index} className="relative">
-              {/* Connector line (desktop only) */}
-              {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-16 left-1/2 w-full h-0.5 bg-gradient-to-r from-primary-300 to-transparent"></div>
-              )}
-
-              {/* Step content */}
-              <div className="relative text-center">
-                {/* Icon circle */}
-                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white mb-6 shadow-lg relative z-10">
-                  {step.icon}
-                </div>
-
-                {/* Step number badge */}
-                <div className="absolute top-0 right-1/2 transform translate-x-1/2 -translate-y-2 w-8 h-8 rounded-full bg-gold-400 text-gray-900 font-bold text-sm flex items-center justify-center shadow-md">
-                  {step.number}
-                </div>
-
-                {/* Step title */}
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  {step.title}
-                </h3>
-
-                {/* Step description */}
-                <p className="text-gray-600 leading-relaxed">
-                  {step.description}
-                </p>
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          {steps.map((item, i) => (
+            <div key={i} className="relative">
+              <div 
+                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+                style={{ background: 'linear-gradient(135deg, rgba(42, 157, 143, 0.1) 0%, rgba(110, 198, 167, 0.1) 100%)' }}
+              >
+                <div className="text-teal">{item.icon}</div>
               </div>
+              <div className="text-sm font-bold mb-2 text-teal">{item.step}</div>
+              <h3 className="text-xl font-bold mb-3 text-navy font-display">{item.title}</h3>
+              <p className="text-gray-600">{item.desc}</p>
             </div>
           ))}
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="text-center mt-16">
-          <p className="text-gray-600 mb-4">
-            Most customers get approved in under 5 minutes
-          </p>
         </div>
       </div>
     </section>

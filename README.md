@@ -1,4 +1,4 @@
-# FlowPay - Embedded Consumer Financing Platform
+# SuprFi - Embedded Consumer Financing Platform
 
 **Status:** 📋 Planning Complete → Ready for Development  
 **Timeline:** 12-16 weeks to MVP  
@@ -6,9 +6,9 @@
 
 ---
 
-## 🎯 What is FlowPay?
+## 🎯 What is SuprFi?
 
-FlowPay is an embedded consumer financing platform for home service businesses. We allow technicians to offer "Pay Later" options to homeowners directly from their CRM (starting with FieldRoutes), creating a seamless financing experience without leaving their workflow.
+SuprFi is an embedded consumer financing platform for home service businesses. We allow technicians to offer "Pay Later" options to homeowners directly from their CRM (starting with FieldRoutes), creating a seamless financing experience without leaving their workflow.
 
 ### Key Features (MVP)
 - 🔗 **CRM Integration** - Trigger financing offers from FieldRoutes
@@ -17,7 +17,7 @@ FlowPay is an embedded consumer financing platform for home service businesses. 
 - ✅ **KYC/AML** - Persona identity verification
 - 📊 **Credit Decisioning** - Built-in underwriting engine with manual review queue
 - 💰 **Lender Network** - Route approved loans to funding partners
-- 📈 **FlowOps Dashboard** - Internal admin tool for operations and analytics
+- 📈 **SuprOps Dashboard** - Internal admin tool for operations and analytics
 
 ---
 
@@ -81,7 +81,7 @@ docker >= 24.0.0
 
 **Step 1: Clone and Install**
 ```bash
-cd /Users/doug/Desktop/FlowFi
+cd /Users/doug/Desktop/SuprFi
 pnpm init
 pnpm install next@latest react@latest react-dom@latest
 pnpm install -D typescript @types/node @types/react
@@ -128,7 +128,7 @@ pnpm dev
 ## 📂 Project Structure (Planned)
 
 ```
-FlowFi/
+SuprFi/
 ├── docs/                    # All documentation
 │   ├── PRD.md
 │   ├── TECHNICAL_SPEC.md
@@ -138,7 +138,7 @@ FlowFi/
 ├── src/
 │   ├── app/                 # Next.js App Router
 │   │   ├── apply/[token]/   # Borrower application flow
-│   │   ├── admin/           # FlowOps dashboard
+│   │   ├── admin/           # SuprOps dashboard
 │   │   └── api/v1/          # API routes
 │   │       ├── crm/
 │   │       ├── borrower/
@@ -222,7 +222,7 @@ FlowFi/
 - [ ] Job queue setup
 - [ ] Webhook handlers
 
-### Phase 5: FlowOps Admin (Week 12-13)
+### Phase 5: SuprOps Admin (Week 12-13)
 - [ ] Applications dashboard
 - [ ] Manual review interface
 - [ ] Loan management
@@ -291,9 +291,9 @@ vercel --prod
 ## 📊 Monitoring
 
 ### Dashboards
-- **Vercel Analytics**: https://vercel.com/flowpay/analytics
-- **Datadog**: https://app.datadoghq.com/dashboard/flowpay
-- **Bull Board**: https://app.flowpay.com/admin/queue
+- **Vercel Analytics**: https://vercel.com/suprfi/analytics
+- **Datadog**: https://app.datadoghq.com/dashboard/suprfi
+- **Bull Board**: https://app.suprfi.com/admin/queue
 
 ### Key Metrics
 - Application completion rate
@@ -310,7 +310,7 @@ vercel --prod
 ### Reporting Security Issues
 **DO NOT** open a public GitHub issue for security vulnerabilities.
 
-Email: security@flowpay.com (to be set up)
+Email: security@suprfi.com (to be set up)
 
 ### Security Measures
 - TLS 1.3 encryption (all traffic)
@@ -360,7 +360,7 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 ## 📜 License
 
 Proprietary - All Rights Reserved  
-© 2025 Flow Finance / FlowFi
+© 2025 SuprFi
 
 ---
 

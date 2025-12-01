@@ -7,7 +7,7 @@
 
 ## 🎉 What Just Happened
 
-Your FlowPay database is now fully set up and connected to Supabase!
+Your SuprFi database is now fully set up and connected to Supabase!
 
 ### Database Details
 - **Provider:** Supabase (PostgreSQL 15)
@@ -86,7 +86,7 @@ You can:
 
 If Prisma Studio isn't running:
 ```bash
-cd /Users/doug/Desktop/FlowFi
+cd /Users/doug/Desktop/SuprFi
 npx prisma studio
 ```
 
@@ -97,7 +97,7 @@ npx prisma studio
 Create a simple test file to verify everything works:
 
 ```bash
-cd /Users/doug/Desktop/FlowFi
+cd /Users/doug/Desktop/SuprFi
 ```
 
 Create `test-db.ts`:
@@ -179,10 +179,10 @@ Your `.env.local` file now contains:
 
 2. **Initialize Git Repository**
    ```bash
-   cd /Users/doug/Desktop/FlowFi
+   cd /Users/doug/Desktop/SuprFi
    git init
    git add .
-   git commit -m "feat: initial FlowPay setup with database"
+   git commit -m "feat: initial SuprFi setup with database"
    ```
 
 3. **Test Everything**

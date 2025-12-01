@@ -1,4 +1,4 @@
-# FlowPay Architecture Document
+# SuprFi Architecture Document
 
 **Version:** v1.0  
 **Last Updated:** October 29, 2025  
@@ -23,7 +23,7 @@
 
 ## System Overview
 
-FlowPay is an embedded consumer financing platform designed to seamlessly integrate with home service CRMs. The architecture is built for:
+SuprFi is an embedded consumer financing platform designed to seamlessly integrate with home service CRMs. The architecture is built for:
 
 - **Speed**: Sub-2-minute application flow
 - **Reliability**: 99.9% uptime SLA
@@ -37,7 +37,7 @@ FlowPay is an embedded consumer financing platform designed to seamlessly integr
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION LAYER                        │
 │  ┌──────────────────────┐        ┌──────────────────────┐       │
-│  │  Borrower Portal     │        │  FlowOps Admin       │       │
+│  │  Borrower Portal     │        │  SuprOps Admin       │       │
 │  │  (Next.js/React)     │        │  (Next.js/React)     │       │
 │  │  - Apply for loan    │        │  - Review apps       │       │
 │  │  - Link bank         │        │  - Manage rules      │       │
@@ -450,7 +450,7 @@ function generateOffers(score: number, loanAmount: number): Offer[] {
 
 **OAuth Flow:**
 ```
-1. Admin authorizes FlowPay in FieldRoutes settings
+1. Admin authorizes SuprFi in FieldRoutes settings
 2. FieldRoutes redirects to: /api/v1/crm/fieldroutes/callback?code=abc123
 3. Exchange code for access_token + refresh_token
 4. Store tokens encrypted in database
@@ -467,7 +467,7 @@ interface FieldMapping {
     'customer.email': string;
     // ...
   };
-  flowPay: {
+  suprfi: {
     crmCustomerId: string;
     firstName: string;
     email: string;
@@ -476,7 +476,7 @@ interface FieldMapping {
 }
 
 // Bidirectional sync
-function mapToFlowPay(frData: any): Customer;
+function mapToSuprFi(frData: any): Customer;
 function mapToFieldRoutes(fpData: Customer): any;
 ```
 
@@ -630,14 +630,14 @@ worker.on('failed', (job, error) => {
      job: {...}
    }
    ↓
-2. FlowPay API Gateway
+2. SuprFi API Gateway
    - Validates API key
    - Creates Application record in Postgres
    - Generates unique token (JWT, 24h expiry)
    - Queues SMS job in BullMQ
    ↓
 3. BullMQ Worker sends SMS (Twilio)
-   SMS: "John, apply for financing: https://app.flowpay.com/apply/abc123"
+   SMS: "John, apply for financing: https://app.suprfi.com/apply/abc123"
    ↓
 4. Borrower clicks link → Next.js Frontend
    GET /api/v1/borrower/abc123
@@ -725,7 +725,7 @@ worker.on('failed', (job, error) => {
      status: "pending"
    }
    ↓
-3. Admin opens FlowOps → Review Queue
+3. Admin opens SuprOps → Review Queue
    GET /api/v1/admin/manual-review/queue
    ↓
 4. Underwriter clicks "Assign to Me"
@@ -1120,7 +1120,7 @@ cache_hit_ratio (gauge)
 **Datadog Dashboard Layout:**
 ```
 ┌─────────────────────────────────────────┐
-│          FlowPay Overview               │
+│          SuprFi Overview               │
 ├─────────────────────────────────────────┤
 │ Applications Today: 247                  │
 │ Approval Rate: 68% ↑ 2%                 │
@@ -1199,7 +1199,7 @@ Production (Vercel + AWS)
    └─ Run E2E tests (Playwright)
    ↓
 3. If PR → Deploy to Vercel Preview
-   - Unique URL: flowpay-pr-123.vercel.app
+   - Unique URL: suprfi-pr-123.vercel.app
    - Comment on PR with link
    ↓
 4. If merged to main → Deploy to Staging

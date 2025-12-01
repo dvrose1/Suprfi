@@ -2,7 +2,7 @@
 // ABOUTME: Stores submissions in database and sends confirmation email
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for duplicate email
-    const existing = await db.waitlist.findFirst({
+    const existing = await prisma.waitlist.findFirst({
       where: {
         email: email.toLowerCase(),
         type,
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       // Update existing record instead of creating duplicate
-      const updated = await db.waitlist.update({
+      const updated = await prisma.waitlist.update({
         where: { id: existing.id },
         data: {
           name,
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new waitlist entry
-    const waitlist = await db.waitlist.create({
+    const waitlist = await prisma.waitlist.create({
       data: {
         type,
         email: email.toLowerCase(),
@@ -118,11 +118,11 @@ export async function GET(request: NextRequest) {
 
     const where = type ? { type } : {};
 
-    const total = await db.waitlist.count({ where });
-    const homeowners = await db.waitlist.count({ where: { type: 'homeowner' } });
-    const contractors = await db.waitlist.count({ where: { type: 'contractor' } });
+    const total = await prisma.waitlist.count({ where });
+    const homeowners = await prisma.waitlist.count({ where: { type: 'homeowner' } });
+    const contractors = await prisma.waitlist.count({ where: { type: 'contractor' } });
 
-    const recent = await db.waitlist.findMany({
+    const recent = await prisma.waitlist.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: 10,

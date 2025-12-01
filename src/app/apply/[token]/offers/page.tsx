@@ -104,7 +104,7 @@ export default function OffersPage() {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">FlowPay</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">SuprFi</h1>
           <p className="text-gray-600">Your financing decision is ready</p>
         </div>
 
@@ -263,10 +263,10 @@ export default function OffersPage() {
               <h4 className="font-semibold text-gray-900 mb-2">Need Help?</h4>
               <p className="text-sm text-gray-600">
                 Contact our support team at{' '}
-                <a href="mailto:support@flowpay.com" className="text-blue-600 underline">
-                  support@flowpay.com
+                <a href="mailto:support@suprfi.com" className="text-blue-600 underline">
+                  support@suprfi.com
                 </a>{' '}
-                or call 1-800-FLOWPAY
+                or call 1-800-SUPRFI
               </p>
             </div>
           </div>
@@ -274,7 +274,7 @@ export default function OffersPage() {
 
         {/* Support Footer */}
         <div className="text-center mt-8 text-sm text-gray-600">
-          <p>Questions? Contact support@flowpay.com</p>
+          <p>Questions? Contact support@suprfi.com</p>
         </div>
       </div>
     </div>

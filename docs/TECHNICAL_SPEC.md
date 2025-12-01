@@ -1,4 +1,4 @@
-# FlowPay Technical Delivery Specification
+# SuprFi Technical Delivery Specification
 
 **Version:** v1.0  
 **Last Updated:** October 29, 2025  
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-FlowPay is an embedded consumer financing platform for home service businesses. This document outlines the technical implementation plan for the MVP, covering architecture, technology choices, implementation phases, and delivery timeline.
+SuprFi is an embedded consumer financing platform for home service businesses. This document outlines the technical implementation plan for the MVP, covering architecture, technology choices, implementation phases, and delivery timeline.
 
 **Key Facts:**
 - **Target Timeline:** 12-16 weeks to production-ready MVP
@@ -138,7 +138,7 @@ Node.js Microservices (separate deployments)
 │                  FRONTEND (Next.js 14 / Vercel)                  │
 │                                                                   │
 │  ┌─────────────────────┐        ┌─────────────────────┐         │
-│  │  Borrower Portal    │        │  FlowOps Admin      │         │
+│  │  Borrower Portal    │        │  SuprOps Admin      │         │
 │  │  - Apply for loan   │        │  - Review queue     │         │
 │  │  - Link bank        │        │  - Manage rules     │         │
 │  │  - E-sign           │        │  - Analytics        │         │
@@ -450,7 +450,7 @@ model AuditLog {
 model CrmSyncLog {
   id              String    @id @default(cuid())
   crmType         String    @default("fieldroutes")
-  direction       String    // "inbound" (CRM → FlowPay) or "outbound" (FlowPay → CRM)
+  direction       String    // "inbound" (CRM → SuprFi) or "outbound" (SuprFi → CRM)
   
   entityType      String    // "customer", "job", "financing_status"
   entityId        String
@@ -486,7 +486,7 @@ Week 3-5:   Phase 1  - Borrower Flow MVP
 Week 6-7:   Phase 2  - Decisioning Engine
 Week 8-9:   Phase 3  - CRM Integration (Mock + Real)
 Week 10-11: Phase 4  - Lender Integration
-Week 12-13: Phase 5  - FlowOps Admin Tool
+Week 12-13: Phase 5  - SuprOps Admin Tool
 Week 14-15: Phase 6  - Security & Hardening
 Week 15-16: Phase 7  - Testing & QA
 Week 16+:   Phase 8  - Pilot Launch
@@ -655,7 +655,7 @@ Pre-launch: Phase 9  - Legal & Compliance
 - [ ] Read operations:
   - Fetch customer by ID
   - Fetch job/appointment by ID
-  - Map FieldRoutes fields → FlowPay schema
+  - Map FieldRoutes fields → SuprFi schema
 - [ ] Write operations:
   - Update job with financing status
   - Write back: `financing_status`, `loan_amount`, `funded_date`, `next_payment_due`
@@ -750,7 +750,7 @@ Pre-launch: Phase 9  - Legal & Compliance
 
 ---
 
-### Phase 5: FlowOps Admin Tool (Week 12-13) - 50-60 hours
+### Phase 5: SuprOps Admin Tool (Week 12-13) - 50-60 hours
 
 **Goal:** Internal dashboard for operations, manual review, and analytics
 
@@ -961,7 +961,7 @@ Pre-launch: Phase 9  - Legal & Compliance
 - [ ] Deploy to Vercel production
 - [ ] Run database migrations
 - [ ] Configure production secrets
-- [ ] Set up custom domain (app.flowpay.com)
+- [ ] Set up custom domain (app.suprfi.com)
 - [ ] Enable SSL certificate
 
 **8.2 Monitoring & Observability**
@@ -1101,7 +1101,7 @@ Response (200):
   "application_id": "APP-abc123",
   "token": "eyJhbGc...",
   "sms_sent": true,
-  "link": "https://app.flowpay.com/apply/eyJhbGc...",
+  "link": "https://app.suprfi.com/apply/eyJhbGc...",
   "expires_at": "2025-11-01T18:30:00Z"
 }
 ```
@@ -1373,7 +1373,7 @@ Response (200):
 
 **Uptime Monitoring:**
 - UptimeRobot (external ping every 5 min)
-- Status page (status.flowpay.com)
+- Status page (status.suprfi.com)
 
 ---
 
@@ -1504,7 +1504,7 @@ Response (200):
 - ✅ Webhook handler receiving funding confirmations
 - ✅ Job queue processing successfully
 
-**Phase 5 (FlowOps Admin):**
+**Phase 5 (SuprOps Admin):**
 - ✅ Admin can view applications and loans
 - ✅ Manual review queue functional
 - ✅ Analytics dashboard showing real-time data
@@ -1528,7 +1528,7 @@ Response (200):
 
 ## 10. Conclusion
 
-This technical specification outlines an aggressive but achievable 12-16 week timeline to build FlowPay MVP. The architecture is designed for rapid iteration with a clear path to scale. By leveraging modern tools (Next.js, Supabase, Clerk) and AI pair programming, we can move fast while maintaining high quality.
+This technical specification outlines an aggressive but achievable 12-16 week timeline to build SuprFi MVP. The architecture is designed for rapid iteration with a clear path to scale. By leveraging modern tools (Next.js, Supabase, Clerk) and AI pair programming, we can move fast while maintaining high quality.
 
 **Key Success Factors:**
 1. **Start simple:** Mock integrations first, real APIs second

@@ -1,5 +1,7 @@
 'use client'
 
+import { useState, useCallback, useEffect } from 'react'
+import { usePlaidLink } from 'react-plaid-link'
 import type { FormData } from '../ApplicationForm'
 
 interface BankLinkStepProps {
@@ -10,20 +12,107 @@ interface BankLinkStepProps {
 }
 
 export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankLinkStepProps) {
+  const [linkToken, setLinkToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fetch link token on component mount
+  useEffect(() => {
+    async function fetchLinkToken() {
+      try {
+        // Extract token from URL (assuming it's passed as a URL param or available in context)
+        const urlToken = window.location.pathname.split('/')[2] // /apply/[token]
+        
+        const response = await fetch(`/api/v1/borrower/${urlToken}/plaid/link-token`, {
+          method: 'POST',
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to create link token')
+        }
+
+        const data = await response.json()
+        setLinkToken(data.linkToken)
+      } catch (err) {
+        console.error('Error fetching link token:', err)
+        setError('Failed to initialize Plaid. Please try again.')
+      }
+    }
+
+    // Only fetch if we don't already have a bank connected
+    if (!formData.plaidAccessToken) {
+      fetchLinkToken()
+    }
+  }, [formData.plaidAccessToken])
+
+  // Handle successful Plaid Link
+  const onSuccess = useCallback(async (publicToken: string, metadata: any) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const urlToken = window.location.pathname.split('/')[2]
+      
+      const response = await fetch(`/api/v1/borrower/${urlToken}/plaid/exchange`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          publicToken,
+          metadata,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to connect bank account')
+      }
+
+      const data = await response.json()
+      
+      // Update form data with bank connection details
+      updateFormData({
+        plaidAccessToken: 'connected', // We don't store the actual token in form data
+        plaidAccountId: metadata.account_id,
+        bankName: data.bankName,
+        accountMask: data.accountMask,
+      })
+
+      // Auto-advance to next step
+      setTimeout(() => {
+        onNext()
+      }, 500)
+    } catch (err) {
+      console.error('Error connecting bank:', err)
+      setError('Failed to connect your bank account. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }, [updateFormData, onNext])
+
+  // Handle Plaid Link exit
+  const onExit = useCallback((err: any, metadata: any) => {
+    if (err != null) {
+      console.error('Plaid Link error:', err)
+      setError('Bank connection was cancelled or failed. Please try again.')
+    }
+  }, [])
+
+  // Configure Plaid Link
+  const config = {
+    token: linkToken,
+    onSuccess,
+    onExit,
+  }
+
+  const { open, ready } = usePlaidLink(config)
+
   const handleConnect = () => {
-    // TODO: Integrate Plaid Link in next session
-    // For now, simulate connection
-    updateFormData({
-      plaidAccessToken: 'mock_access_token',
-      plaidAccountId: 'mock_account_id',
-      bankName: 'Chase Bank',
-      accountMask: '1234',
-    })
-    
-    setTimeout(() => {
-      alert('Bank connected successfully! (Mock)');
-      onNext()
-    }, 1000)
+    if (ready) {
+      open()
+    } else {
+      setError('Plaid is still loading. Please wait a moment and try again.')
+    }
   }
 
   return (
@@ -32,6 +121,19 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
       <p className="text-gray-600 mb-8">
         We use Plaid to securely connect to your bank account. This helps us verify your income and financial stability.
       </p>
+
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start">
+            <div className="text-red-600 text-xl mr-3">⚠️</div>
+            <div>
+              <div className="font-semibold text-red-900">Connection Error</div>
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {formData.plaidAccessToken ? (
         // Already connected
@@ -58,9 +160,10 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
           <button
             type="button"
             onClick={handleConnect}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            disabled={!ready || loading}
+            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Connect Bank Account
+            {loading ? 'Connecting...' : !ready ? 'Loading...' : 'Connect Bank Account'}
           </button>
           
           <div className="mt-6 text-sm text-gray-500">

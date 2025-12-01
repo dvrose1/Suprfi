@@ -105,7 +105,7 @@ export function ReviewStep({ formData, updateFormData, job, onSubmit, onBack, is
             className="mt-1 mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
           />
           <label htmlFor="credit-consent" className="text-sm text-gray-700 cursor-pointer">
-            I authorize FlowPay to obtain my credit report for underwriting purposes. 
+            I authorize SuprFi to obtain my credit report for underwriting purposes. 
             This will be a <strong>soft pull</strong> and will not affect my credit score.
           </label>
         </div>

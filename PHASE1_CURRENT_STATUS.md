@@ -83,7 +83,7 @@ Paste the link in your browser - you'll see:
 ## 📸 What You Should See
 
 ### Landing Page Features:
-- **Header:** "FlowPay - Apply for financing in minutes"
+- **Header:** "SuprFi - Apply for financing in minutes"
 - **Welcome:** Personalized with customer name
 - **Loan Details Card (Blue):**
   - Estimated Amount: $10,000 (or your test amount)

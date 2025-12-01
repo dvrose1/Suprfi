@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { sendFinancingStatusToFieldRoutes } from '@/lib/services/crm/fieldroutes'
 
 interface RouteParams {
   params: Promise<{
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const application = await prisma.application.findUnique({
       where: { id },
       include: {
+        job: true,
         decision: true,
       },
     })
@@ -112,6 +114,22 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     })
 
     console.log('✅ Audit log created')
+
+    // Sync status to CRM (FieldRoutes)
+    if (application.job.crmJobId) {
+      const syncResult = await sendFinancingStatusToFieldRoutes({
+        appointmentId: application.job.crmJobId,
+        financingStatus: 'declined',
+        applicationId: id,
+        declineReason: reason,
+      })
+
+      if (syncResult.success) {
+        console.log('✅ Decline status synced to CRM')
+      } else {
+        console.warn('⚠️ Failed to sync decline status to CRM:', syncResult.error)
+      }
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,4 +1,4 @@
-# FlowPay Product Requirements Document (PRD)
+# SuprFi Product Requirements Document (PRD)
 
 **Version:** v1.0  
 **Last Updated:** October 28, 2025  
@@ -9,12 +9,12 @@
 ## 1. Overview
 
 ### 1.1 Product Name
-**FlowPay** (by Flow Finance / FlowFi)
+**SuprFi** (by Flow Finance / SuprFi)
 
 ### 1.2 Summary
-FlowPay is an embedded consumer financing platform for home service businesses. It allows technicians to offer "Pay Later" options to homeowners for large service costs (e.g., pest control, HVAC, generators, etc.) without leaving their CRM.
+SuprFi is an embedded consumer financing platform for home service businesses. It allows technicians to offer "Pay Later" options to homeowners for large service costs (e.g., pest control, HVAC, generators, etc.) without leaving their CRM.
 
-Phase 1 MVP connects with existing CRMs like FieldRoutes via API, allowing technicians to trigger financing offers via SMS and automatically synchronize key data between FlowPay and the CRM.
+Phase 1 MVP connects with existing CRMs like FieldRoutes via API, allowing technicians to trigger financing offers via SMS and automatically synchronize key data between SuprFi and the CRM.
 
 ### 1.3 Problem Statement
 - Home service providers lack seamless financing options integrated into their workflow
@@ -45,7 +45,7 @@ Empower home service professionals to close more sales while giving homeowners f
 ### 2.1 Borrower Experience
 1. Technician triggers pre-qualification link via API → SMS
 2. Borrower receives text with a unique prefilled link
-3. FlowPay web app (React + Node.js on Vercel) guides borrower through:
+3. SuprFi web app (React + Node.js on Vercel) guides borrower through:
    - KYC (Persona)
    - Bank linking (Plaid)
    - Credit soft pull (Experian API)
@@ -77,7 +77,7 @@ Empower home service professionals to close more sales while giving homeowners f
 
 ## 3. FieldRoutes API Mapping
 
-| FieldRoutes Object | FlowPay Field | Direction | Description |
+| FieldRoutes Object | SuprFi Field | Direction | Description |
 |-------------------|---------------|-----------|-------------|
 | customerId | crmCustomerId | ↔ | Unique customer ID |
 | customer.firstName | firstName | → | Borrower prefill |
@@ -89,7 +89,7 @@ Empower home service professionals to close more sales while giving homeowners f
 | address.zip | postalCode | → | ZIP |
 | appointment.id | jobId | ↔ | Job link |
 | appointment.totalCost | loanAmount | → | Pre-filled loan request |
-| appointment.status | financingStatus | ← | Updates from FlowPay |
+| appointment.status | financingStatus | ← | Updates from SuprFi |
 | payment.status | paymentStatus | ← | Used for reconciliation |
 | payment.transactionId | fundingId | ← | Funding reference |
 
@@ -109,7 +109,7 @@ Empower home service professionals to close more sales while giving homeowners f
 ### 4.2 High-Level Flow
 1. Technician triggers financing in FieldRoutes (click "Offer Financing")
 2. FR calls our endpoint: `POST /api/v1/crm/offer-financing` with job/customer payload
-3. FlowPay generates a secure tokenized link and sends SMS (Twilio) to customer
+3. SuprFi generates a secure tokenized link and sends SMS (Twilio) to customer
 4. Customer opens React web app using token:
    - Token validated
    - Page prefilled with job/customer data
@@ -127,7 +127,7 @@ Empower home service professionals to close more sales while giving homeowners f
 8. CRM writeback:
    - Update FieldRoutes with financing status, loanId, fundedAmount, etc.
 9. Reconciliation:
-   - Payment webhooks from lender → FlowPay → CRM updates
+   - Payment webhooks from lender → SuprFi → CRM updates
 
 ---
 
@@ -150,7 +150,7 @@ Empower home service professionals to close more sales while giving homeowners f
 
 | ID | User Story | Priority | Acceptance Criteria |
 |----|------------|----------|---------------------|
-| MX1 | As a technician, I can click "Offer Financing" in CRM | P1 | Opens FlowPay API link |
+| MX1 | As a technician, I can click "Offer Financing" in CRM | P1 | Opens SuprFi API link |
 | MX2 | As a merchant, I see financing status synced | P1 | CRM updates when loan is approved |
 | MX3 | As a merchant, I can reconcile financing payments | P2 | Payment updates sync automatically |
 
@@ -307,7 +307,7 @@ Admin tool allows ops users to:
 
 ---
 
-## Appendix B: FlowOps (Admin Tool Requirements)
+## Appendix B: SuprOps (Admin Tool Requirements)
 
 ### B.1 Roles & Permissions
 - **Admin (Super):** Full access, manage lenders, rules, users

@@ -1,7 +1,7 @@
-# FlowPay API Specification
+# SuprFi API Specification
 
 **Version:** v1.0  
-**Base URL:** `https://api.flowpay.com/v1`  
+**Base URL:** `https://api.suprfi.com/v1`  
 **Last Updated:** October 29, 2025
 
 ---
@@ -165,7 +165,7 @@ Trigger a financing offer for a customer/job from CRM.
 {
   "application_id": "APP-abc123",
   "token": "eyJhbGc...",
-  "link": "https://app.flowpay.com/apply/eyJhbGc...",
+  "link": "https://app.suprfi.com/apply/eyJhbGc...",
   "sms_sent": true,
   "expires_at": "2025-11-01T18:30:00Z"
 }
@@ -952,7 +952,7 @@ POST /api/v1/admin/pricing-rules
 
 ## Webhook Events
 
-FlowPay sends webhooks for key events. Configure webhook URLs in admin settings.
+SuprFi sends webhooks for key events. Configure webhook URLs in admin settings.
 
 ### Event Types
 
@@ -996,7 +996,7 @@ FlowPay sends webhooks for key events. Configure webhook URLs in admin settings.
 
 **Signature Header:**
 ```http
-X-FlowPay-Signature: t=1698765432,v1=abc123def456...
+X-SuprFi-Signature: t=1698765432,v1=abc123def456...
 ```
 
 **Verification (Node.js):**
@@ -1030,12 +1030,12 @@ function verifyWebhook(payload, header, secret) {
 
 ## Postman Collection
 
-Download the complete Postman collection: [FlowPay API v1.postman_collection.json](./postman/flowpay_api_v1.json)
+Download the complete Postman collection: [SuprFi API v1.postman_collection.json](./postman/suprfi_api_v1.json)
 
 **Environment Variables:**
 ```json
 {
-  "base_url": "https://api.flowpay.com/v1",
+  "base_url": "https://api.suprfi.com/v1",
   "api_key": "sk_dev_...",
   "jwt_token": "eyJhbGc...",
   "application_id": "APP-abc123",

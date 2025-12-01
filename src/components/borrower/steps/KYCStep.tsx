@@ -1,6 +1,14 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import type { FormData } from '../ApplicationForm'
+
+// Declare Persona client type
+declare global {
+  interface Window {
+    Persona: any
+  }
+}
 
 interface KYCStepProps {
   formData: FormData
@@ -10,19 +18,136 @@ interface KYCStepProps {
 }
 
 export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepProps) {
-  const handleVerify = () => {
-    // TODO: Integrate Persona in next session
-    // For now, simulate verification
-    updateFormData({
-      personaInquiryId: 'mock_inquiry_id',
-      kycStatus: 'verified',
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [inquiryData, setInquiryData] = useState<any>(null)
+  const [personaLoaded, setPersonaLoaded] = useState(false)
+
+  // Load Persona script
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.Persona) {
+      const script = document.createElement('script')
+      script.src = 'https://cdn.withpersona.com/dist/persona-v4.6.0.js'
+      script.async = true
+      script.onload = () => setPersonaLoaded(true)
+      script.onerror = () => setError('Failed to load Persona. Please refresh the page.')
+      document.body.appendChild(script)
+
+      return () => {
+        document.body.removeChild(script)
+      }
+    } else if (window.Persona) {
+      setPersonaLoaded(true)
+    }
+  }, [])
+
+  // Create inquiry on component mount
+  useEffect(() => {
+    async function createInquiry() {
+      if (formData.kycStatus === 'verified') {
+        return // Already verified
+      }
+
+      try {
+        setLoading(true)
+        const urlToken = window.location.pathname.split('/')[2]
+
+        const response = await fetch(`/api/v1/borrower/${urlToken}/persona/create-inquiry`, {
+          method: 'POST',
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to create identity verification')
+        }
+
+        const data = await response.json()
+        setInquiryData(data)
+      } catch (err) {
+        console.error('Error creating inquiry:', err)
+        setError('Failed to initialize identity verification. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    createInquiry()
+  }, [formData.kycStatus])
+
+  const handleVerify = useCallback(() => {
+    if (!personaLoaded || !window.Persona) {
+      setError('Persona is still loading. Please wait a moment.')
+      return
+    }
+
+    if (!inquiryData?.sessionToken) {
+      setError('Verification session not ready. Please refresh the page.')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    const client = new window.Persona.Client({
+      templateId: inquiryData.sessionToken,
+      environment: process.env.NEXT_PUBLIC_PERSONA_ENV || 'sandbox',
+      onLoad: () => {
+        setLoading(false)
+        client.open()
+      },
+      onComplete: async ({ inquiryId, status }: any) => {
+        setLoading(true)
+        
+        try {
+          const urlToken = window.location.pathname.split('/')[2]
+          
+          const response = await fetch(`/api/v1/borrower/${urlToken}/persona/complete`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              inquiryId,
+              status,
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error('Failed to complete verification')
+          }
+
+          const data = await response.json()
+
+          if (data.verified) {
+            updateFormData({
+              personaInquiryId: inquiryId,
+              kycStatus: 'verified',
+            })
+
+            setTimeout(() => {
+              onNext()
+            }, 500)
+          } else {
+            setError('Verification could not be completed. Please try again or contact support.')
+          }
+        } catch (err) {
+          console.error('Error completing verification:', err)
+          setError('Failed to complete verification. Please try again.')
+        } finally {
+          setLoading(false)
+        }
+      },
+      onCancel: ({ inquiryId }: any) => {
+        setError('Verification was cancelled. Click "Verify Identity" to try again.')
+        setLoading(false)
+      },
+      onError: (error: any) => {
+        console.error('Persona error:', error)
+        setError('An error occurred during verification. Please try again.')
+        setLoading(false)
+      },
     })
-    
-    setTimeout(() => {
-      alert('Identity verified successfully! (Mock)')
-      onNext()
-    }, 1000)
-  }
+  }, [personaLoaded, inquiryData, updateFormData, onNext])
+
 
   return (
     <div>
@@ -30,6 +155,19 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
       <p className="text-gray-600 mb-8">
         We need to verify your identity to comply with federal regulations and protect against fraud.
       </p>
+
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start">
+            <div className="text-red-600 text-xl mr-3">⚠️</div>
+            <div>
+              <div className="font-semibold text-red-900">Verification Error</div>
+              <div className="text-sm text-red-700">{error}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {formData.kycStatus === 'verified' ? (
         // Already verified
@@ -50,21 +188,22 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
           <div className="text-purple-600 text-5xl mb-4">🪪</div>
           <h3 className="text-lg font-semibold mb-2">Quick Identity Check</h3>
           <p className="text-gray-600 mb-6">
-            You'll be asked to provide a photo ID and take a selfie. This process takes less than 2 minutes.
+            You'll be asked to upload a photo of your government-issued ID. This process takes less than 2 minutes.
           </p>
           
           <button
             type="button"
             onClick={handleVerify}
-            className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+            disabled={loading || !personaLoaded || !inquiryData}
+            className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            Verify Identity
+            {loading ? 'Loading...' : !personaLoaded ? 'Initializing...' : !inquiryData ? 'Preparing...' : 'Verify Identity'}
           </button>
           
           <div className="mt-6 text-sm text-gray-500">
             <p className="mb-2">✓ Powered by Persona</p>
             <p className="mb-2">✓ Bank-level security</p>
-            <p>✓ Your photos are encrypted</p>
+            <p>✓ Your ID is encrypted and secure</p>
           </div>
         </div>
       )}

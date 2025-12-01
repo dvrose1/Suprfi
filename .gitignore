@@ -40,3 +40,4 @@ next-env.d.ts
 prisma/migrations/*_migration_lock.toml
 
 /src/generated/prisma
+ACCELERATE_CONNECTION_STRING.txt

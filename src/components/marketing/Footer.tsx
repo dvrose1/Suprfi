@@ -1,131 +1,94 @@
-// ABOUTME: Footer component for marketing site with links, social media, and legal information
-// ABOUTME: Includes company info, navigation links, and copyright notice
-
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 const Footer: React.FC = () => {
   const navigation = {
     product: [
       { name: 'How It Works', href: '/how-it-works' },
-      { name: 'For Homeowners', href: '/homeowners' },
-      { name: 'For Contractors', href: '/contractors' },
+      { name: 'Rates & Terms', href: '/rates' },
+      { name: 'Calculator', href: '/calculator' },
+      { name: 'Help Center', href: '/help' },
     ],
     company: [
       { name: 'About Us', href: '/about' },
-      { name: 'Contact', href: '/contact' },
-      { name: 'Careers', href: '#' },
+      { name: 'For Contractors', href: '/contractors' },
+      { name: 'Careers', href: '/careers' },
+      { name: 'Blog', href: '/blog' },
     ],
     legal: [
-      { name: 'Privacy Policy', href: '#' },
-      { name: 'Terms of Service', href: '#' },
-      { name: 'Licensing', href: '#' },
+      { name: 'Privacy Policy', href: '/privacy' },
+      { name: 'Terms of Service', href: '/terms' },
+      { name: 'Licenses', href: '/licenses' },
     ],
   };
 
   return (
-    <footer className="bg-gray-50 border-t border-gray-200">
-      <div className="container-custom">
-        <div className="py-12 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-            {/* Brand */}
-            <div className="lg:col-span-2">
-              <Link href="/" className="flex items-center space-x-3 mb-4">
-                <Image
-                  src="/logos/suprfi-logo-icon.png"
-                  alt="SuprFi Logo"
-                  width={32}
-                  height={32}
-                  className="h-8 w-auto"
-                />
-                <span className="text-xl font-bold">
-                  <span className="text-primary-600">Supr</span>
-                  <span className="text-gold-400">Fi</span>
-                </span>
-              </Link>
-              <p className="text-gray-600 mb-4 max-w-sm">
-                The Home Repair Financing Specialists. Fast, fair, and transparent financing for home services.
-              </p>
-              <p className="text-sm text-gray-500">
-                Licensed lender. Loans subject to approval.
-              </p>
-            </div>
-
-            {/* Product */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-                Product
-              </h3>
-              <ul className="space-y-3">
-                {navigation.product.map((item) => (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className="text-gray-600 hover:text-primary-600 transition-colors"
-                    >
-                      {item.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-                Company
-              </h3>
-              <ul className="space-y-3">
-                {navigation.company.map((item) => (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className="text-gray-600 hover:text-primary-600 transition-colors"
-                    >
-                      {item.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-                Legal
-              </h3>
-              <ul className="space-y-3">
-                {navigation.legal.map((item) => (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className="text-gray-600 hover:text-primary-600 transition-colors"
-                    >
-                      {item.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Bottom bar */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
-            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <p className="text-sm text-gray-500">
-                © {new Date().getFullYear()} SuprFi. All rights reserved.
-              </p>
-              <div className="flex items-center space-x-6">
-                <a
-                  href="mailto:hello@suprfi.com"
-                  className="text-sm text-gray-500 hover:text-primary-600 transition-colors"
-                >
-                  hello@suprfi.com
-                </a>
+    <footer className="bg-gray-900 text-gray-400 py-16 px-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-12 mb-12">
+          {/* Brand */}
+          <div>
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-accent">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
               </div>
-            </div>
+              <span className="text-xl font-bold text-white font-display">SuprFi</span>
+            </Link>
+            <p className="text-sm">Financing that works as fast as you need it.</p>
           </div>
+          
+          {/* Product */}
+          <div>
+            <h4 className="font-semibold text-white mb-4">Product</h4>
+            <ul className="space-y-2 text-sm">
+              {navigation.product.map((item) => (
+                <li key={item.name}>
+                  <Link href={item.href} className="hover:text-white transition-colors">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          {/* Company */}
+          <div>
+            <h4 className="font-semibold text-white mb-4">Company</h4>
+            <ul className="space-y-2 text-sm">
+              {navigation.company.map((item) => (
+                <li key={item.name}>
+                  <Link href={item.href} className="hover:text-white transition-colors">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          {/* Legal */}
+          <div>
+            <h4 className="font-semibold text-white mb-4">Legal</h4>
+            <ul className="space-y-2 text-sm">
+              {navigation.legal.map((item) => (
+                <li key={item.name}>
+                  <Link href={item.href} className="hover:text-white transition-colors">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        
+        {/* Bottom bar */}
+        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm">© {new Date().getFullYear()} SuprFi Inc. All rights reserved.</p>
+          <p className="text-xs text-gray-500 max-w-2xl text-center md:text-right">
+            Loans are provided by SuprFi&apos;s lending partners. APR ranges from 14.99% to 29.99%. 
+            Rates depend on credit profile and loan terms.
+          </p>
         </div>
       </div>
     </footer>

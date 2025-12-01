@@ -87,7 +87,7 @@ export default async function ApplyPage({ params }: PageProps) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">FlowPay</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">SuprFi</h1>
         <p className="text-gray-600">Apply for financing in minutes</p>
       </div>
 
@@ -105,7 +105,7 @@ export default async function ApplyPage({ params }: PageProps) {
 
       {/* Support Footer */}
       <div className="text-center mt-8 text-sm text-gray-600">
-        <p>Need help? Contact support@flowpay.com</p>
+        <p>Need help? Contact support@suprfi.com</p>
         <p className="mt-2">Application expires in 24 hours</p>
       </div>
     </div>

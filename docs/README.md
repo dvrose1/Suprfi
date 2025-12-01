@@ -1,6 +1,6 @@
-# FlowPay Documentation
+# SuprFi Documentation
 
-Welcome to the FlowPay technical documentation. This directory contains all product requirements, technical specifications, and architecture decisions for the FlowPay embedded financing platform.
+Welcome to the SuprFi technical documentation. This directory contains all product requirements, technical specifications, and architecture decisions for the SuprFi embedded financing platform.
 
 ---
 
@@ -14,7 +14,7 @@ Welcome to the FlowPay technical documentation. This directory contains all prod
 - User stories and acceptance criteria
 - Feature requirements (borrower flow, CRM integration, decisioning)
 - Success metrics and KPIs
-- Appendices: Decisioning engine details, FlowOps admin requirements
+- Appendices: Decisioning engine details, SuprOps admin requirements
 
 **Start here if:** You want to understand WHAT we're building and WHY.
 
@@ -49,7 +49,7 @@ Welcome to the FlowPay technical documentation. This directory contains all prod
 - Rate limiting
 - Postman collection reference
 
-**Start here if:** You're integrating with FlowPay APIs or testing endpoints.
+**Start here if:** You're integrating with SuprFi APIs or testing endpoints.
 
 ---
 
