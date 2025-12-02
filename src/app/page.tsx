@@ -1,9 +1,16 @@
 import React from 'react';
+import Header from '@/components/marketing/Header';
+import Footer from '@/components/marketing/Footer';
+import Hero from '@/components/marketing/Hero';
+import TrustBar from '@/components/marketing/TrustBar';
+import HowItWorks from '@/components/marketing/HowItWorks';
+import ServicesGrid from '@/components/marketing/ServicesGrid';
+import Testimonials from '@/components/marketing/Testimonials';
+import CtaSection from '@/components/marketing/CtaSection';
 
-export default function ComingSoon() {
+function ComingSoon() {
   return (
     <div className="min-h-screen bg-warm-white flex flex-col items-center justify-center px-6 relative overflow-hidden">
-      {/* Background gradient */}
       <div 
         className="absolute inset-0 opacity-5"
         style={{ 
@@ -12,7 +19,6 @@ export default function ComingSoon() {
       />
       
       <div className="relative text-center max-w-2xl">
-        {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <svg viewBox="0 0 40 40" className="w-12 h-12">
             <defs>
@@ -30,16 +36,41 @@ export default function ComingSoon() {
           </span>
         </div>
 
-        {/* Tagline */}
         <h1 className="text-4xl md:text-5xl font-bold text-navy font-display mb-12">
           Financing that works just as fast as you do.
         </h1>
 
-        {/* Coming Soon Badge */}
         <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-primary text-white font-semibold">
           <span>Coming Soon</span>
         </div>
       </div>
     </div>
   );
+}
+
+function MarketingHome() {
+  return (
+    <>
+      <Header />
+      <main>
+        <Hero />
+        <TrustBar />
+        <HowItWorks />
+        <ServicesGrid />
+        <Testimonials />
+        <CtaSection />
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+export default function Home() {
+  const isComingSoon = process.env.NEXT_PUBLIC_COMING_SOON === 'true';
+  
+  if (isComingSoon) {
+    return <ComingSoon />;
+  }
+  
+  return <MarketingHome />;
 }
