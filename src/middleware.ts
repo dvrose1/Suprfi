@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   '/contractors',
   '/homeowners',
   '/waitlist',
+  '/get-started',  // Public sign-up / demo page
   '/rates',
   '/help',
   '/privacy',

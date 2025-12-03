@@ -151,13 +151,19 @@ export default async function AdminPage() {
                 <div className="font-medium">All Applications</div>
                 <div className="text-sm text-green-600">Manage all financing requests</div>
               </Link>
-              <button 
-                className="w-full px-4 py-3 bg-gray-100 text-gray-500 rounded-lg text-left cursor-not-allowed"
-                disabled
+              <Link
+                href="/admin/manual-review"
+                className={`block w-full px-4 py-3 rounded-lg text-left ${
+                  manualReviews > 0 
+                    ? 'bg-red-50 text-red-700 hover:bg-red-100' 
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
               >
-                <div className="font-medium">Manage Pricing Rules</div>
-                <div className="text-sm text-gray-400">Coming in Phase 3</div>
-              </button>
+                <div className="font-medium">Manual Review Queue</div>
+                <div className={`text-sm ${manualReviews > 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                  {manualReviews > 0 ? `${manualReviews} pending reviews` : 'No pending reviews'}
+                </div>
+              </Link>
             </div>
           </div>
         </div>

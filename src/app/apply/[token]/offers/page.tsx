@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 
 interface Offer {
   id: string
@@ -33,12 +33,14 @@ interface Decision {
 export default function OffersPage() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const token = params.token as string
   const decisionId = searchParams.get('decision')
   
   const [decision, setDecision] = useState<Decision | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectingOffer, setSelectingOffer] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchDecision() {
@@ -208,13 +210,33 @@ export default function OffersPage() {
                             isRecommended
                               ? 'bg-blue-600 text-white hover:bg-blue-700'
                               : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                          }`}
-                          onClick={() => {
-                            // TODO: Implement offer selection
-                            alert(`Selected ${offer.termMonths}-month plan. Implementation coming soon!`)
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          disabled={selectingOffer !== null}
+                          onClick={async () => {
+                            setSelectingOffer(offer.id)
+                            try {
+                              const response = await fetch(`/api/v1/borrower/${token}/offers/select`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ offerId: offer.id }),
+                              })
+                              const result = await response.json()
+                              
+                              if (!response.ok) {
+                                alert(result.error || 'Failed to select offer')
+                                return
+                              }
+                              
+                              // Navigate to agreement page
+                              router.push(`/apply/${token}/agreement?offer=${offer.id}`)
+                            } catch (err) {
+                              alert('Failed to select offer. Please try again.')
+                            } finally {
+                              setSelectingOffer(null)
+                            }
                           }}
                         >
-                          Select This Plan
+                          {selectingOffer === offer.id ? 'Selecting...' : 'Select This Plan'}
                         </button>
                       </div>
                     </div>

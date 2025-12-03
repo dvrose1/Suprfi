@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { usePlaidLink } from 'react-plaid-link'
 import type { FormData } from '../ApplicationForm'
+import { ManualBankForm, type ManualBankData } from '../ManualBankForm'
 
 interface BankLinkStepProps {
   formData: FormData
@@ -15,6 +16,8 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
   const [linkToken, setLinkToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [manualEntryLoading, setManualEntryLoading] = useState(false)
 
   // Fetch link token on component mount
   useEffect(() => {
@@ -115,6 +118,76 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
     }
   }
 
+  // Handle manual bank entry submission
+  const handleManualBankSubmit = async (data: ManualBankData) => {
+    setManualEntryLoading(true)
+    setError(null)
+
+    try {
+      const urlToken = window.location.pathname.split('/')[2]
+      
+      const response = await fetch(`/api/v1/borrower/${urlToken}/bank/manual`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to save bank details')
+      }
+
+      // Update form data to indicate bank is connected (manually)
+      updateFormData({
+        plaidAccessToken: 'manual_entry',
+        bankName: data.bankName,
+        accountMask: data.accountNumber.slice(-4),
+      })
+
+      // Auto-advance to next step
+      setTimeout(() => {
+        onNext()
+      }, 500)
+    } catch (err) {
+      console.error('Error saving manual bank details:', err)
+      setError(err instanceof Error ? err.message : 'Failed to save bank details. Please try again.')
+    } finally {
+      setManualEntryLoading(false)
+    }
+  }
+
+  // If showing manual entry form
+  if (showManualEntry) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Enter Bank Details Manually</h2>
+        <p className="text-gray-600 mb-8">
+          Please enter your bank account information below. This will be used for loan disbursement and payments.
+        </p>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <div className="text-red-600 text-xl mr-3">!</div>
+              <div>
+                <div className="font-semibold text-red-900">Error</div>
+                <div className="text-sm text-red-700">{error}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <ManualBankForm
+          onSubmit={handleManualBankSubmit}
+          onCancel={() => setShowManualEntry(false)}
+          loading={manualEntryLoading}
+        />
+      </div>
+    )
+  }
+
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Connect Your Bank Account</h2>
@@ -170,6 +243,17 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
             <p className="mb-2">✓ 256-bit SSL encryption</p>
             <p className="mb-2">✓ Read-only access</p>
             <p>✓ Trusted by 8,000+ financial apps</p>
+          </div>
+
+          {/* Manual Entry Link */}
+          <div className="mt-6 pt-4 border-t border-blue-200">
+            <button
+              type="button"
+              onClick={() => setShowManualEntry(true)}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              Having trouble? Enter bank details manually
+            </button>
           </div>
         </div>
       )}

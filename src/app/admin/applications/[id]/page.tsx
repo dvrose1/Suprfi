@@ -31,6 +31,8 @@ interface ApplicationDetail {
     score: number | null
     decisionStatus: string
     decisionReason: string | null
+    ruleHits: string[]
+    evaluatorVersion: string | null
     decidedAt: string
     decidedBy: string | null
     offers: Array<{
@@ -311,6 +313,44 @@ export default function ApplicationDetailPage() {
                   </div>
                 )}
 
+                {/* Decision Factors from Plaid Data Analysis */}
+                {application.decision.ruleHits && application.decision.ruleHits.length > 0 && (
+                  <div className="mb-4 pt-4 border-t border-gray-200">
+                    <div className="text-sm font-medium text-gray-700 mb-3">📊 Decision Factors (from Plaid data)</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Positive Factors */}
+                      <div>
+                        <div className="text-xs font-medium text-green-700 mb-2">✅ Positive Factors</div>
+                        <div className="space-y-1">
+                          {application.decision.ruleHits
+                            .filter((hit: string) => !hit.toLowerCase().includes('low') && !hit.toLowerCase().includes('risk'))
+                            .map((hit: string, idx: number) => (
+                              <div key={idx} className="text-sm text-green-700 bg-green-50 rounded px-2 py-1">
+                                {hit}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                      {/* Risk Factors */}
+                      <div>
+                        <div className="text-xs font-medium text-red-700 mb-2">⚠️ Risk Factors</div>
+                        <div className="space-y-1">
+                          {application.decision.ruleHits
+                            .filter((hit: string) => hit.toLowerCase().includes('low') || hit.toLowerCase().includes('risk'))
+                            .map((hit: string, idx: number) => (
+                              <div key={idx} className="text-sm text-red-700 bg-red-50 rounded px-2 py-1">
+                                {hit}
+                              </div>
+                            ))}
+                          {application.decision.ruleHits.filter((hit: string) => hit.toLowerCase().includes('low') || hit.toLowerCase().includes('risk')).length === 0 && (
+                            <div className="text-sm text-gray-500 italic">None identified</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Offers */}
                 {application.decision.offers.length > 0 && (
                   <div className="mt-6 pt-6 border-t border-gray-200">
@@ -352,44 +392,205 @@ export default function ApplicationDetailPage() {
               </div>
             )}
 
-            {/* Integration Data */}
+            {/* Bank Data (Plaid) */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">🔌 Integration Data</h2>
-              <div className="space-y-4">
-                {/* Plaid */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium text-gray-900">Bank Connection (Plaid)</div>
-                    {application.plaidData ? (
-                      <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Connected</span>
-                    ) : (
-                      <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">Not Connected</span>
-                    )}
-                  </div>
-                  {application.plaidData && (
-                    <div className="text-sm text-gray-600">
-                      Bank: {application.plaidData.bankName || 'N/A'} (...{application.plaidData.accountMask || 'N/A'})
-                    </div>
-                  )}
-                </div>
-
-                {/* Persona */}
-                <div className="pt-4 border-t border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium text-gray-900">Identity Verification (Persona)</div>
-                    {application.personaData ? (
-                      <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Verified</span>
-                    ) : (
-                      <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">Not Verified</span>
-                    )}
-                  </div>
-                  {application.personaData && (
-                    <div className="text-sm text-gray-600">
-                      Status: {application.personaData.status || 'N/A'}
-                    </div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">🏦 Bank Data</h2>
+                <div className="flex items-center gap-2">
+                  {application.plaidData?.manualEntry ? (
+                    <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded font-medium">
+                      ⚠️ Manual Entry
+                    </span>
+                  ) : application.plaidData ? (
+                    <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Plaid Verified</span>
+                  ) : (
+                    <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">Not Connected</span>
                   )}
                 </div>
               </div>
+              
+              {/* Manual Entry Warning */}
+              {application.plaidData?.manualEntry && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start">
+                    <span className="text-yellow-600 text-xl mr-3">⚠️</span>
+                    <div>
+                      <div className="font-semibold text-yellow-900">Manual Bank Entry</div>
+                      <div className="text-sm text-yellow-800">
+                        This customer entered their bank details manually instead of connecting through Plaid.
+                        Balance and transaction data is not available. Consider requesting additional verification.
+                      </div>
+                      {application.plaidData.verificationStatus && (
+                        <div className="mt-2 text-sm">
+                          <span className="font-medium">Verification Status: </span>
+                          <span className={`px-2 py-0.5 rounded text-xs ${
+                            application.plaidData.verificationStatus === 'verified' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {application.plaidData.verificationStatus}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {application.plaidData ? (
+                <div className="space-y-4">
+                  {/* Account Info */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <div className="text-sm text-gray-600">Institution</div>
+                      <div className="font-medium text-gray-900">{application.plaidData.institutionName || 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">Account</div>
+                      <div className="font-medium text-gray-900">
+                        {application.plaidData.accountName || 'N/A'} (...{application.plaidData.accountMask || 'N/A'})
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">Type</div>
+                      <div className="font-medium text-gray-900 capitalize">
+                        {application.plaidData.accountType || 'N/A'} / {application.plaidData.accountSubtype || 'N/A'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">Linked</div>
+                      <div className="font-medium text-gray-900">
+                        {application.plaidData.linkedAt ? new Date(application.plaidData.linkedAt).toLocaleDateString() : 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Balance */}
+                  {application.plaidData.balance && (
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="text-sm font-medium text-gray-700 mb-2">💰 Account Balance</div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="text-xs text-gray-500">Available</div>
+                          <div className="text-xl font-bold text-green-600">
+                            ${(application.plaidData.balance.available || 0).toLocaleString()}
+                          </div>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <div className="text-xs text-gray-500">Current</div>
+                          <div className="text-xl font-bold text-gray-900">
+                            ${(application.plaidData.balance.current || 0).toLocaleString()}
+                          </div>
+                        </div>
+                        {application.plaidData.balance.limit && (
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <div className="text-xs text-gray-500">Limit</div>
+                            <div className="text-xl font-bold text-gray-900">
+                              ${application.plaidData.balance.limit.toLocaleString()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ACH Numbers */}
+                  {application.plaidData.achNumbers && (
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="text-sm font-medium text-gray-700 mb-2">🔐 ACH Information (for disbursement)</div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-blue-50 rounded-lg p-3">
+                          <div className="text-xs text-blue-600">Routing Number</div>
+                          <div className="font-mono font-medium text-blue-900">
+                            {application.plaidData.achNumbers.routingNumber}
+                          </div>
+                        </div>
+                        <div className="bg-blue-50 rounded-lg p-3">
+                          <div className="text-xs text-blue-600">Account Number</div>
+                          <div className="font-mono font-medium text-blue-900">
+                            ****{application.plaidData.achNumbers.accountNumber?.slice(-4) || '****'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* All Accounts */}
+                  {application.plaidData.allAccounts && application.plaidData.allAccounts.length > 1 && (
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="text-sm font-medium text-gray-700 mb-2">📋 All Linked Accounts ({application.plaidData.allAccounts.length})</div>
+                      <div className="space-y-2">
+                        {application.plaidData.allAccounts.map((acc: any, idx: number) => (
+                          <div key={idx} className="flex justify-between items-center text-sm bg-gray-50 rounded p-2">
+                            <span className="text-gray-700">{acc.name} (...{acc.mask})</span>
+                            <span className="font-medium text-gray-900">
+                              ${(acc.balance?.available || acc.balance?.current || 0).toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Asset Report Status */}
+                  {application.plaidData.assetReport && (
+                    <div className="pt-4 border-t border-gray-200">
+                      <div className="text-sm font-medium text-gray-700 mb-2">📄 Asset Report (Bank Statements)</div>
+                      <div className="text-sm">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          application.plaidData.assetReport.status === 'ready' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {application.plaidData.assetReport.status === 'ready' ? 'Ready' : 'Pending'}
+                        </span>
+                        {application.plaidData.assetReport.requestedAt && (
+                          <span className="text-gray-500 ml-2">
+                            Requested: {new Date(application.plaidData.assetReport.requestedAt).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-gray-500 text-sm">No bank account connected yet.</div>
+              )}
+            </div>
+
+            {/* Identity Verification (Persona) */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">🪪 Identity Verification (Persona)</h2>
+                {application.personaData?.status === 'completed' ? (
+                  <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Verified</span>
+                ) : application.personaData ? (
+                  <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded">{application.personaData.status}</span>
+                ) : (
+                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">Not Started</span>
+                )}
+              </div>
+              
+              {application.personaData ? (
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Inquiry ID</span>
+                    <span className="font-mono text-gray-900">{application.personaData.inquiryId}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Status</span>
+                    <span className="font-medium text-gray-900 capitalize">{application.personaData.status}</span>
+                  </div>
+                  {application.personaData.createdAt && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Created</span>
+                      <span className="text-gray-900">{new Date(application.personaData.createdAt).toLocaleString()}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-gray-500 text-sm">Identity verification not started.</div>
+              )}
             </div>
           </div>
 

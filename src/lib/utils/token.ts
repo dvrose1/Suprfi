@@ -1,7 +1,14 @@
 import jwt from 'jsonwebtoken'
 import { nanoid } from 'nanoid'
+import { config } from 'dotenv'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+// Load env
+config({ path: '.env.local' })
+
+const JWT_SECRET = process.env.JWT_SECRET || 'suprfi-default-secret-key-2024'
+
+// Debug: log if we have a secret (don't log the actual secret)
+console.log('JWT_SECRET loaded:', JWT_SECRET ? 'yes (' + JWT_SECRET.length + ' chars)' : 'no, using default')
 
 export interface ApplicationToken {
   applicationId: string

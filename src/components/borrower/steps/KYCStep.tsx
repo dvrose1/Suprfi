@@ -79,7 +79,7 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
       return
     }
 
-    if (!inquiryData?.sessionToken) {
+    if (!inquiryData?.inquiryId) {
       setError('Verification session not ready. Please refresh the page.')
       return
     }
@@ -88,7 +88,7 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
     setError(null)
 
     const client = new window.Persona.Client({
-      templateId: inquiryData.sessionToken,
+      inquiryId: inquiryData.inquiryId,
       environment: process.env.NEXT_PUBLIC_PERSONA_ENV || 'sandbox',
       onLoad: () => {
         setLoading(false)
@@ -194,10 +194,10 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
           <button
             type="button"
             onClick={handleVerify}
-            disabled={loading || !personaLoaded || !inquiryData}
+            disabled={loading || !personaLoaded || !inquiryData?.inquiryId}
             className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            {loading ? 'Loading...' : !personaLoaded ? 'Initializing...' : !inquiryData ? 'Preparing...' : 'Verify Identity'}
+            {loading ? 'Loading...' : !personaLoaded ? 'Initializing...' : !inquiryData?.inquiryId ? 'Preparing...' : 'Verify Identity'}
           </button>
           
           <div className="mt-6 text-sm text-gray-500">

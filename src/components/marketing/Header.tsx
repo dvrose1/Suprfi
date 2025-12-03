@@ -56,10 +56,10 @@ const Header: React.FC = () => {
               Sign In
             </Link>
             <Link
-              href="/waitlist"
+              href="/get-started"
               className="px-5 py-2.5 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90 bg-gradient-primary"
             >
-              Join Waitlist
+              Get Started
             </Link>
           </div>
 
@@ -104,11 +104,11 @@ const Header: React.FC = () => {
                   Sign In
                 </Link>
                 <Link
-                  href="/waitlist"
+                  href="/get-started"
                   className="text-center py-3 rounded-lg text-white font-semibold bg-gradient-primary"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Join Waitlist
+                  Get Started
                 </Link>
               </div>
             </div>

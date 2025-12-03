@@ -75,6 +75,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           score: application.decision.score,
           decisionStatus: application.decision.decisionStatus,
           decisionReason: application.decision.decisionReason,
+          ruleHits: application.decision.ruleHits || [],
+          evaluatorVersion: application.decision.evaluatorVersion,
           decidedAt: application.decision.decidedAt.toISOString(),
           decidedBy: application.decision.decidedBy,
           offers: application.decision.offers.map(offer => ({

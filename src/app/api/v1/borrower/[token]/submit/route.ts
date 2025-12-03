@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { verifyApplicationToken } from '@/lib/utils/token'
+import { runDecisioning, generateOffers } from '@/lib/services/decisioning'
 
 // Request validation schema
 const SubmitApplicationSchema = z.object({
@@ -11,22 +12,22 @@ const SubmitApplicationSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(10),
   addressLine1: z.string().min(1),
-  addressLine2: z.string().optional(),
+  addressLine2: z.string().optional().default(''),
   city: z.string().min(1),
   state: z.string().min(2),
   postalCode: z.string().min(5),
-  dateOfBirth: z.string(),
-  ssn: z.string().min(9),
+  dateOfBirth: z.string().min(1),
+  ssn: z.string().min(9), // Can be formatted like 123-45-6789 (11 chars)
   
-  // Bank Info (from Plaid)
-  plaidAccessToken: z.string().optional(),
-  plaidAccountId: z.string().optional(),
-  bankName: z.string().optional(),
-  accountMask: z.string().optional(),
+  // Bank Info (from Plaid) - all optional
+  plaidAccessToken: z.string().optional().nullable(),
+  plaidAccountId: z.string().optional().nullable(),
+  bankName: z.string().optional().nullable(),
+  accountMask: z.string().optional().nullable(),
   
-  // KYC Info (from Persona)
-  personaInquiryId: z.string().optional(),
-  kycStatus: z.string().optional(),
+  // KYC Info (from Persona) - all optional
+  personaInquiryId: z.string().optional().nullable(),
+  kycStatus: z.string().optional().nullable(),
   
   // Consents
   creditCheckConsent: z.boolean(),
@@ -71,6 +72,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // 2. Parse and validate request body
     const body: unknown = await request.json()
+    console.log('📥 Received submission data:', JSON.stringify(body, null, 2))
+    
     const data = SubmitApplicationSchema.parse(body)
 
     console.log('📋 Application submission received:', {
@@ -181,83 +184,99 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     console.log('✅ Audit log created')
 
-    // 9. TODO: Trigger decisioning (mock for now)
-    // In a real system, this would:
-    // - Call credit bureau API
-    // - Run decisioning engine
-    // - Generate offers
-    // - Store in Decision + Offers tables
-    
-    // Mock decisioning - generate simple offers
+    // 9. Run decisioning using Plaid data
     const loanAmount = Number(application.job.estimateAmount)
+    const existingPlaidData = application.plaidData as any
     
-    // Simple mock credit score (random between 650-800)
-    const mockCreditScore = Math.floor(Math.random() * 150) + 650
+    console.log('🔄 Running decisioning with Plaid data...')
+    console.log('📊 Plaid data available:', {
+      hasAccessToken: !!existingPlaidData?.accessToken,
+      hasBalance: !!existingPlaidData?.balance,
+      hasAchNumbers: !!existingPlaidData?.achNumbers,
+      hasAssetReport: existingPlaidData?.assetReport?.status === 'ready',
+      institutionName: existingPlaidData?.institutionName,
+    })
+    
+    // Run decisioning engine
+    const decisionResult = runDecisioning({
+      loanAmount,
+      plaidData: existingPlaidData || {
+        accessToken: '',
+        itemId: '',
+        accountId: '',
+        institutionName: 'Unknown',
+        accountName: 'Unknown',
+        accountMask: '****',
+        accountType: 'depository',
+        balance: { current: 0, available: 0 },
+      },
+      customerInfo: {
+        firstName: application.customer.firstName,
+        lastName: application.customer.lastName,
+        email: application.customer.email,
+        dateOfBirth: data.dateOfBirth,
+      },
+    })
+    
+    console.log('📊 Decision result:', {
+      approved: decisionResult.approved,
+      score: decisionResult.score,
+      maxLoanAmount: decisionResult.maxLoanAmount,
+      positiveFactors: decisionResult.positiveFactors.length,
+      riskFactors: decisionResult.riskFactors.length,
+    })
     
     // Create decision record
     const decision = await prisma.decision.create({
       data: {
         applicationId: application.id,
-        score: mockCreditScore,
-        decisionStatus: 'approved', // Mock approval
-        decisionReason: 'Mock decisioning - approved for testing',
-        ruleHits: ['mock_rule_1', 'mock_rule_2'],
-        evaluatorVersion: 'v1.0-mock',
+        score: decisionResult.score,
+        decisionStatus: decisionResult.approved ? 'approved' : 'declined',
+        decisionReason: decisionResult.decisionReason,
+        ruleHits: [...decisionResult.riskFactors, ...decisionResult.positiveFactors],
+        evaluatorVersion: 'v1.0-plaid',
         decidedBy: 'system',
       },
     })
 
-    console.log('✅ Decision created:', decision.id, 'Score:', mockCreditScore)
+    console.log('✅ Decision created:', decision.id, 'Score:', decisionResult.score, 'Status:', decision.decisionStatus)
 
-    // Generate 3 mock offers based on credit score
-    const offers = []
+    // Generate offers based on decision
+    const generatedOffers = generateOffers(loanAmount, decisionResult.score, decisionResult.approved)
     
-    // Offer 1: Short term, lower APR
-    const offer1 = await prisma.offer.create({
-      data: {
-        decisionId: decision.id,
-        termMonths: 24,
-        apr: mockCreditScore >= 750 ? 7.9 : mockCreditScore >= 700 ? 9.9 : 11.9,
-        monthlyPayment: calculateMonthlyPayment(loanAmount, 24, mockCreditScore >= 750 ? 7.9 : mockCreditScore >= 700 ? 9.9 : 11.9),
-        downPayment: 0,
-        originationFee: loanAmount * 0.01,
-        totalAmount: calculateTotalAmount(loanAmount, 24, mockCreditScore >= 750 ? 7.9 : mockCreditScore >= 700 ? 9.9 : 11.9),
-        selected: false,
-      },
-    })
-    offers.push(offer1)
+    const offers = []
+    for (const offerData of generatedOffers) {
+      const offer = await prisma.offer.create({
+        data: {
+          decisionId: decision.id,
+          termMonths: offerData.termMonths,
+          apr: offerData.apr,
+          monthlyPayment: offerData.monthlyPayment,
+          downPayment: offerData.downPayment,
+          originationFee: offerData.originationFee,
+          totalAmount: offerData.totalAmount,
+          selected: false,
+        },
+      })
+      offers.push(offer)
+    }
 
-    // Offer 2: Medium term
-    const offer2 = await prisma.offer.create({
-      data: {
-        decisionId: decision.id,
-        termMonths: 48,
-        apr: mockCreditScore >= 750 ? 10.9 : mockCreditScore >= 700 ? 12.9 : 14.9,
-        monthlyPayment: calculateMonthlyPayment(loanAmount, 48, mockCreditScore >= 750 ? 10.9 : mockCreditScore >= 700 ? 12.9 : 14.9),
-        downPayment: 0,
-        originationFee: loanAmount * 0.005,
-        totalAmount: calculateTotalAmount(loanAmount, 48, mockCreditScore >= 750 ? 10.9 : mockCreditScore >= 700 ? 12.9 : 14.9),
-        selected: false,
-      },
-    })
-    offers.push(offer2)
+    console.log('✅ Generated', offers.length, 'financing offers')
 
-    // Offer 3: Long term, lower monthly
-    const offer3 = await prisma.offer.create({
-      data: {
-        decisionId: decision.id,
-        termMonths: 60,
-        apr: mockCreditScore >= 750 ? 12.9 : mockCreditScore >= 700 ? 14.9 : 16.9,
-        monthlyPayment: calculateMonthlyPayment(loanAmount, 60, mockCreditScore >= 750 ? 12.9 : mockCreditScore >= 700 ? 14.9 : 16.9),
-        downPayment: mockCreditScore < 700 ? loanAmount * 0.1 : 0,
-        originationFee: 0,
-        totalAmount: calculateTotalAmount(loanAmount, 60, mockCreditScore >= 750 ? 12.9 : mockCreditScore >= 700 ? 14.9 : 16.9),
-        selected: false,
-      },
-    })
-    offers.push(offer3)
-
-    console.log('✅ Generated 3 financing offers')
+    // 9b. Check if manual review is needed
+    const needsManualReview = shouldTriggerManualReview(decisionResult, loanAmount, existingPlaidData)
+    
+    if (needsManualReview.needed) {
+      await prisma.manualReview.create({
+        data: {
+          decisionId: decision.id,
+          reason: needsManualReview.reason,
+          priority: needsManualReview.priority,
+          status: 'pending',
+        },
+      })
+      console.log('⚠️ Manual review created:', needsManualReview.reason)
+    }
 
     // 10. Return success with offers
     return NextResponse.json({
@@ -268,6 +287,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         id: decision.id,
         status: decision.decisionStatus,
         score: decision.score,
+        reason: decisionResult.decisionReason,
+        positiveFactors: decisionResult.positiveFactors,
+        riskFactors: decisionResult.riskFactors,
+        dataUsed: decisionResult.dataUsed,
       },
       offers: offers.map(offer => ({
         id: offer.id,
@@ -299,15 +322,42 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// Helper function to calculate monthly payment
-function calculateMonthlyPayment(principal: number, months: number, apr: number): number {
-  const monthlyRate = apr / 100 / 12
-  const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1)
-  return Math.round(payment * 100) / 100
-}
-
-// Helper function to calculate total amount
-function calculateTotalAmount(principal: number, months: number, apr: number): number {
-  const monthlyPayment = calculateMonthlyPayment(principal, months, apr)
-  return Math.round(monthlyPayment * months * 100) / 100
+/**
+ * Determine if an application needs manual review
+ */
+function shouldTriggerManualReview(
+  decisionResult: {
+    approved: boolean
+    score: number
+    riskFactors: string[]
+  },
+  loanAmount: number,
+  plaidData: any
+): { needed: boolean; reason: string; priority: number } {
+  // High priority: Borderline score (near threshold)
+  if (decisionResult.score >= 550 && decisionResult.score < 620) {
+    return { needed: true, reason: 'borderline_score', priority: 1 }
+  }
+  
+  // High priority: Manual bank entry with large loan
+  if (plaidData?.manualEntry && loanAmount > 3000) {
+    return { needed: true, reason: 'manual_bank_entry', priority: 1 }
+  }
+  
+  // Medium priority: High loan amount
+  if (loanAmount > 15000) {
+    return { needed: true, reason: 'high_amount', priority: 2 }
+  }
+  
+  // Medium priority: Multiple risk factors but still approved
+  if (decisionResult.approved && decisionResult.riskFactors.length >= 3) {
+    return { needed: true, reason: 'multiple_risk_factors', priority: 2 }
+  }
+  
+  // Low priority: No balance data but approved
+  if (decisionResult.approved && !plaidData?.balance) {
+    return { needed: true, reason: 'thin_file', priority: 3 }
+  }
+  
+  return { needed: false, reason: '', priority: 0 }
 }
