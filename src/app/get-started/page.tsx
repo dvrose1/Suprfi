@@ -117,16 +117,8 @@ function SignUpForm() {
             </h1>
             
             <p className="text-gray-600 mb-8">
-              Click below to start your financing application. Use the test credentials for Plaid.
+              Click below to start your financing application.
             </p>
-            
-            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 mb-8">
-              <h3 className="font-semibold text-navy mb-3">Test Credentials for Plaid:</h3>
-              <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
-                <p><span className="text-gray-500">Username:</span> user_good</p>
-                <p><span className="text-gray-500">Password:</span> pass_good</p>
-              </div>
-            </div>
             
             <a
               href={result.link}
@@ -147,14 +139,11 @@ function SignUpForm() {
       <main className="flex-1 flex items-center justify-center px-6 py-20">
         <div className="max-w-lg w-full">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-700 text-sm font-medium mb-4">
-              🧪 Demo / Testing Mode
-            </div>
             <h1 className="text-3xl font-bold text-navy font-display mb-3">
-              Try SuprFi Financing
+              Get Started with SuprFi
             </h1>
             <p className="text-gray-600">
-              Create a test application to experience the borrower flow
+              Enter your details to check your financing options
             </p>
           </div>
 
@@ -232,12 +221,12 @@ function SignUpForm() {
               disabled={loading}
               className="w-full py-3 bg-gradient-primary text-white rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {loading ? 'Creating Application...' : 'Create Test Application'}
+              {loading ? 'Processing...' : 'Check Your Rate'}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-6">
-            This creates a real test application in the system that you can complete end-to-end.
+            Checking your rate won't affect your credit score.
           </p>
         </div>
       </main>
