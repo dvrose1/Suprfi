@@ -54,27 +54,27 @@ const ServicesGrid: React.FC = () => {
   ];
 
   return (
-    <section className="py-20 px-6 bg-light-gray">
+    <section className="py-12 sm:py-20 px-4 sm:px-6 bg-light-gray">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 text-navy font-display">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-navy font-display">
             Financing for whatever your home needs
           </h2>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-4">
           {services.map((service, i) => (
             <div 
               key={i} 
-              className="bg-white p-6 rounded-xl text-center hover:shadow-lg transition-all cursor-pointer group"
+              className="bg-white p-3 sm:p-6 rounded-xl text-center hover:shadow-lg transition-all cursor-pointer group"
             >
               <div 
-                className="w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform"
+                className="w-10 h-10 sm:w-12 sm:h-12 mx-auto rounded-xl flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform"
                 style={{ background: 'linear-gradient(135deg, rgba(15, 45, 74, 0.05) 0%, rgba(42, 157, 143, 0.1) 100%)' }}
               >
-                <div className="text-teal">{service.icon}</div>
+                <div className="text-teal [&>svg]:w-5 [&>svg]:h-5 sm:[&>svg]:w-6 sm:[&>svg]:h-6">{service.icon}</div>
               </div>
-              <span className="font-medium text-navy">{service.label}</span>
+              <span className="font-medium text-navy text-xs sm:text-sm md:text-base">{service.label}</span>
             </div>
           ))}
         </div>

@@ -9,13 +9,13 @@ const TrustBar: React.FC = () => {
   ];
 
   return (
-    <section className="py-6 border-y border-gray-100 bg-light-gray">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="flex flex-wrap justify-center gap-8 lg:gap-16 text-center">
+    <section className="py-4 sm:py-6 border-y border-gray-100 bg-light-gray">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 lg:gap-16 text-center">
           {stats.map((stat, i) => (
             <div key={i}>
-              <div className="text-2xl font-bold text-navy font-display">{stat.value}</div>
-              <div className="text-sm text-medium-gray">{stat.label}</div>
+              <div className="text-lg sm:text-2xl font-bold text-navy font-display">{stat.value}</div>
+              <div className="text-xs sm:text-sm text-medium-gray">{stat.label}</div>
             </div>
           ))}
         </div>

@@ -47,18 +47,18 @@ export default async function AdminPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex items-center justify-between">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">SuprOps Dashboard</h1>
-              <p className="text-gray-600 mt-1">Welcome back, {user?.firstName || 'Admin'}!</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">SuprOps Dashboard</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">Welcome back, {user?.firstName || 'Admin'}!</p>
             </div>
             <a 
               href="/" 
-              className="px-4 py-2 text-blue-600 hover:text-blue-800"
+              className="px-4 py-2 text-blue-600 hover:text-blue-800 text-sm sm:text-base"
             >
               ← Back to Home
             </a>
@@ -66,61 +66,61 @@ export default async function AdminPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Link href="/admin/applications" className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-            <div className="text-sm text-gray-600">Total Applications</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">{totalApps}</div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+          <Link href="/admin/applications" className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow">
+            <div className="text-xs sm:text-sm text-gray-600">Total Applications</div>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{totalApps}</div>
             <div className="text-xs text-blue-600 mt-1">Click to view all →</div>
           </Link>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600">Approval Rate</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">{approvalRate}%</div>
-            <div className="text-xs text-gray-500 mt-1">{approvedApps} of {totalApps} approved</div>
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="text-xs sm:text-sm text-gray-600">Approval Rate</div>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{approvalRate}%</div>
+            <div className="text-xs text-gray-500 mt-1">{approvedApps} of {totalApps}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600">Total Funded</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="text-xs sm:text-sm text-gray-600">Total Funded</div>
+            <div className="text-xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
               ${(Number(totalFunded._sum.fundedAmount) || 0).toLocaleString()}
             </div>
-            <div className="text-xs text-gray-500 mt-1">Lifetime funded amount</div>
+            <div className="text-xs text-gray-500 mt-1">Lifetime</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-sm text-gray-600">Manual Reviews</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">{manualReviews}</div>
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="text-xs sm:text-sm text-gray-600">Manual Reviews</div>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{manualReviews}</div>
             <div className="text-xs text-gray-500 mt-1">
-              {manualReviews > 0 ? 'Needs attention' : 'No pending reviews'}
+              {manualReviews > 0 ? 'Needs attention' : 'No pending'}
             </div>
           </div>
         </div>
 
         {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">📋 Recent Applications</h2>
-              <Link href="/admin/applications" className="text-sm text-blue-600 hover:text-blue-800">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h2 className="text-base sm:text-xl font-semibold">📋 Recent Applications</h2>
+              <Link href="/admin/applications" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
                 View All →
               </Link>
             </div>
             {recentApps.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No applications yet</p>
-                <p className="text-sm mt-2">Applications will appear here once submitted</p>
+              <div className="text-center py-6 sm:py-8 text-gray-500">
+                <p className="text-sm sm:text-base">No applications yet</p>
+                <p className="text-xs sm:text-sm mt-2">Applications will appear here once submitted</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {recentApps.map((app) => (
                   <Link
                     key={app.id}
                     href={`/admin/applications/${app.id}`}
-                    className="block p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                    className="block p-2.5 sm:p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-gray-900 text-sm sm:text-base">
                           {app.customer.firstName} {app.customer.lastName}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs sm:text-sm text-gray-500">
                           ${Number(app.job.estimateAmount).toLocaleString()}
                         </div>
                       </div>
@@ -134,9 +134,9 @@ export default async function AdminPage() {
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">⚡ Quick Actions</h2>
-            <div className="space-y-3">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+            <h2 className="text-base sm:text-xl font-semibold mb-3 sm:mb-4">⚡ Quick Actions</h2>
+            <div className="space-y-2 sm:space-y-3">
               <Link 
                 href="/admin/applications?status=submitted"
                 className="block w-full px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-left"

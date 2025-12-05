@@ -102,41 +102,41 @@ export default function OffersPage() {
   const isApproved = decision.decisionStatus === 'approved'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 sm:py-12 px-4">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">SuprFi</h1>
-          <p className="text-gray-600">Your financing decision is ready</p>
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">SuprFi</h1>
+          <p className="text-sm sm:text-base text-gray-600">Your financing decision is ready</p>
         </div>
 
         {isApproved ? (
           <>
             {/* Success Banner */}
-            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 mb-8">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-3xl">✓</span>
+            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
+              <div className="flex items-center justify-center mb-3 sm:mb-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-2xl sm:text-3xl">✓</span>
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 text-center mb-1 sm:mb-2">
                 Congratulations, {application.customer.firstName}!
               </h2>
-              <p className="text-center text-gray-700">
+              <p className="text-center text-sm sm:text-base text-gray-700">
                 You've been approved for financing. Choose the plan that works best for you.
               </p>
             </div>
 
             {/* Credit Score (Mock) */}
             {decision.score && (
-              <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="text-sm text-gray-600">Your Credit Score</div>
-                    <div className="text-3xl font-bold text-gray-900">{decision.score}</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Your Credit Score</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-900">{decision.score}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-gray-600">Decision ID</div>
+                    <div className="text-xs sm:text-sm text-gray-600">Decision ID</div>
                     <div className="text-xs font-mono text-gray-400">{decision.id.slice(0, 12)}...</div>
                   </div>
                 </div>
@@ -144,11 +144,11 @@ export default function OffersPage() {
             )}
 
             {/* Financing Offers */}
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">
+            <div className="mb-6 sm:mb-8">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
                 Choose Your Financing Plan
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 {offers.map((offer, index) => {
                   const isRecommended = index === 1 // Middle option recommended
                   
@@ -165,48 +165,48 @@ export default function OffersPage() {
                         </div>
                       )}
                       
-                      <div className="p-6">
-                        <div className="text-center mb-6">
-                          <div className="text-sm text-gray-600 mb-1">
+                      <div className="p-4 sm:p-6">
+                        <div className="text-center mb-4 sm:mb-6">
+                          <div className="text-xs sm:text-sm text-gray-600 mb-1">
                             {offer.termMonths} Month Plan
                           </div>
-                          <div className="text-4xl font-bold text-gray-900 mb-1">
+                          <div className="text-3xl sm:text-4xl font-bold text-gray-900 mb-1">
                             ${Number(offer.monthlyPayment).toFixed(2)}
                           </div>
-                          <div className="text-sm text-gray-600">per month</div>
+                          <div className="text-xs sm:text-sm text-gray-600">per month</div>
                         </div>
 
-                        <div className="space-y-3 mb-6">
-                          <div className="flex justify-between text-sm">
+                        <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                          <div className="flex justify-between text-xs sm:text-sm">
                             <span className="text-gray-600">APR</span>
                             <span className="font-semibold">{Number(offer.apr).toFixed(2)}%</span>
                           </div>
-                          <div className="flex justify-between text-sm">
+                          <div className="flex justify-between text-xs sm:text-sm">
                             <span className="text-gray-600">Term Length</span>
                             <span className="font-semibold">{offer.termMonths} months</span>
                           </div>
                           {Number(offer.downPayment) > 0 && (
-                            <div className="flex justify-between text-sm">
+                            <div className="flex justify-between text-xs sm:text-sm">
                               <span className="text-gray-600">Down Payment</span>
                               <span className="font-semibold">${Number(offer.downPayment).toFixed(2)}</span>
                             </div>
                           )}
                           {Number(offer.originationFee) > 0 && (
-                            <div className="flex justify-between text-sm">
+                            <div className="flex justify-between text-xs sm:text-sm">
                               <span className="text-gray-600">Origination Fee</span>
                               <span className="font-semibold">${Number(offer.originationFee).toFixed(2)}</span>
                             </div>
                           )}
-                          <div className="pt-3 border-t border-gray-200">
-                            <div className="flex justify-between text-sm">
+                          <div className="pt-2 sm:pt-3 border-t border-gray-200">
+                            <div className="flex justify-between text-xs sm:text-sm">
                               <span className="text-gray-600">Total Amount</span>
-                              <span className="font-bold text-lg">${Number(offer.totalAmount).toFixed(2)}</span>
+                              <span className="font-bold text-base sm:text-lg">${Number(offer.totalAmount).toFixed(2)}</span>
                             </div>
                           </div>
                         </div>
 
                         <button
-                          className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                          className={`w-full py-2.5 sm:py-3 rounded-lg font-semibold text-sm sm:text-base transition-colors ${
                             isRecommended
                               ? 'bg-blue-600 text-white hover:bg-blue-700'
                               : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
@@ -246,9 +246,9 @@ export default function OffersPage() {
             </div>
 
             {/* Next Steps */}
-            <div className="bg-blue-50 rounded-lg p-6">
-              <h4 className="font-semibold text-gray-900 mb-3">What Happens Next?</h4>
-              <ol className="space-y-2 text-sm text-gray-700">
+            <div className="bg-blue-50 rounded-lg p-4 sm:p-6">
+              <h4 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">What Happens Next?</h4>
+              <ol className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-700">
                 <li className="flex items-start">
                   <span className="font-bold mr-2">1.</span>
                   <span>Choose your financing plan above</span>

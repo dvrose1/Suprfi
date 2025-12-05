@@ -35,29 +35,29 @@ const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section className="py-20 px-6">
+    <section className="py-12 sm:py-20 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4 text-navy font-display">
+        <div className="text-center mb-10 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 text-navy font-display">
             From quote to done in three steps
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
             We made financing as simple as it should be. Tell us what you need, see your options, get it done.
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {steps.map((item, i) => (
-            <div key={i} className="relative">
+            <div key={i} className="relative text-center md:text-left">
               <div 
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
+                className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-6 mx-auto md:mx-0"
                 style={{ background: 'linear-gradient(135deg, rgba(42, 157, 143, 0.1) 0%, rgba(110, 198, 167, 0.1) 100%)' }}
               >
-                <div className="text-teal">{item.icon}</div>
+                <div className="text-teal [&>svg]:w-6 [&>svg]:h-6 sm:[&>svg]:w-8 sm:[&>svg]:h-8">{item.icon}</div>
               </div>
-              <div className="text-sm font-bold mb-2 text-teal">{item.step}</div>
-              <h3 className="text-xl font-bold mb-3 text-navy font-display">{item.title}</h3>
-              <p className="text-gray-600">{item.desc}</p>
+              <div className="text-xs sm:text-sm font-bold mb-1 sm:mb-2 text-teal">{item.step}</div>
+              <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-navy font-display">{item.title}</h3>
+              <p className="text-sm sm:text-base text-gray-600">{item.desc}</p>
             </div>
           ))}
         </div>

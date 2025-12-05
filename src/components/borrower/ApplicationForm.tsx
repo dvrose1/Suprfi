@@ -140,9 +140,9 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
   const progress = (currentStep / steps.length) * 100
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4 sm:px-0">
       {/* Progress Bar */}
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <div className="flex justify-between mb-2">
           {steps.map((step) => (
             <div
@@ -157,7 +157,7 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
             >
               <div className="flex items-center justify-center mb-1">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${
                     step.id === currentStep
                       ? 'bg-blue-600 text-white'
                       : step.id < currentStep
@@ -168,20 +168,20 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
                   {step.id < currentStep ? '✓' : step.id}
                 </div>
               </div>
-              <div className="hidden md:block text-xs">{step.name}</div>
+              <div className="hidden sm:block text-xs">{step.name}</div>
             </div>
           ))}
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
           <div
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            className="bg-blue-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
       {/* Main Form Card */}
-      <div className="bg-white rounded-lg shadow-xl p-8">
+      <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
         {/* Step Content */}
         {currentStep === 1 && (
           <PersonalInfoStep
@@ -222,7 +222,7 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
       </div>
 
       {/* Security Notice */}
-      <div className="mt-6 text-center text-sm text-gray-600">
+      <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-600">
         <div className="flex items-center justify-center space-x-2">
           <span className="text-green-600">🔒</span>
           <span>256-bit SSL encryption • Your data is secure</span>

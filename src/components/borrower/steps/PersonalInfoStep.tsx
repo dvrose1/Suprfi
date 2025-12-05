@@ -49,12 +49,12 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
-      <p className="text-gray-600 mb-6">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Personal Information</h2>
+      <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
         Please confirm and complete your personal details. This information is used for identity verification.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
         {/* First Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -171,8 +171,8 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
       </div>
 
       {/* Address */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="mb-4 sm:mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
           Street Address *
         </label>
         <input
@@ -180,17 +180,17 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
           value={formData.addressLine1}
           onChange={(e) => updateFormData({ addressLine1: e.target.value })}
           placeholder="123 Main Street"
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+          className={`w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
             errors.addressLine1 ? 'border-red-500' : 'border-gray-300'
           }`}
         />
         {errors.addressLine1 && (
-          <p className="mt-1 text-sm text-red-600">{errors.addressLine1}</p>
+          <p className="mt-1 text-xs sm:text-sm text-red-600">{errors.addressLine1}</p>
         )}
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="mb-4 sm:mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
           Apartment, Suite, etc. (Optional)
         </label>
         <input
@@ -198,11 +198,11 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
           value={formData.addressLine2}
           onChange={(e) => updateFormData({ addressLine2: e.target.value })}
           placeholder="Apt 4B"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* City */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -270,7 +270,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
       <div className="flex justify-end">
         <button
           type="submit"
-          className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
         >
           Continue →
         </button>
