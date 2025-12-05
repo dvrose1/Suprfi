@@ -22,6 +22,9 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
   const [error, setError] = useState<string | null>(null)
   const [inquiryData, setInquiryData] = useState<any>(null)
   const [personaLoaded, setPersonaLoaded] = useState(false)
+  
+  // Allow skipping in sandbox/development mode
+  const isSandbox = process.env.NEXT_PUBLIC_PERSONA_ENV === 'sandbox' || process.env.NODE_ENV === 'development'
 
   // Load Persona script
   useEffect(() => {
@@ -72,6 +75,41 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
 
     createInquiry()
   }, [formData.kycStatus])
+
+  // Handle skipping verification in sandbox mode
+  const handleSkipVerification = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      const urlToken = window.location.pathname.split('/')[2]
+      
+      const response = await fetch(`/api/v1/borrower/${urlToken}/persona/skip`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to skip verification')
+      }
+
+      updateFormData({
+        personaInquiryId: 'skipped-sandbox',
+        kycStatus: 'verified',
+      })
+
+      setTimeout(() => {
+        onNext()
+      }, 500)
+    } catch (err) {
+      console.error('Error skipping verification:', err)
+      setError('Failed to skip verification. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }, [updateFormData, onNext])
 
   const handleVerify = useCallback(() => {
     if (!personaLoaded || !window.Persona) {
@@ -199,6 +237,20 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
           >
             {loading ? 'Loading...' : !personaLoaded ? 'Initializing...' : !inquiryData?.inquiryId ? 'Preparing...' : 'Verify Identity'}
           </button>
+          
+          {/* Skip option for sandbox/development */}
+          {isSandbox && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={handleSkipVerification}
+                disabled={loading}
+                className="px-6 py-2 text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Skip verification (Sandbox mode)
+              </button>
+            </div>
+          )}
           
           <div className="mt-6 text-sm text-gray-500">
             <p className="mb-2">✓ Powered by Persona</p>
