@@ -171,6 +171,13 @@ export default async function AdminPage() {
                 <div className="font-medium">Waitlist Management</div>
                 <div className="text-sm text-purple-600">View and manage signups</div>
               </Link>
+              <Link
+                href="/admin/contractors"
+                className="block w-full px-4 py-3 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 text-left"
+              >
+                <div className="font-medium">Contractor Partners</div>
+                <div className="text-sm text-teal-600">Manage approved contractors</div>
+              </Link>
             </div>
           </div>
         </div>
