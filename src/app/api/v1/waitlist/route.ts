@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendEmail, WaitlistConfirmation } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -92,9 +93,24 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send confirmation email via Resend
-    // This will be implemented once Resend is configured
-    // await sendWaitlistConfirmation(waitlist);
+    // Send confirmation email
+    const emailResult = await sendEmail({
+      to: email.toLowerCase(),
+      subject: type === 'contractor' 
+        ? "Welcome to SuprFi Partners!" 
+        : "You're on the SuprFi Waitlist!",
+      react: WaitlistConfirmation({ name, type }),
+      replyTo: 'hello@suprfi.com',
+      tags: [
+        { name: 'category', value: 'waitlist' },
+        { name: 'type', value: type },
+      ],
+    });
+
+    if (!emailResult.success) {
+      console.error('[Waitlist] Email send failed:', emailResult.error);
+      // Don't fail the signup if email fails - just log it
+    }
 
     return NextResponse.json({
       success: true,

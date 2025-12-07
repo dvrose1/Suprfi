@@ -17,44 +17,28 @@ export default function ContractorsPage() {
     {
       title: 'Win More Jobs',
       description: 'Don\'t lose customers who can\'t afford to pay upfront. Give them flexible payment options and close more high-ticket repairs.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-      ),
+      icon: '📈',
       stat: '35%',
       statLabel: 'Average increase in close rate',
     },
     {
       title: 'Get Paid Faster',
       description: 'No more waiting for customers to pay. We pay you directly once the loan is approved - usually within 24 hours.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
+      icon: '💰',
       stat: '24 hours',
       statLabel: 'Average time to payment',
     },
     {
       title: 'Simple Integration',
       description: 'Works with your existing workflow. No hardware required. Just send your customer a link and we handle the rest.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      ),
+      icon: '⚡',
       stat: '5 min',
       statLabel: 'Setup time',
     },
     {
       title: 'Protect Your Cash Flow',
       description: 'No more extending credit yourself. Let us handle the financing while you focus on delivering great service.',
-      icon: (
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-        </svg>
-      ),
+      icon: '🛡️',
       stat: '0%',
       statLabel: 'Risk to your business',
     },
@@ -150,7 +134,7 @@ export default function ContractorsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
               {benefits.map((benefit, index) => (
                 <Card key={index} padding="lg" hover>
-                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white mb-6 shadow-md`}>
+                  <div className="text-4xl mb-6">
                     {benefit.icon}
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">

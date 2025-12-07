@@ -164,6 +164,13 @@ export default async function AdminPage() {
                   {manualReviews > 0 ? `${manualReviews} pending reviews` : 'No pending reviews'}
                 </div>
               </Link>
+              <Link
+                href="/admin/waitlist"
+                className="block w-full px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-left"
+              >
+                <div className="font-medium">Waitlist Management</div>
+                <div className="text-sm text-purple-600">View and manage signups</div>
+              </Link>
             </div>
           </div>
         </div>
