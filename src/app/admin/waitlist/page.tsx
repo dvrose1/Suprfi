@@ -28,6 +28,7 @@ interface Stats {
   contractors: number;
   thisWeek: number;
   converted: number;
+  approved: number;
 }
 
 interface Pagination {
@@ -202,7 +203,7 @@ export default function AdminWaitlistPage() {
 
         {/* Stats */}
         {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-6 gap-4 mb-6">
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-sm text-gray-600">Total Signups</div>
               <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
@@ -216,8 +217,12 @@ export default function AdminWaitlistPage() {
               <div className="text-2xl font-bold text-purple-600">{stats.contractors}</div>
             </div>
             <div className="bg-white rounded-lg shadow p-4">
+              <div className="text-sm text-gray-600">Approved</div>
+              <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+            </div>
+            <div className="bg-white rounded-lg shadow p-4">
               <div className="text-sm text-gray-600">This Week</div>
-              <div className="text-2xl font-bold text-green-600">{stats.thisWeek}</div>
+              <div className="text-2xl font-bold text-orange-600">{stats.thisWeek}</div>
             </div>
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-sm text-gray-600">Converted</div>
@@ -263,6 +268,7 @@ export default function AdminWaitlistPage() {
             >
               <option value="all">All Statuses</option>
               <option value="active">Active</option>
+              <option value="approved">Approved</option>
               <option value="converted">Converted</option>
               <option value="unsubscribed">Unsubscribed</option>
             </select>
@@ -274,6 +280,12 @@ export default function AdminWaitlistPage() {
               <span className="text-sm text-gray-600">
                 {selected.size} selected
               </span>
+              <button
+                onClick={() => handleBulkStatusUpdate('approved')}
+                className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200"
+              >
+                Approve (Send Invite)
+              </button>
               <button
                 onClick={() => handleBulkStatusUpdate('converted')}
                 className="px-3 py-1 text-sm bg-teal-100 text-teal-700 rounded hover:bg-teal-200"
@@ -388,14 +400,19 @@ export default function AdminWaitlistPage() {
                           value={entry.status}
                           onChange={(e) => handleStatusUpdate(entry.id, e.target.value)}
                           className={`text-xs px-2 py-1 rounded border ${
-                            entry.status === 'converted'
+                            entry.status === 'approved'
+                              ? 'bg-green-50 border-green-200 text-green-700'
+                              : entry.status === 'converted'
                               ? 'bg-teal-50 border-teal-200 text-teal-700'
                               : entry.status === 'unsubscribed'
                               ? 'bg-gray-50 border-gray-200 text-gray-500'
-                              : 'bg-green-50 border-green-200 text-green-700'
+                              : 'bg-blue-50 border-blue-200 text-blue-700'
                           }`}
                         >
                           <option value="active">Active</option>
+                          {entry.type === 'contractor' && (
+                            <option value="approved">Approved</option>
+                          )}
                           <option value="converted">Converted</option>
                           <option value="unsubscribed">Unsubscribed</option>
                         </select>

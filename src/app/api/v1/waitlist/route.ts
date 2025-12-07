@@ -3,7 +3,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendEmail, WaitlistConfirmation } from '@/lib/email';
+import { sendEmail } from '@/lib/email';
+import { WaitlistConfirmation } from '@/lib/email/templates/WaitlistConfirmation';
 
 export async function POST(request: NextRequest) {
   try {

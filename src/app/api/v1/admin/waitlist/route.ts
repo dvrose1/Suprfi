@@ -1,8 +1,11 @@
 // ABOUTME: Admin API endpoint for waitlist management
 // ABOUTME: Supports filtering, search, pagination, and status updates
+// ABOUTME: Sends invite email when contractors are approved
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendEmail } from '@/lib/email';
+import { ContractorInvite } from '@/lib/email/templates/ContractorInvite';
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +48,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Get stats
-    const [totalAll, homeowners, contractors, thisWeek, converted] = await Promise.all([
+    const [totalAll, homeowners, contractors, thisWeek, converted, approved] = await Promise.all([
       prisma.waitlist.count(),
       prisma.waitlist.count({ where: { type: 'homeowner' } }),
       prisma.waitlist.count({ where: { type: 'contractor' } }),
@@ -57,6 +60,7 @@ export async function GET(request: NextRequest) {
         },
       }),
       prisma.waitlist.count({ where: { status: 'converted' } }),
+      prisma.waitlist.count({ where: { status: 'approved', type: 'contractor' } }),
     ]);
 
     return NextResponse.json({
@@ -73,6 +77,7 @@ export async function GET(request: NextRequest) {
         contractors,
         thisWeek,
         converted,
+        approved,
       },
     });
   } catch (error) {
@@ -92,6 +97,49 @@ export async function PATCH(request: NextRequest) {
 
     // Bulk update
     if (ids && bulkStatus) {
+      // If bulk approving contractors, send emails
+      if (bulkStatus === 'approved') {
+        const entries = await prisma.waitlist.findMany({
+          where: { 
+            id: { in: ids },
+            type: 'contractor',
+            status: { not: 'approved' }, // Only send to newly approved
+          },
+        });
+        
+        // Update status
+        await prisma.waitlist.updateMany({
+          where: { id: { in: ids } },
+          data: { status: bulkStatus },
+        });
+
+        // Send invite emails to contractors
+        const emailPromises = entries.map(entry => 
+          sendEmail({
+            to: entry.email,
+            subject: "You're Approved! Welcome to SuprFi Partners",
+            react: ContractorInvite({ 
+              name: entry.name || 'Partner',
+              businessName: entry.businessName || undefined,
+            }),
+            replyTo: 'partners@suprfi.com',
+            tags: [
+              { name: 'category', value: 'contractor-invite' },
+              { name: 'waitlist_id', value: entry.id },
+            ],
+          })
+        );
+
+        const emailResults = await Promise.allSettled(emailPromises);
+        const emailsSent = emailResults.filter(r => r.status === 'fulfilled').length;
+        
+        return NextResponse.json({ 
+          success: true, 
+          updated: ids.length,
+          emailsSent,
+        });
+      }
+
       await prisma.waitlist.updateMany({
         where: { id: { in: ids } },
         data: { status: bulkStatus },
@@ -101,10 +149,48 @@ export async function PATCH(request: NextRequest) {
 
     // Single update
     if (id && status) {
+      // Get the entry first to check type and current status
+      const entry = await prisma.waitlist.findUnique({ where: { id } });
+      
+      if (!entry) {
+        return NextResponse.json(
+          { error: 'Entry not found' },
+          { status: 404 }
+        );
+      }
+
       const updated = await prisma.waitlist.update({
         where: { id },
         data: { status },
       });
+
+      // Send invite email when contractor is approved
+      if (status === 'approved' && entry.type === 'contractor' && entry.status !== 'approved') {
+        const emailResult = await sendEmail({
+          to: entry.email,
+          subject: "You're Approved! Welcome to SuprFi Partners",
+          react: ContractorInvite({ 
+            name: entry.name || 'Partner',
+            businessName: entry.businessName || undefined,
+          }),
+          replyTo: 'partners@suprfi.com',
+          tags: [
+            { name: 'category', value: 'contractor-invite' },
+            { name: 'waitlist_id', value: entry.id },
+          ],
+        });
+
+        if (!emailResult.success) {
+          console.error('[Waitlist] Failed to send invite email:', emailResult.error);
+        }
+
+        return NextResponse.json({ 
+          success: true, 
+          entry: updated,
+          emailSent: emailResult.success,
+        });
+      }
+
       return NextResponse.json({ success: true, entry: updated });
     }
 

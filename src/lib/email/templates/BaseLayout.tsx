@@ -1,18 +1,6 @@
 // ABOUTME: Base email layout template with SuprFi branding
-// ABOUTME: Used as wrapper for all transactional emails
+// ABOUTME: Returns a div wrapper - the actual html/body tags are added by Resend
 
-import {
-  Body,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components';
 import * as React from 'react';
 
 interface BaseLayoutProps {
@@ -21,59 +9,63 @@ interface BaseLayoutProps {
 }
 
 export function BaseLayout({ preview, children }: BaseLayoutProps) {
+  // Note: Resend handles the html/head/body wrapper
+  // We just return the email content structure
   return (
-    <Html>
-      <Head />
-      <Preview>{preview}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          {/* Header */}
-          <Section style={header}>
-            <Text style={logo}>
-              Supr<span style={logoAccent}>Fi</span>
-            </Text>
-          </Section>
+    <div style={main}>
+      {/* Hidden preview text for email clients */}
+      <div style={{ display: 'none', maxHeight: 0, overflow: 'hidden' }}>
+        {preview}
+      </div>
+      <div style={container}>
+        {/* Header */}
+        <div style={header}>
+          <p style={logo}>
+            Supr<span style={logoAccent}>Fi</span>
+          </p>
+        </div>
 
-          {/* Content */}
-          <Section style={content}>{children}</Section>
+        {/* Content */}
+        <div style={content}>{children}</div>
 
-          {/* Footer */}
-          <Hr style={hr} />
-          <Section style={footer}>
-            <Text style={footerText}>
-              SuprFi - The Home Repair Financing Specialists
-            </Text>
-            <Text style={footerLinks}>
-              <Link href="https://suprfi.com" style={link}>
-                Website
-              </Link>
-              {' · '}
-              <Link href="https://suprfi.com/privacy" style={link}>
-                Privacy Policy
-              </Link>
-              {' · '}
-              <Link href="https://suprfi.com/terms" style={link}>
-                Terms of Service
-              </Link>
-            </Text>
-            <Text style={footerDisclaimer}>
-              © {new Date().getFullYear()} SuprFi Inc. All rights reserved.
-            </Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+        {/* Footer */}
+        <hr style={hr} />
+        <div style={footer}>
+          <p style={footerText}>
+            SuprFi - The Home Repair Financing Specialists
+          </p>
+          <p style={footerLinks}>
+            <a href="https://suprfi.com" style={link}>
+              Website
+            </a>
+            {' · '}
+            <a href="https://suprfi.com/privacy" style={link}>
+              Privacy Policy
+            </a>
+            {' · '}
+            <a href="https://suprfi.com/terms" style={link}>
+              Terms of Service
+            </a>
+          </p>
+          <p style={footerDisclaimer}>
+            © {new Date().getFullYear()} SuprFi Inc. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
 // Styles
-const main = {
+const main: React.CSSProperties = {
   backgroundColor: '#f6f9fc',
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+  margin: 0,
+  padding: 0,
 };
 
-const container = {
+const container: React.CSSProperties = {
   backgroundColor: '#ffffff',
   margin: '0 auto',
   padding: '20px 0 48px',
@@ -81,55 +73,57 @@ const container = {
   maxWidth: '600px',
 };
 
-const header = {
+const header: React.CSSProperties = {
   padding: '24px 32px',
   borderBottom: '1px solid #e6ebf1',
 };
 
-const logo = {
+const logo: React.CSSProperties = {
   fontSize: '28px',
-  fontWeight: '700' as const,
+  fontWeight: 700,
   color: '#0F2D4A',
-  margin: '0',
+  margin: 0,
 };
 
-const logoAccent = {
+const logoAccent: React.CSSProperties = {
   color: '#2A9D8F',
 };
 
-const content = {
+const content: React.CSSProperties = {
   padding: '32px',
 };
 
-const hr = {
+const hr: React.CSSProperties = {
   borderColor: '#e6ebf1',
+  borderStyle: 'solid',
+  borderWidth: '1px 0 0 0',
   margin: '20px 0',
 };
 
-const footer = {
+const footer: React.CSSProperties = {
   padding: '0 32px',
 };
 
-const footerText = {
+const footerText: React.CSSProperties = {
   color: '#8898aa',
   fontSize: '14px',
   lineHeight: '20px',
   margin: '0 0 8px',
 };
 
-const footerLinks = {
+const footerLinks: React.CSSProperties = {
   color: '#8898aa',
   fontSize: '12px',
   lineHeight: '16px',
   margin: '0 0 8px',
 };
 
-const link = {
+const link: React.CSSProperties = {
   color: '#2A9D8F',
   textDecoration: 'none',
 };
 
-const footerDisclaimer = {
+const footerDisclaimer: React.CSSProperties = {
   color: '#b7c1cd',
   fontSize: '11px',
   lineHeight: '16px',
