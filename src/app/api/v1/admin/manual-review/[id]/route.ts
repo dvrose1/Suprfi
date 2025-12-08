@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
+import { requireAuth } from '@/lib/auth/api'
 
 const UpdateReviewSchema = z.object({
   action: z.enum(['assign', 'add_note', 'resolve']),
@@ -19,10 +19,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
+    // Require ops role for review actions
+    const { user, error } = await requireAuth(request, 'ops')
+    if (error) return error
 
     const { id } = await params
     const body = await request.json()
@@ -76,7 +75,7 @@ export async function PATCH(
         updateData = {
           status: 'resolved',
           resolution: data.resolution,
-          resolvedBy: userId,
+          resolvedBy: user?.id || 'unknown',
           resolvedAt: new Date(),
         }
 
@@ -88,7 +87,7 @@ export async function PATCH(
           where: { id: review.decisionId },
           data: {
             decisionStatus: newDecisionStatus,
-            decidedBy: userId,
+            decidedBy: user?.id || 'unknown',
             decidedAt: new Date(),
           },
         })
@@ -103,7 +102,7 @@ export async function PATCH(
           data: {
             entityType: 'manual_review',
             entityId: id,
-            actor: userId,
+            actor: user?.id || 'unknown',
             action: `resolved_${data.resolution}`,
             payload: {
               applicationId: review.decision.applicationId,

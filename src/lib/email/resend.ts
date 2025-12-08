@@ -2,7 +2,6 @@
 // ABOUTME: Provides typed email sending functions for transactional emails
 
 import { Resend } from 'resend';
-import { render } from '@react-email/render';
 
 // Initialize Resend only if API key is available
 const resend = process.env.RESEND_API_KEY 
@@ -38,8 +37,9 @@ export async function sendEmail(options: SendEmailOptions): Promise<EmailResult>
   }
 
   try {
-    // Render React component to HTML
-    const html = await render(options.react);
+    // Render React component to HTML using dynamic import
+    const ReactDOMServer = (await import('react-dom/server')).default;
+    const html = ReactDOMServer.renderToStaticMarkup(options.react);
     
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,

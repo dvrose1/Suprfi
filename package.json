@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
@@ -13,9 +13,8 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.34.1",
     "@prisma/client": "^6.18.0",
-    "@react-email/render": "^2.0.0",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.5",
     "jsonwebtoken": "^9.0.2",
     "nanoid": "^5.1.6",
@@ -31,6 +30,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^18",

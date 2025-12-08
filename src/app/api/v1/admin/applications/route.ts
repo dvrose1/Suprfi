@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { requireAuth } from '@/lib/auth/api'
 
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Unauthorized',
-      }, { status: 401 })
-    }
+    const { user, error } = await requireAuth(request)
+    if (error) return error
 
     // Get query parameters
     const { searchParams } = new URL(request.url)

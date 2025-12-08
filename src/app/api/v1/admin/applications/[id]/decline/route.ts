@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, currentUser } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { sendFinancingStatusToFieldRoutes } from '@/lib/services/crm/fieldroutes'
+import { requireAuth } from '@/lib/auth/api'
 
 interface RouteParams {
   params: Promise<{
@@ -16,16 +16,9 @@ interface RouteParams {
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    // Check authentication
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({
-        success: false,
-        error: 'Unauthorized',
-      }, { status: 401 })
-    }
-
-    const user = await currentUser()
+    // Check authentication - require ops role for declines
+    const { user, error } = await requireAuth(request, 'ops')
+    if (error) return error
     const { id } = await params
     const body = await request.json()
     const { reason } = body
@@ -79,7 +72,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           score: null,
           decisionStatus: 'declined',
           decisionReason: reason,
-          decidedBy: user?.emailAddresses[0]?.emailAddress || userId,
+          decidedBy: user?.email || user?.id,
         },
       })
 
@@ -91,7 +84,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         data: {
           decisionStatus: 'declined',
           decisionReason: reason,
-          decidedBy: user?.emailAddresses[0]?.emailAddress || userId,
+          decidedBy: user?.email || user?.id,
         },
       })
 
@@ -103,11 +96,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       data: {
         entityType: 'application',
         entityId: id,
-        actor: userId,
+        actor: user?.id || 'unknown',
         action: 'manual_decline',
         payload: {
           reason,
-          declinedBy: user?.emailAddresses[0]?.emailAddress || userId,
+          declinedBy: user?.email || user?.id,
           previousStatus: application.status,
         },
       },

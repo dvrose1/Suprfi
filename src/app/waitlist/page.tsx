@@ -3,13 +3,13 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/marketing/Header';
 import Footer from '@/components/marketing/Footer';
 import WaitlistForm from '@/components/marketing/WaitlistForm';
 
-export default function WaitlistPage() {
+function WaitlistContent() {
   const searchParams = useSearchParams();
   const [type, setType] = useState<'homeowner' | 'contractor'>('homeowner');
 
@@ -136,5 +136,17 @@ export default function WaitlistPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function WaitlistPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    }>
+      <WaitlistContent />
+    </Suspense>
   );
 }

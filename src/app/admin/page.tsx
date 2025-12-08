@@ -1,50 +1,75 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
+// ABOUTME: Admin dashboard page
+// ABOUTME: Shows stats and quick actions for SuprOps
 
-export default async function AdminPage() {
-  const { userId } = await auth()
-  
-  if (!userId) {
-    redirect('/sign-in')
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/lib/auth/context';
+import { useRouter } from 'next/navigation';
+
+interface DashboardStats {
+  totalApps: number;
+  submittedApps: number;
+  approvedApps: number;
+  approvalRate: string;
+  totalFunded: number;
+  manualReviews: number;
+  recentApps: Array<{
+    id: string;
+    customer: { firstName: string; lastName: string };
+    job: { estimateAmount: string };
+    createdAt: string;
+  }>;
+}
+
+export default function AdminPage() {
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/admin/login');
+    }
+  }, [loading, user, router]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/v1/admin/dashboard');
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
   }
 
-  const user = await currentUser()
-
-  // Get real stats
-  const [totalApps, submittedApps, approvedApps, recentApps] = await Promise.all([
-    prisma.application.count(),
-    prisma.application.count({ where: { status: 'submitted' } }),
-    prisma.application.count({ where: { status: 'approved' } }),
-    prisma.application.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        customer: {
-          select: {
-            firstName: true,
-            lastName: true,
-          }
-        },
-        job: {
-          select: {
-            estimateAmount: true,
-          }
-        },
-      },
-    }),
-  ])
-
-  const approvalRate = totalApps > 0 ? ((approvedApps / totalApps) * 100).toFixed(1) : '0.0'
-  const totalFunded = await prisma.loan.aggregate({
-    _sum: { fundedAmount: true },
-    where: { status: 'funded' },
-  })
-  
-  const manualReviews = await prisma.manualReview.count({
-    where: { status: 'pending' },
-  })
+  const totalApps = stats?.totalApps ?? 0;
+  const submittedApps = stats?.submittedApps ?? 0;
+  const approvedApps = stats?.approvedApps ?? 0;
+  const approvalRate = stats?.approvalRate ?? '0.0';
+  const totalFunded = stats?.totalFunded ?? 0;
+  const manualReviews = stats?.manualReviews ?? 0;
+  const recentApps = stats?.recentApps ?? [];
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
@@ -54,14 +79,20 @@ export default async function AdminPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">SuprOps Dashboard</h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">Welcome back, {user?.firstName || 'Admin'}!</p>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">Welcome back, {user?.name || 'Admin'}!</p>
             </div>
-            <a 
-              href="/" 
-              className="px-4 py-2 text-blue-600 hover:text-blue-800 text-sm sm:text-base"
-            >
-              ← Back to Home
-            </a>
+            <div className="flex items-center gap-4">
+              <div className="text-right hidden sm:block">
+                <div className="text-sm font-medium text-gray-900">{user?.email}</div>
+                <div className="text-xs text-gray-500 capitalize">{user?.role} Role</div>
+              </div>
+              <button
+                onClick={() => logout()}
+                className="px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg text-sm transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
 
@@ -80,7 +111,7 @@ export default async function AdminPage() {
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="text-xs sm:text-sm text-gray-600">Total Funded</div>
             <div className="text-xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
-              ${(Number(totalFunded._sum.fundedAmount) || 0).toLocaleString()}
+              ${(totalFunded || 0).toLocaleString()}
             </div>
             <div className="text-xs text-gray-500 mt-1">Lifetime</div>
           </div>
@@ -178,6 +209,24 @@ export default async function AdminPage() {
                 <div className="font-medium">Contractor Partners</div>
                 <div className="text-sm text-teal-600">Manage approved contractors</div>
               </Link>
+              {(user?.role === 'god' || user?.role === 'admin') && (
+                <Link
+                  href="/admin/users"
+                  className="block w-full px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 text-left"
+                >
+                  <div className="font-medium">User Management</div>
+                  <div className="text-sm text-indigo-600">Manage admin users</div>
+                </Link>
+              )}
+              {user?.role === 'god' && (
+                <Link
+                  href="/admin/audit"
+                  className="block w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-left"
+                >
+                  <div className="font-medium">Audit Log</div>
+                  <div className="text-sm text-gray-600">View all admin actions</div>
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -32,17 +32,17 @@ export default function ContractorDetailPage() {
   useEffect(() => {
     const fetchContractor = async () => {
       try {
-        // Fetch from waitlist API with the specific ID
-        const res = await fetch(`/api/v1/admin/waitlist?search=${params.id}`);
-        const data = await res.json();
+        // Fetch contractor by ID from contractors API
+        const res = await fetch(`/api/v1/admin/contractors/${params.id}`);
         
-        if (data.entries && data.entries.length > 0) {
-          const found = data.entries.find((e: Contractor) => e.id === params.id);
-          if (found && found.type === 'contractor') {
-            setContractor(found);
-          } else {
-            setError('Contractor not found');
-          }
+        if (!res.ok) {
+          setError('Contractor not found');
+          return;
+        }
+        
+        const data = await res.json();
+        if (data.contractor) {
+          setContractor(data.contractor);
         } else {
           setError('Contractor not found');
         }
@@ -62,13 +62,14 @@ export default function ContractorDetailPage() {
     if (!contractor) return;
     setUpdating(true);
     try {
-      const res = await fetch('/api/v1/admin/contractors', {
+      const res = await fetch(`/api/v1/admin/contractors/${contractor.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: contractor.id, status: newStatus }),
+        body: JSON.stringify({ status: newStatus }),
       });
       if (res.ok) {
-        setContractor({ ...contractor, status: newStatus });
+        const data = await res.json();
+        setContractor(data.contractor);
       }
     } catch (err) {
       console.error('Failed to update status:', err);
