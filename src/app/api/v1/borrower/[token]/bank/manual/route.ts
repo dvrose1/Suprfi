@@ -79,9 +79,10 @@ export async function POST(
       )
     }
 
-    // Check if Plaid is already connected
+    // Check if Plaid is already connected (skip check in development for easier testing)
     const existingPlaidData = application.plaidData as Record<string, unknown> | null
-    if (existingPlaidData?.accessToken && !existingPlaidData?.manualEntry) {
+    const isDev = process.env.NODE_ENV === 'development'
+    if (!isDev && existingPlaidData?.accessToken && !existingPlaidData?.manualEntry) {
       return NextResponse.json(
         { success: false, error: 'Bank account already connected via Plaid' },
         { status: 400 }

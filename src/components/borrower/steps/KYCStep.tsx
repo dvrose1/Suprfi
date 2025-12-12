@@ -274,7 +274,7 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
           <button
             type="button"
             onClick={onNext}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            className="px-8 py-3 bg-teal text-white rounded-lg font-semibold hover:bg-teal/90 transition-colors"
           >
             Continue →
           </button>

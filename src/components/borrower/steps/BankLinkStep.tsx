@@ -223,8 +223,8 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
         </div>
       ) : (
         // Not connected yet
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 mb-8 text-center">
-          <div className="text-blue-600 text-5xl mb-4">🏦</div>
+        <div className="bg-teal/10 border border-teal/20 rounded-lg p-8 mb-8 text-center">
+          <div className="text-teal text-5xl mb-4">🏦</div>
           <h3 className="text-lg font-semibold mb-2">Secure Bank Connection</h3>
           <p className="text-gray-600 mb-6">
             Your credentials are never stored. Plaid uses bank-level encryption.
@@ -234,7 +234,7 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
             type="button"
             onClick={handleConnect}
             disabled={!ready || loading}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="px-8 py-3 bg-teal text-white rounded-lg font-semibold hover:bg-teal/90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? 'Connecting...' : !ready ? 'Loading...' : 'Connect Bank Account'}
           </button>
@@ -246,11 +246,11 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
           </div>
 
           {/* Manual Entry Link */}
-          <div className="mt-6 pt-4 border-t border-blue-200">
+          <div className="mt-6 pt-4 border-t border-teal/20">
             <button
               type="button"
               onClick={() => setShowManualEntry(true)}
-              className="text-sm text-blue-600 hover:text-blue-800 underline"
+              className="text-sm text-teal hover:text-teal/80 underline"
             >
               Having trouble? Enter bank details manually
             </button>
@@ -272,7 +272,7 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
           <button
             type="button"
             onClick={onNext}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            className="px-8 py-3 bg-teal text-white rounded-lg font-semibold hover:bg-teal/90 transition-colors"
           >
             Continue →
           </button>

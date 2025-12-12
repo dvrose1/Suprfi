@@ -84,10 +84,10 @@ export default async function ApplyPage({ params }: PageProps) {
 
   // 5. Render the application form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+    <div className="min-h-screen bg-warm-white py-12 px-4">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">SuprFi</h1>
+        <h1 className="text-4xl font-bold text-navy font-display mb-2">Supr<span className="text-teal">Fi</span></h1>
         <p className="text-gray-600">Apply for financing in minutes</p>
       </div>
 

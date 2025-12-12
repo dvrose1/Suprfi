@@ -122,7 +122,7 @@ export function ManualBankForm({ onSubmit, onCancel, loading = false }: ManualBa
           value={formData.bankName}
           onChange={(e) => handleChange('bankName', e.target.value)}
           placeholder="e.g., Chase, Bank of America, Wells Fargo"
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal focus:border-teal ${
             errors.bankName ? 'border-red-500' : 'border-gray-300'
           }`}
         />
@@ -140,7 +140,7 @@ export function ManualBankForm({ onSubmit, onCancel, loading = false }: ManualBa
           value={formData.accountHolderName}
           onChange={(e) => handleChange('accountHolderName', e.target.value)}
           placeholder="Name as it appears on your account"
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal focus:border-teal ${
             errors.accountHolderName ? 'border-red-500' : 'border-gray-300'
           }`}
         />
@@ -160,7 +160,7 @@ export function ManualBankForm({ onSubmit, onCancel, loading = false }: ManualBa
               value="checking"
               checked={formData.accountType === 'checking'}
               onChange={(e) => handleChange('accountType', e.target.value)}
-              className="mr-2 h-4 w-4 text-blue-600"
+              className="mr-2 h-4 w-4 text-teal"
             />
             <span className="text-gray-700">Checking</span>
           </label>
@@ -171,7 +171,7 @@ export function ManualBankForm({ onSubmit, onCancel, loading = false }: ManualBa
               value="savings"
               checked={formData.accountType === 'savings'}
               onChange={(e) => handleChange('accountType', e.target.value)}
-              className="mr-2 h-4 w-4 text-blue-600"
+              className="mr-2 h-4 w-4 text-teal"
             />
             <span className="text-gray-700">Savings</span>
           </label>
@@ -190,7 +190,7 @@ export function ManualBankForm({ onSubmit, onCancel, loading = false }: ManualBa
           onChange={(e) => handleChange('routingNumber', e.target.value.replace(/\D/g, '').slice(0, 9))}
           placeholder="9-digit routing number"
           maxLength={9}
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono ${
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal focus:border-teal font-mono ${
             errors.routingNumber ? 'border-red-500' : 'border-gray-300'
           }`}
         />
@@ -211,7 +211,7 @@ export function ManualBankForm({ onSubmit, onCancel, loading = false }: ManualBa
             onChange={(e) => handleChange('accountNumber', e.target.value.replace(/\D/g, '').slice(0, 17))}
             placeholder="Your account number"
             maxLength={17}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono pr-12 ${
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal focus:border-teal font-mono pr-12 ${
               errors.accountNumber ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -238,7 +238,7 @@ export function ManualBankForm({ onSubmit, onCancel, loading = false }: ManualBa
           onChange={(e) => handleChange('accountNumberConfirm', e.target.value.replace(/\D/g, '').slice(0, 17))}
           placeholder="Re-enter your account number"
           maxLength={17}
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono ${
+          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal focus:border-teal font-mono ${
             errors.accountNumberConfirm ? 'border-red-500' : 'border-gray-300'
           }`}
         />
@@ -274,7 +274,7 @@ export function ManualBankForm({ onSubmit, onCancel, loading = false }: ManualBa
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="flex-1 px-6 py-3 bg-teal text-white rounded-lg font-semibold hover:bg-teal/90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           {loading ? 'Submitting...' : 'Submit Bank Details'}
         </button>

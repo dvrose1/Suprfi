@@ -5,6 +5,23 @@ import Link from 'next/link'
 import Header from '@/components/marketing/Header'
 import Footer from '@/components/marketing/Footer'
 
+const COUNTRY_CODES = [
+  { code: '+1', country: 'US', flag: '🇺🇸' },
+  { code: '+1', country: 'CA', flag: '🇨🇦' },
+  { code: '+44', country: 'UK', flag: '🇬🇧' },
+  { code: '+61', country: 'AU', flag: '🇦🇺' },
+  { code: '+49', country: 'DE', flag: '🇩🇪' },
+  { code: '+33', country: 'FR', flag: '🇫🇷' },
+  { code: '+52', country: 'MX', flag: '🇲🇽' },
+]
+
+function formatPhoneNumber(value: string): string {
+  const digits = value.replace(/\D/g, '')
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`
+}
+
 function ComingSoonSignUp() {
   return (
     <div className="min-h-screen bg-warm-white flex flex-col">
@@ -69,8 +86,14 @@ function SignUpForm() {
     lastName: '',
     email: '',
     phone: '',
+    countryCode: '+1',
     estimateAmount: 5000,
   })
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value)
+    setFormData({ ...formData, phone: formatted })
+  }
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{ success: boolean; link?: string; error?: string } | null>(null)
 
@@ -83,7 +106,10 @@ function SignUpForm() {
       const response = await fetch('/api/v1/demo/create-application', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          phone: `${formData.countryCode}${formData.phone.replace(/-/g, '')}`,
+        }),
       })
 
       const data = await response.json()
@@ -101,31 +127,18 @@ function SignUpForm() {
   }
 
   if (result?.success && result.link) {
+    window.location.href = result.link
     return (
       <div className="min-h-screen bg-warm-white flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center px-6 py-20">
           <div className="max-w-xl text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-16 h-16 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+              <svg className="w-8 h-8 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            
-            <h1 className="text-3xl font-bold text-navy font-display mb-4">
-              Your Application is Ready!
-            </h1>
-            
-            <p className="text-gray-600 mb-8">
-              Click below to start your financing application.
-            </p>
-            
-            <a
-              href={result.link}
-              className="inline-block px-8 py-4 bg-gradient-primary text-white rounded-lg font-semibold text-lg hover:opacity-90 transition-opacity"
-            >
-              Start Application →
-            </a>
+            <p className="text-gray-600">Redirecting to your application...</p>
           </div>
         </main>
         <Footer />
@@ -140,10 +153,10 @@ function SignUpForm() {
         <div className="max-w-lg w-full">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-navy font-display mb-3">
-              Get Started with SuprFi
+              Get Started with Supr<span className="text-teal">Fi</span>
             </h1>
             <p className="text-gray-600">
-              Enter your details to check your financing options
+              Apply in under 60 seconds to check your financing options
             </p>
           </div>
 
@@ -187,26 +200,46 @@ function SignUpForm() {
 
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input
-                type="tel"
-                required
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
-                placeholder="555-123-4567"
-              />
+              <div className="flex gap-2">
+                <select
+                  value={`${formData.countryCode}-${COUNTRY_CODES.find(c => c.code === formData.countryCode)?.country || 'US'}`}
+                  onChange={(e) => {
+                    const [code] = e.target.value.split('-')
+                    setFormData({ ...formData, countryCode: code })
+                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
+                >
+                  {COUNTRY_CODES.map((country) => (
+                    <option key={`${country.code}-${country.country}`} value={`${country.code}-${country.country}`}>
+                      {country.flag} {country.code}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={handlePhoneChange}
+                  maxLength={12}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
+                  placeholder="555-123-4567"
+                />
+              </div>
             </div>
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">Project Amount ($)</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 required
-                min="500"
-                max="50000"
-                value={formData.estimateAmount}
-                onChange={(e) => setFormData({ ...formData, estimateAmount: parseInt(e.target.value) || 5000 })}
+                value={formData.estimateAmount === 0 ? '' : formData.estimateAmount}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '')
+                  setFormData({ ...formData, estimateAmount: value === '' ? 0 : parseInt(value) })
+                }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
+                placeholder="5000"
               />
             </div>
 
@@ -225,7 +258,7 @@ function SignUpForm() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm font-semibold text-gray-700 mt-6">
             Checking your rate won't affect your credit score.
           </p>
         </div>

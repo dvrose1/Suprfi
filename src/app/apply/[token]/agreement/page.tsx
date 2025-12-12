@@ -5,12 +5,22 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation'
 
 interface SelectedOffer {
   id: string
-  termMonths: number
+  type?: 'bnpl' | 'installment'
+  name?: string
+  termWeeks?: number
+  termMonths?: number
+  paymentFrequency?: 'biweekly' | 'monthly'
   apr: number
-  monthlyPayment: number
-  downPayment: number
   originationFee: number
+  downPaymentPercent?: number
+  downPaymentAmount?: number
+  installmentAmount?: number
+  numberOfPayments?: number
   totalAmount: number
+  loanAmount?: number
+  // Legacy fields
+  monthlyPayment?: number
+  downPayment?: number
 }
 
 interface AgreementData {
@@ -43,7 +53,6 @@ export default function AgreementPage() {
   const [error, setError] = useState<string | null>(null)
   const [signing, setSigning] = useState(false)
 
-  // Consent checkboxes
   const [consents, setConsents] = useState({
     reviewedTerms: false,
     agreeToPayments: false,
@@ -110,7 +119,6 @@ export default function AgreementPage() {
         return
       }
 
-      // Redirect to success page
       router.push(`/apply/${token}/success`)
     } catch (err) {
       alert('Failed to sign agreement. Please try again.')
@@ -121,9 +129,9 @@ export default function AgreementPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-warm-white flex items-center justify-center">
         <div className="text-center">
-          <div className="text-5xl mb-4">📄</div>
+          <div className="w-12 h-12 border-4 border-teal border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <div className="text-gray-600">Loading your agreement...</div>
         </div>
       </div>
@@ -132,14 +140,18 @@ export default function AgreementPage() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
-          <div className="text-5xl mb-4">❌</div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Error</h1>
+      <div className="min-h-screen bg-warm-white flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-navy mb-2">Error</h1>
           <p className="text-gray-600 mb-4">{error || 'Agreement not found'}</p>
           <button
             onClick={() => router.back()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-4 py-2 bg-teal text-white rounded-lg hover:bg-teal/90"
           >
             Go Back
           </button>
@@ -149,89 +161,122 @@ export default function AgreementPage() {
   }
 
   const { offer, customer, job } = data
-  const principalAmount = job.estimateAmount
+  const principalAmount = offer.loanAmount || job.estimateAmount
+  const isBNPL = offer.type === 'bnpl'
+  const paymentAmount = offer.installmentAmount || offer.monthlyPayment || 0
+  const downPayment = offer.downPaymentAmount || offer.downPayment || 0
+  const numberOfPayments = offer.numberOfPayments || offer.termMonths || 0
+  const paymentFrequency = offer.paymentFrequency || 'monthly'
+  
   const firstPaymentDate = new Date()
-  firstPaymentDate.setMonth(firstPaymentDate.getMonth() + 1)
+  if (paymentFrequency === 'biweekly') {
+    firstPaymentDate.setDate(firstPaymentDate.getDate() + 14)
+  } else {
+    firstPaymentDate.setMonth(firstPaymentDate.getMonth() + 1)
+  }
+
+  const interestAmount = Number(offer.totalAmount) - principalAmount
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-warm-white py-8 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Loan Agreement</h1>
-          <p className="text-gray-600">Please review and sign your financing agreement</p>
+          <h1 className="text-3xl font-bold text-navy font-display mb-2">
+            Supr<span className="text-teal">Fi</span>
+          </h1>
+          <p className="text-gray-600">Review and sign your {isBNPL ? 'payment' : 'financing'} agreement</p>
         </div>
 
-        {/* Loan Summary Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">💰</span> Loan Summary
-          </h2>
+        {/* Payment Summary Card */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-teal/10 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-navy">Payment Summary</h2>
+              <p className="text-sm text-gray-500">{offer.name || `${offer.termMonths} Month Plan`}</p>
+            </div>
+          </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <div className="text-sm text-blue-600 mb-1">Loan Amount</div>
-              <div className="text-2xl font-bold text-blue-900">${principalAmount.toLocaleString()}</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-teal/5 rounded-xl p-4 text-center">
+              <div className="text-xs text-gray-500 mb-1">Service Amount</div>
+              <div className="text-xl font-bold text-navy">${principalAmount.toLocaleString()}</div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4 text-center">
-              <div className="text-sm text-green-600 mb-1">Monthly Payment</div>
-              <div className="text-2xl font-bold text-green-900">${Number(offer.monthlyPayment).toFixed(2)}</div>
+            {downPayment > 0 && (
+              <div className="bg-teal/5 rounded-xl p-4 text-center">
+                <div className="text-xs text-gray-500 mb-1">Due Today</div>
+                <div className="text-xl font-bold text-navy">${downPayment.toFixed(2)}</div>
+              </div>
+            )}
+            <div className="bg-teal/5 rounded-xl p-4 text-center">
+              <div className="text-xs text-gray-500 mb-1">
+                {numberOfPayments} Payment{numberOfPayments > 1 ? 's' : ''} of
+              </div>
+              <div className="text-xl font-bold text-navy">${paymentAmount.toFixed(2)}</div>
             </div>
-            <div className="bg-purple-50 rounded-lg p-4 text-center">
-              <div className="text-sm text-purple-600 mb-1">APR</div>
-              <div className="text-2xl font-bold text-purple-900">{Number(offer.apr).toFixed(2)}%</div>
-            </div>
-            <div className="bg-orange-50 rounded-lg p-4 text-center">
-              <div className="text-sm text-orange-600 mb-1">Term</div>
-              <div className="text-2xl font-bold text-orange-900">{offer.termMonths} mo</div>
+            <div className="bg-teal/5 rounded-xl p-4 text-center">
+              <div className="text-xs text-gray-500 mb-1">APR</div>
+              <div className={`text-xl font-bold ${offer.apr === 0 ? 'text-teal' : 'text-navy'}`}>
+                {offer.apr === 0 ? '0%' : `${Number(offer.apr).toFixed(2)}%`}
+              </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-4 space-y-2 text-sm">
+          <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Total of Payments</span>
-              <span className="font-semibold">${Number(offer.totalAmount).toFixed(2)}</span>
+              <span className="text-gray-600">Total You'll Pay</span>
+              <span className="font-bold text-navy">${Number(offer.totalAmount).toFixed(2)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Finance Charge (Interest)</span>
-              <span className="font-semibold">${(Number(offer.totalAmount) - principalAmount).toFixed(2)}</span>
-            </div>
-            {Number(offer.originationFee) > 0 && (
+            {interestAmount > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Origination Fee</span>
-                <span className="font-semibold">${Number(offer.originationFee).toFixed(2)}</span>
+                <span className="text-gray-600">Finance Charge (Interest)</span>
+                <span className="font-semibold">${interestAmount.toFixed(2)}</span>
               </div>
             )}
-            {Number(offer.downPayment) > 0 && (
+            {interestAmount === 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Down Payment</span>
-                <span className="font-semibold">${Number(offer.downPayment).toFixed(2)}</span>
+                <span className="text-gray-600">Interest</span>
+                <span className="font-semibold text-teal">$0.00 - Interest Free</span>
               </div>
             )}
             <div className="flex justify-between">
               <span className="text-gray-600">First Payment Due</span>
               <span className="font-semibold">{firstPaymentDate.toLocaleDateString()}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Payment Frequency</span>
+              <span className="font-semibold capitalize">{paymentFrequency === 'biweekly' ? 'Every 2 Weeks' : 'Monthly'}</span>
+            </div>
           </div>
         </div>
 
         {/* Borrower Info */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">👤</span> Borrower Information
-          </h2>
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-navy/10 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-navy">Your Information</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <div className="text-gray-600">Name</div>
-              <div className="font-medium">{customer.firstName} {customer.lastName}</div>
+              <div className="text-gray-500">Name</div>
+              <div className="font-medium text-navy">{customer.firstName} {customer.lastName}</div>
             </div>
             <div>
-              <div className="text-gray-600">Email</div>
-              <div className="font-medium">{customer.email}</div>
+              <div className="text-gray-500">Email</div>
+              <div className="font-medium text-navy">{customer.email}</div>
             </div>
             <div className="md:col-span-2">
-              <div className="text-gray-600">Address</div>
-              <div className="font-medium">
+              <div className="text-gray-500">Address</div>
+              <div className="font-medium text-navy">
                 {customer.addressLine1}, {customer.city}, {customer.state} {customer.postalCode}
               </div>
             </div>
@@ -239,23 +284,52 @@ export default function AgreementPage() {
         </div>
 
         {/* Terms & Conditions */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">📋</span> Terms & Conditions
-          </h2>
-          <div className="bg-gray-50 rounded-lg p-4 h-48 overflow-y-auto text-sm text-gray-700 mb-4">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-navy/10 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-navy">Terms & Conditions</h2>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-4 h-48 overflow-y-auto text-sm text-gray-700 mb-4">
+            {isBNPL ? (
+              <>
+                <p className="mb-3">
+                  <strong>BUY NOW, PAY LATER AGREEMENT</strong>
+                </p>
+                <p className="mb-3">
+                  This is a payment plan agreement with 0% interest. By signing below, you agree to pay 
+                  the total amount of ${principalAmount.toLocaleString()} in {numberOfPayments + (downPayment > 0 ? 1 : 0)} payments.
+                </p>
+                {downPayment > 0 && (
+                  <p className="mb-3">
+                    <strong>DOWN PAYMENT:</strong> A down payment of ${downPayment.toFixed(2)} is due today 
+                    to confirm your service booking.
+                  </p>
+                )}
+                <p className="mb-3">
+                  <strong>PAYMENT SCHEDULE:</strong> {numberOfPayments} payments of ${paymentAmount.toFixed(2)} will be 
+                  automatically debited from your bank account {paymentFrequency === 'biweekly' ? 'every 2 weeks' : 'monthly'}, 
+                  starting {firstPaymentDate.toLocaleDateString()}.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mb-3">
+                  <strong>TRUTH IN LENDING DISCLOSURE</strong>
+                </p>
+                <p className="mb-3">
+                  This is a closed-end credit agreement. By signing below, you agree to repay the 
+                  Principal Amount of ${principalAmount.toLocaleString()} plus interest at an Annual Percentage 
+                  Rate (APR) of {Number(offer.apr).toFixed(2)}% over {numberOfPayments} monthly payments 
+                  of ${paymentAmount.toFixed(2)} each.
+                </p>
+              </>
+            )}
             <p className="mb-3">
-              <strong>TRUTH IN LENDING DISCLOSURE</strong>
-            </p>
-            <p className="mb-3">
-              This is a closed-end credit agreement. By signing below, you agree to repay the 
-              Principal Amount of ${principalAmount.toLocaleString()} plus interest at an Annual Percentage 
-              Rate (APR) of {Number(offer.apr).toFixed(2)}% over {offer.termMonths} monthly payments 
-              of ${Number(offer.monthlyPayment).toFixed(2)} each.
-            </p>
-            <p className="mb-3">
-              <strong>PAYMENT TERMS:</strong> Payments are due on the same day each month, beginning 
-              {' '}{firstPaymentDate.toLocaleDateString()}. Late payments may result in a late fee of 
+              <strong>LATE PAYMENTS:</strong> Late payments may result in a late fee of 
               $25 or 5% of the payment amount, whichever is greater.
             </p>
             <p className="mb-3">
@@ -266,33 +340,34 @@ export default function AgreementPage() {
               <strong>DEFAULT:</strong> If you fail to make a payment when due, we may declare the 
               entire unpaid balance immediately due and payable.
             </p>
-            <p className="mb-3">
-              <strong>GOVERNING LAW:</strong> This agreement is governed by the laws of the state 
-              where the services are performed.
-            </p>
             <p>
               <strong>ELECTRONIC COMMUNICATIONS:</strong> By signing electronically, you consent to 
-              receive all communications regarding this loan electronically.
+              receive all communications regarding this agreement electronically.
             </p>
           </div>
         </div>
 
         {/* Consents */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">✅</span> Required Consents
-          </h2>
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-teal/10 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-navy">Required Consents</h2>
+          </div>
           <div className="space-y-4">
             <label className="flex items-start cursor-pointer">
               <input
                 type="checkbox"
                 checked={consents.reviewedTerms}
                 onChange={(e) => setConsents({ ...consents, reviewedTerms: e.target.checked })}
-                className="mt-1 mr-3 h-5 w-5 text-blue-600 rounded"
+                className="mt-1 mr-3 h-5 w-5 text-teal rounded border-gray-300 focus:ring-teal"
               />
               <span className="text-sm text-gray-700">
-                I have read and understand the loan terms, including the APR of {Number(offer.apr).toFixed(2)}%, 
-                monthly payment of ${Number(offer.monthlyPayment).toFixed(2)}, and total repayment 
+                I have read and understand the payment terms, including the {offer.apr === 0 ? '0% APR' : `APR of ${Number(offer.apr).toFixed(2)}%`}, 
+                {' '}payment amount of ${paymentAmount.toFixed(2)}, and total repayment 
                 amount of ${Number(offer.totalAmount).toFixed(2)}.
               </span>
             </label>
@@ -302,11 +377,11 @@ export default function AgreementPage() {
                 type="checkbox"
                 checked={consents.agreeToPayments}
                 onChange={(e) => setConsents({ ...consents, agreeToPayments: e.target.checked })}
-                className="mt-1 mr-3 h-5 w-5 text-blue-600 rounded"
+                className="mt-1 mr-3 h-5 w-5 text-teal rounded border-gray-300 focus:ring-teal"
               />
               <span className="text-sm text-gray-700">
-                I agree to make {offer.termMonths} monthly payments starting {firstPaymentDate.toLocaleDateString()} 
-                and authorize SuprFi to debit my bank account for scheduled payments.
+                I agree to make {numberOfPayments} {paymentFrequency === 'biweekly' ? 'bi-weekly' : 'monthly'} payments 
+                starting {firstPaymentDate.toLocaleDateString()} and authorize SuprFi to debit my bank account for scheduled payments.
               </span>
             </label>
 
@@ -315,21 +390,26 @@ export default function AgreementPage() {
                 type="checkbox"
                 checked={consents.electronicSignature}
                 onChange={(e) => setConsents({ ...consents, electronicSignature: e.target.checked })}
-                className="mt-1 mr-3 h-5 w-5 text-blue-600 rounded"
+                className="mt-1 mr-3 h-5 w-5 text-teal rounded border-gray-300 focus:ring-teal"
               />
               <span className="text-sm text-gray-700">
                 I agree that my electronic signature below has the same legal effect as a handwritten 
-                signature and constitutes my acceptance of this loan agreement.
+                signature and constitutes my acceptance of this agreement.
               </span>
             </label>
           </div>
         </div>
 
         {/* Electronic Signature */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <span className="mr-2">✍️</span> Electronic Signature
-          </h2>
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-navy/10 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-navy" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-navy">Electronic Signature</h2>
+          </div>
           <p className="text-sm text-gray-600 mb-4">
             Please type your full legal name below to sign this agreement.
           </p>
@@ -338,7 +418,7 @@ export default function AgreementPage() {
             value={signature}
             onChange={(e) => setSignature(e.target.value)}
             placeholder={`${customer.firstName} ${customer.lastName}`}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-xl font-signature"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal focus:ring-2 focus:ring-teal/20 text-xl"
             style={{ fontFamily: 'cursive' }}
           />
           <p className="text-xs text-gray-500 mt-2">
@@ -350,22 +430,36 @@ export default function AgreementPage() {
         <div className="flex flex-col sm:flex-row gap-4">
           <button
             onClick={() => router.back()}
-            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+            className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
           >
-            ← Back to Offers
+            Back to Offers
           </button>
           <button
             onClick={handleSign}
             disabled={!allConsentsChecked || !signatureValid || signing}
-            className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 px-6 py-3 bg-teal text-white rounded-xl font-semibold hover:bg-teal/90 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {signing ? 'Processing...' : '✓ Sign & Accept Loan'}
+            {signing ? (
+              <>
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </>
+            ) : (
+              'Sign & Accept Agreement'
+            )}
           </button>
         </div>
 
         {/* Help */}
-        <div className="text-center mt-8 text-sm text-gray-600">
-          <p>Questions? Contact us at support@suprfi.com or 1-800-SUPRFI</p>
+        <div className="text-center mt-8 text-sm text-gray-500">
+          <p>Questions? Contact us at{' '}
+            <a href="mailto:support@suprfi.com" className="text-teal font-medium hover:underline">
+              support@suprfi.com
+            </a>
+          </p>
         </div>
       </div>
     </div>

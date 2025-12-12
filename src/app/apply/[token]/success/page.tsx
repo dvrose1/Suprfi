@@ -52,11 +52,11 @@ export default function SuccessPage() {
   firstPaymentDate.setMonth(firstPaymentDate.getMonth() + 1)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-100 py-12 px-4">
+    <div className="min-h-screen bg-warm-white py-12 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Success Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-green-600 rounded-full mb-6">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-teal rounded-full mb-6">
             <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
@@ -146,7 +146,7 @@ export default function SuccessPage() {
           <div className="space-y-4">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-blue-600 font-bold text-sm">1</span>
+                <span className="text-teal font-bold text-sm">1</span>
               </div>
               <div>
                 <div className="font-medium text-gray-900">Confirmation Email</div>
@@ -158,7 +158,7 @@ export default function SuccessPage() {
 
             <div className="flex items-start">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-blue-600 font-bold text-sm">2</span>
+                <span className="text-teal font-bold text-sm">2</span>
               </div>
               <div>
                 <div className="font-medium text-gray-900">Service Scheduling</div>
@@ -170,7 +170,7 @@ export default function SuccessPage() {
 
             <div className="flex items-start">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-blue-600 font-bold text-sm">3</span>
+                <span className="text-teal font-bold text-sm">3</span>
               </div>
               <div>
                 <div className="font-medium text-gray-900">Funds Disbursed</div>
@@ -182,7 +182,7 @@ export default function SuccessPage() {
 
             <div className="flex items-start">
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-blue-600 font-bold text-sm">4</span>
+                <span className="text-teal font-bold text-sm">4</span>
               </div>
               <div>
                 <div className="font-medium text-gray-900">Start Payments</div>
@@ -195,7 +195,7 @@ export default function SuccessPage() {
         </div>
 
         {/* Contact & Support */}
-        <div className="bg-blue-50 rounded-xl p-6 mb-8">
+        <div className="bg-teal/10 rounded-xl p-6 mb-8">
           <h3 className="font-semibold text-gray-900 mb-2">Need Help?</h3>
           <p className="text-sm text-gray-700 mb-4">
             Our support team is here to help with any questions about your loan.
@@ -220,7 +220,7 @@ export default function SuccessPage() {
         <div className="text-center">
           <Link
             href="/"
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-teal hover:text-blue-700 font-medium"
           >
             ← Return to SuprFi Home
           </Link>

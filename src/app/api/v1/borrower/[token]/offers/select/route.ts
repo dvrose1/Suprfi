@@ -5,6 +5,22 @@ import { verifyApplicationToken } from '@/lib/utils/token'
 
 const SelectOfferSchema = z.object({
   offerId: z.string().min(1),
+  offerDetails: z.object({
+    id: z.string(),
+    type: z.enum(['bnpl', 'installment']),
+    name: z.string(),
+    termWeeks: z.number().optional(),
+    termMonths: z.number().optional(),
+    paymentFrequency: z.enum(['biweekly', 'monthly']),
+    apr: z.number(),
+    originationFee: z.number(),
+    downPaymentPercent: z.number(),
+    downPaymentAmount: z.number(),
+    installmentAmount: z.number(),
+    numberOfPayments: z.number(),
+    totalAmount: z.number(),
+    loanAmount: z.number(),
+  }).optional(),
 })
 
 /**
@@ -29,7 +45,7 @@ export async function POST(
 
     // Parse request
     const body = await request.json()
-    const { offerId } = SelectOfferSchema.parse(body)
+    const { offerId, offerDetails } = SelectOfferSchema.parse(body)
 
     // Get application
     const application = await prisma.application.findUnique({
@@ -48,6 +64,50 @@ export async function POST(
       )
     }
 
+    // Handle client-generated offers (BNPL/new format)
+    if (offerDetails) {
+      // Store the selected offer details in creditData JSON field
+      const existingCreditData = (application.creditData as Record<string, unknown>) || {}
+      await prisma.application.update({
+        where: { id: application.id },
+        data: { 
+          status: 'offer_selected',
+          creditData: {
+            ...existingCreditData,
+            selectedOffer: offerDetails,
+          },
+        },
+      })
+
+      // Create audit log
+      await prisma.auditLog.create({
+        data: {
+          entityType: 'offer',
+          entityId: offerId,
+          actor: application.customerId,
+          action: 'selected',
+          payload: {
+            applicationId: application.id,
+            offerType: offerDetails.type,
+            offerName: offerDetails.name,
+            apr: offerDetails.apr,
+            totalAmount: offerDetails.totalAmount,
+            installmentAmount: offerDetails.installmentAmount,
+            numberOfPayments: offerDetails.numberOfPayments,
+          },
+        },
+      })
+
+      console.log('✅ Offer selected:', offerId, 'for application:', application.id)
+
+      return NextResponse.json({
+        success: true,
+        message: 'Offer selected successfully',
+        offer: offerDetails,
+      })
+    }
+
+    // Legacy: Handle database offers
     if (!application.decision) {
       return NextResponse.json(
         { success: false, error: 'No decision found for this application' },

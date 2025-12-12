@@ -1,7 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { FormData } from '../ApplicationForm'
+
+const COUNTRY_CODES = [
+  { code: '+1', country: 'US', flag: '🇺🇸' },
+  { code: '+1', country: 'CA', flag: '🇨🇦' },
+  { code: '+44', country: 'UK', flag: '🇬🇧' },
+  { code: '+61', country: 'AU', flag: '🇦🇺' },
+  { code: '+49', country: 'DE', flag: '🇩🇪' },
+  { code: '+33', country: 'FR', flag: '🇫🇷' },
+  { code: '+52', country: 'MX', flag: '🇲🇽' },
+]
 
 interface PersonalInfoStepProps {
   formData: FormData
@@ -9,8 +19,47 @@ interface PersonalInfoStepProps {
   onNext: () => void
 }
 
+const formatPhoneNumber = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 10)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
+}
+
 export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalInfoStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [countryCode, setCountryCode] = useState('+1')
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [showSSN, setShowSSN] = useState(false)
+
+  // Parse incoming phone number to extract country code and number
+  useEffect(() => {
+    if (formData.phone) {
+      // Check if phone starts with a country code
+      const matchedCountry = COUNTRY_CODES.find(c => formData.phone.startsWith(c.code))
+      if (matchedCountry) {
+        setCountryCode(matchedCountry.code)
+        const numberPart = formData.phone.slice(matchedCountry.code.length).replace(/\D/g, '')
+        setPhoneNumber(formatPhoneNumber(numberPart))
+      } else {
+        // No country code, just format the number
+        const digits = formData.phone.replace(/\D/g, '')
+        setPhoneNumber(formatPhoneNumber(digits))
+      }
+    }
+  }, []) // Only run on mount
+
+  // Update formData when phone changes
+  const handlePhoneChange = (value: string) => {
+    const formatted = formatPhoneNumber(value)
+    setPhoneNumber(formatted)
+    updateFormData({ phone: `${countryCode}${formatted.replace(/-/g, '')}` })
+  }
+
+  const handleCountryCodeChange = (code: string) => {
+    setCountryCode(code)
+    updateFormData({ phone: `${code}${phoneNumber.replace(/-/g, '')}` })
+  }
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
@@ -64,7 +113,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
             type="text"
             value={formData.firstName}
             onChange={(e) => updateFormData({ firstName: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
               errors.firstName ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -82,7 +131,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
             type="text"
             value={formData.lastName}
             onChange={(e) => updateFormData({ lastName: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
               errors.lastName ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -100,7 +149,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
             type="email"
             value={formData.email}
             onChange={(e) => updateFormData({ email: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
               errors.email ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -114,14 +163,32 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Phone Number *
           </label>
-          <input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => updateFormData({ phone: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.phone ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
+          <div className="flex gap-2">
+            <select
+              value={`${countryCode}-${COUNTRY_CODES.find(c => c.code === countryCode)?.country || 'US'}`}
+              onChange={(e) => {
+                const [code] = e.target.value.split('-')
+                handleCountryCodeChange(code)
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
+            >
+              {COUNTRY_CODES.map((country) => (
+                <option key={`${country.code}-${country.country}`} value={`${country.code}-${country.country}`}>
+                  {country.flag} {country.code}
+                </option>
+              ))}
+            </select>
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              placeholder="555-123-4567"
+              maxLength={12}
+              className={`flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
+                errors.phone ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+          </div>
           {errors.phone && (
             <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
           )}
@@ -137,7 +204,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
             value={formData.dateOfBirth}
             onChange={(e) => updateFormData({ dateOfBirth: e.target.value })}
             max={new Date().toISOString().split('T')[0]}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
               errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -151,16 +218,35 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Social Security Number *
           </label>
-          <input
-            type="text"
-            value={formData.ssn}
-            onChange={(e) => updateFormData({ ssn: formatSSN(e.target.value) })}
-            placeholder="###-##-####"
-            maxLength={11}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.ssn ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
+          <div className="relative">
+            <input
+              type={showSSN ? 'text' : 'password'}
+              value={formData.ssn}
+              onChange={(e) => updateFormData({ ssn: formatSSN(e.target.value) })}
+              placeholder="###-##-####"
+              maxLength={11}
+              className={`w-full px-4 py-2 pr-12 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
+                errors.ssn ? 'border-red-500' : 'border-gray-300'
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowSSN(!showSSN)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              aria-label={showSSN ? 'Hide SSN' : 'Show SSN'}
+            >
+              {showSSN ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              )}
+            </button>
+          </div>
           {errors.ssn && (
             <p className="mt-1 text-sm text-red-600">{errors.ssn}</p>
           )}
@@ -180,7 +266,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
           value={formData.addressLine1}
           onChange={(e) => updateFormData({ addressLine1: e.target.value })}
           placeholder="123 Main Street"
-          className={`w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+          className={`w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
             errors.addressLine1 ? 'border-red-500' : 'border-gray-300'
           }`}
         />
@@ -198,7 +284,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
           value={formData.addressLine2}
           onChange={(e) => updateFormData({ addressLine2: e.target.value })}
           placeholder="Apt 4B"
-          className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
         />
       </div>
 
@@ -212,7 +298,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
             type="text"
             value={formData.city}
             onChange={(e) => updateFormData({ city: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
               errors.city ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -229,7 +315,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
           <select
             value={formData.state}
             onChange={(e) => updateFormData({ state: e.target.value })}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
               errors.state ? 'border-red-500' : 'border-gray-300'
             }`}
           >
@@ -256,7 +342,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
             onChange={(e) => updateFormData({ postalCode: e.target.value.slice(0, 10) })}
             placeholder="12345"
             maxLength={10}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent ${
               errors.postalCode ? 'border-red-500' : 'border-gray-300'
             }`}
           />
@@ -270,7 +356,7 @@ export function PersonalInfoStep({ formData, updateFormData, onNext }: PersonalI
       <div className="flex justify-end">
         <button
           type="submit"
-          className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
+          className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-teal text-white rounded-lg font-semibold hover:bg-teal/90 transition-colors text-sm sm:text-base"
         >
           Continue →
         </button>

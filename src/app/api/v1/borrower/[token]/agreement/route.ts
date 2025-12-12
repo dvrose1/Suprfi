@@ -50,6 +50,51 @@ export async function GET(
       )
     }
 
+    // Check for client-generated offer in creditData first
+    const creditData = application.creditData as Record<string, unknown> | null
+    const selectedOffer = creditData?.selectedOffer as Record<string, unknown> | null
+    
+    if (selectedOffer && selectedOffer.id === offerId) {
+      // Return the client-generated offer (BNPL format)
+      return NextResponse.json({
+        success: true,
+        applicationId: application.id,
+        offer: {
+          id: selectedOffer.id,
+          type: selectedOffer.type,
+          name: selectedOffer.name,
+          termWeeks: selectedOffer.termWeeks,
+          termMonths: selectedOffer.termMonths,
+          paymentFrequency: selectedOffer.paymentFrequency,
+          apr: selectedOffer.apr,
+          originationFee: selectedOffer.originationFee,
+          downPaymentPercent: selectedOffer.downPaymentPercent,
+          downPaymentAmount: selectedOffer.downPaymentAmount,
+          installmentAmount: selectedOffer.installmentAmount,
+          numberOfPayments: selectedOffer.numberOfPayments,
+          totalAmount: selectedOffer.totalAmount,
+          loanAmount: selectedOffer.loanAmount,
+          // Legacy fields for compatibility
+          monthlyPayment: selectedOffer.installmentAmount,
+          downPayment: selectedOffer.downPaymentAmount,
+        },
+        customer: {
+          firstName: application.customer.firstName,
+          lastName: application.customer.lastName,
+          email: application.customer.email,
+          addressLine1: application.customer.addressLine1 || '',
+          city: application.customer.city || '',
+          state: application.customer.state || '',
+          postalCode: application.customer.postalCode || '',
+        },
+        job: {
+          estimateAmount: Number(application.job.estimateAmount),
+          serviceType: application.job.serviceType,
+        },
+      })
+    }
+
+    // Legacy: Check database offers
     if (!application.decision) {
       return NextResponse.json(
         { success: false, error: 'No decision found' },

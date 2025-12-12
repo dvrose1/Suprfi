@@ -34,7 +34,7 @@ export function ReviewStep({ formData, updateFormData, job, onSubmit, onBack, is
       </p>
 
       {/* Loan Summary */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+      <div className="bg-teal/10 border border-teal/20 rounded-lg p-6 mb-8">
         <h3 className="font-semibold text-gray-900 mb-4">Financing Request</h3>
         <div className="space-y-2">
           <div className="flex justify-between">
@@ -102,7 +102,7 @@ export function ReviewStep({ formData, updateFormData, job, onSubmit, onBack, is
             id="credit-consent"
             checked={formData.creditCheckConsent}
             onChange={(e) => updateFormData({ creditCheckConsent: e.target.checked })}
-            className="mt-1 mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+            className="mt-1 mr-3 h-5 w-5 text-teal focus:ring-teal border-gray-300 rounded cursor-pointer"
           />
           <label htmlFor="credit-consent" className="text-sm text-gray-700 cursor-pointer">
             I authorize SuprFi to obtain my credit report for underwriting purposes. 
@@ -116,11 +116,11 @@ export function ReviewStep({ formData, updateFormData, job, onSubmit, onBack, is
             id="terms-consent"
             checked={formData.termsAccepted}
             onChange={(e) => updateFormData({ termsAccepted: e.target.checked })}
-            className="mt-1 mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+            className="mt-1 mr-3 h-5 w-5 text-teal focus:ring-teal border-gray-300 rounded cursor-pointer"
           />
           <label htmlFor="terms-consent" className="text-sm text-gray-700 cursor-pointer">
-            I agree to the <a href="#" className="text-blue-600 underline">Terms of Service</a> and{' '}
-            <a href="#" className="text-blue-600 underline">Privacy Policy</a>.
+            I agree to the <a href="#" className="text-teal underline">Terms of Service</a> and{' '}
+            <a href="#" className="text-teal underline">Privacy Policy</a>.
           </label>
         </div>
 
@@ -130,7 +130,7 @@ export function ReviewStep({ formData, updateFormData, job, onSubmit, onBack, is
             id="esign-consent"
             checked={formData.eSignConsent}
             onChange={(e) => updateFormData({ eSignConsent: e.target.checked })}
-            className="mt-1 mr-3 h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+            className="mt-1 mr-3 h-5 w-5 text-teal focus:ring-teal border-gray-300 rounded cursor-pointer"
           />
           <label htmlFor="esign-consent" className="text-sm text-gray-700 cursor-pointer">
             I consent to receive documents and notices electronically and agree to use electronic signatures.

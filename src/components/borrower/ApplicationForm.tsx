@@ -149,9 +149,9 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
               key={step.id}
               className={`flex-1 text-center ${
                 step.id === currentStep
-                  ? 'text-blue-600 font-semibold'
+                  ? 'text-teal font-semibold'
                   : step.id < currentStep
-                  ? 'text-green-600'
+                  ? 'text-mint'
                   : 'text-gray-400'
               }`}
             >
@@ -159,9 +159,9 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
                 <div
                   className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${
                     step.id === currentStep
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-teal text-white'
                       : step.id < currentStep
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-mint text-white'
                       : 'bg-gray-300 text-gray-600'
                   }`}
                 >
@@ -174,7 +174,7 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
           <div
-            className="bg-blue-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
+            className="bg-teal h-1.5 sm:h-2 rounded-full transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
