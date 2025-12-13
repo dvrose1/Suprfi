@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
+import ClientHeader from '@/components/client/ClientHeader';
 
 interface DashboardStats {
   totalApplications: number;
@@ -31,7 +32,7 @@ interface RecentActivity {
 }
 
 export default function ClientDashboardPage() {
-  const { user, loading, logout, canAccess } = useContractorAuth();
+  const { user, loading, canAccess } = useContractorAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -85,67 +86,7 @@ export default function ClientDashboardPage() {
 
   return (
     <div className="min-h-screen bg-warm-white">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/client" className="flex items-center">
-                <span className="text-2xl font-bold font-display">
-                  <span className="text-navy">Supr</span>
-                  <span className="text-teal">Client</span>
-                </span>
-              </Link>
-              <nav className="hidden md:flex items-center gap-6">
-                <Link href="/client" className="text-navy font-medium">Dashboard</Link>
-                <Link href="/client/applications" className="text-gray-600 hover:text-navy">Applications</Link>
-                <Link href="/client/loans" className="text-gray-600 hover:text-navy">Loans</Link>
-                {canAccess('analytics:view') && (
-                  <Link href="/client/analytics" className="text-gray-600 hover:text-navy">Analytics</Link>
-                )}
-              </nav>
-            </div>
-            <div className="flex items-center gap-4">
-              {canAccess('application:send_link') && (
-                <Link
-                  href="/client/new"
-                  className="bg-teal text-white rounded-lg font-semibold px-4 py-2 hover:bg-teal/90 transition-colors text-sm"
-                >
-                  + Send Financing Link
-                </Link>
-              )}
-              <div className="relative group">
-                <button className="flex items-center gap-2 text-sm">
-                  <div className="w-8 h-8 bg-navy text-white rounded-full flex items-center justify-center font-semibold">
-                    {user.name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
-                  </div>
-                  <span className="hidden sm:block text-gray-700">{user.name || user.email}</span>
-                </button>
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  <div className="p-3 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900">{user.contractorName}</p>
-                    <p className="text-xs text-gray-500 capitalize">{user.role}</p>
-                  </div>
-                  {canAccess('team:view') && (
-                    <Link href="/client/team" className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                      Team
-                    </Link>
-                  )}
-                  <Link href="/client/settings" className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                    Settings
-                  </Link>
-                  <button
-                    onClick={() => logout()}
-                    className="w-full text-left px-3 py-2 text-sm text-error hover:bg-error/5"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <ClientHeader />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

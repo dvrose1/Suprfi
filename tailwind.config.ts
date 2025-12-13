@@ -118,6 +118,18 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Safe area plugin for iOS notch/home indicator
+    function({ addUtilities }: { addUtilities: (utilities: Record<string, Record<string, string>>) => void }) {
+      addUtilities({
+        '.safe-area-bottom': {
+          'padding-bottom': 'env(safe-area-inset-bottom)',
+        },
+        '.safe-area-top': {
+          'padding-top': 'env(safe-area-inset-top)',
+        },
+      });
+    },
+  ],
 };
 export default config;

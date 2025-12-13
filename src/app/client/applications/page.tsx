@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
+import ClientHeader from '@/components/client/ClientHeader';
 
 interface Application {
   id: string;
@@ -91,34 +92,7 @@ export default function ApplicationsPage() {
 
   return (
     <div className="min-h-screen bg-warm-white">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <Link href="/client" className="flex items-center">
-                <span className="text-2xl font-bold font-display">
-                  <span className="text-navy">Supr</span>
-                  <span className="text-teal">Client</span>
-                </span>
-              </Link>
-              <nav className="hidden md:flex items-center gap-6">
-                <Link href="/client" className="text-gray-600 hover:text-navy">Dashboard</Link>
-                <Link href="/client/applications" className="text-navy font-medium">Applications</Link>
-                <Link href="/client/loans" className="text-gray-600 hover:text-navy">Loans</Link>
-              </nav>
-            </div>
-            {canAccess('application:send_link') && (
-              <Link
-                href="/client/new"
-                className="bg-teal text-white rounded-lg font-semibold px-4 py-2 hover:bg-teal/90 transition-colors text-sm"
-              >
-                + Send Link
-              </Link>
-            )}
-          </div>
-        </div>
-      </header>
+      <ClientHeader />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
