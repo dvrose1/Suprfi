@@ -323,6 +323,147 @@ model PasswordReset {
 }
 
 // ============================================
+// CONTRACTOR / SUPRCLIENT
+// ============================================
+
+model Contractor {
+  id            String   @id @default(cuid())
+  
+  // Business info
+  email         String   @unique
+  businessName  String?
+  name          String?
+  phone         String?
+  
+  // Service details
+  serviceType   String?  // "hvac", "plumbing", "electrical", "pest", "general"
+  state         String?
+  
+  // Status
+  status        String   @default("approved") // approved, active, suspended
+  
+  // SuprClient specific
+  apiKey        String?  @unique  // For CRM integration
+  settings      Json?    // Notification preferences, branding, etc.
+  tier          String   @default("standard") // standard, premium, enterprise
+  
+  // Metadata
+  source        String?  // Where they came from (waitlist, direct, etc.)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  users         ContractorUser[]
+  jobs          ContractorJob[]
+  
+  @@index([email])
+  @@index([status])
+  @@index([apiKey])
+}
+
+model ContractorUser {
+  id            String   @id @default(cuid())
+  contractorId  String
+  contractor    Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  
+  email         String   @unique
+  passwordHash  String
+  name          String?
+  phone         String?
+  
+  role          String   @default("tech") // owner, manager, tech, viewer
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  
+  invitedBy     String?  // ContractorUser ID who invited them
+  inviteToken   String?  @unique // For pending invitations
+  inviteExpiresAt DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  sessions      ContractorSession[]
+  auditLogs     ContractorAuditLog[]
+  
+  @@index([contractorId])
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@index([inviteToken])
+}
+
+model ContractorSession {
+  id           String   @id @default(cuid())
+  userId       String
+  user         ContractorUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  token        String   @unique
+  expiresAt    DateTime
+  rememberMe   Boolean  @default(false)
+  lastActiveAt DateTime @default(now())
+  ipAddress    String?
+  userAgent    String?
+  
+  createdAt    DateTime @default(now())
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model ContractorAuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        ContractorUser @relation(fields: [userId], references: [id])
+  
+  action      String   // login, logout, sent_link, viewed_app, generated_qr, etc.
+  targetType  String?  // application, loan, team_member, etc.
+  targetId    String?
+  
+  metadata    Json?    // Additional context
+  ipAddress   String?
+  userAgent   String?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model ContractorPasswordReset {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  
+  @@index([token])
+  @@index([email])
+}
+
+// Link contractors to jobs they initiate
+model ContractorJob {
+  id            String   @id @default(cuid())
+  contractorId  String
+  contractor    Contractor @relation(fields: [contractorId], references: [id])
+  
+  jobId         String   @unique
+  
+  // Who initiated this financing request
+  initiatedBy   String?  // ContractorUser ID
+  initiatedAt   DateTime @default(now())
+  
+  // How it was sent
+  sendMethod    String?  // "sms", "email", "qr"
+  
+  @@index([contractorId])
+  @@index([jobId])
+}
+
+// ============================================
 // WAITLIST
 // ============================================
 
