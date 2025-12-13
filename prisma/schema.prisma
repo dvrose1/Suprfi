@@ -30,8 +30,10 @@ model Customer {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   
-  jobs           Job[]
-  applications   Application[]
+  jobs              Job[]
+  applications      Application[]
+  borrowerSessions  BorrowerSession[]
+  borrowerMagicLinks BorrowerMagicLink[]
   
   @@index([email])
   @@index([phone])
@@ -461,6 +463,43 @@ model ContractorJob {
   
   @@index([contractorId])
   @@index([jobId])
+}
+
+// ============================================
+// BORROWER PORTAL
+// ============================================
+
+model BorrowerSession {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  token        String   @unique
+  expiresAt    DateTime
+  lastActiveAt DateTime @default(now())
+  ipAddress    String?
+  userAgent    String?
+  
+  createdAt    DateTime @default(now())
+  
+  @@index([token])
+  @@index([customerId])
+  @@index([expiresAt])
+}
+
+model BorrowerMagicLink {
+  id         String    @id @default(cuid())
+  customerId String
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  token      String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  
+  createdAt  DateTime  @default(now())
+  
+  @@index([token])
+  @@index([customerId])
 }
 
 // ============================================
