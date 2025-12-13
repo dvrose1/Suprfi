@@ -9,7 +9,12 @@ import { useContractorAuth } from '@/lib/auth/contractor-context';
 
 export default function MobileNav() {
   const pathname = usePathname();
-  const { canAccess } = useContractorAuth();
+  const { user, loading, canAccess } = useContractorAuth();
+
+  // Don't render until we know auth state to avoid hydration mismatch
+  if (loading || !user) {
+    return null;
+  }
 
   const navItems = [
     { href: '/client', label: 'Home', icon: HomeIcon },
