@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
 
             {/* Benchmarks */}
             <div className="bg-gradient-to-r from-navy to-teal rounded-2xl p-6 mb-8 text-white">
-              <h2 className="text-xl font-semibold mb-4">How You Compare</h2>
+              <h2 className="text-xl font-semibold mb-4 text-white">How You Compare</h2>
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
                   <div className="text-white/80 text-sm mb-2">Approval Rate</div>

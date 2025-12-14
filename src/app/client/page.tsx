@@ -15,6 +15,11 @@ interface DashboardStats {
   pendingReview: number;
   totalFunded: number;
   fundedThisMonth: number;
+  soldThisMonth: number;
+  soldCount: number;
+  fundedCount: number;
+  avgLoanSize: number;
+  midFunnelCount: number;
   conversionFunnel: {
     initiated: number;
     submitted: number;
@@ -98,23 +103,32 @@ export default function ClientDashboardPage() {
           <p className="text-gray-600 mt-1">{user.contractorName}</p>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - Sold, Funded, Avg Loan Size, Approval Rate */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-sm text-gray-600 mb-1">Funded This Month</div>
+            <div className="text-sm text-gray-600 mb-1">Sold</div>
+            <div className="text-3xl font-bold font-display text-navy">
+              ${statsLoading ? '...' : (stats?.soldThisMonth || 0).toLocaleString()}
+            </div>
+            <div className="text-xs text-teal mt-2">
+              {stats?.soldCount || 0} loans this month
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="text-sm text-gray-600 mb-1">Funded</div>
             <div className="text-3xl font-bold font-display text-navy">
               ${statsLoading ? '...' : (stats?.fundedThisMonth || 0).toLocaleString()}
             </div>
             <div className="text-xs text-teal mt-2">
-              ${(stats?.totalFunded || 0).toLocaleString()} lifetime
+              {stats?.fundedCount || 0} loans this month
             </div>
           </div>
           <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-sm text-gray-600 mb-1">Applications</div>
+            <div className="text-sm text-gray-600 mb-1">Avg. Loan Size</div>
             <div className="text-3xl font-bold font-display text-navy">
-              {statsLoading ? '...' : stats?.applicationsThisMonth || 0}
+              ${statsLoading ? '...' : (stats?.avgLoanSize || 0).toLocaleString()}
             </div>
-            <div className="text-xs text-gray-500 mt-2">this month</div>
+            <div className="text-xs text-gray-500 mt-2">last 30 days</div>
           </div>
           <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <div className="text-sm text-gray-600 mb-1">Approval Rate</div>
@@ -123,118 +137,74 @@ export default function ClientDashboardPage() {
             </div>
             <div className="text-xs text-gray-500 mt-2">last 30 days</div>
           </div>
-          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-sm text-gray-600 mb-1">Pending Review</div>
-            <div className="text-3xl font-bold font-display text-warning">
-              {statsLoading ? '...' : stats?.pendingReview || 0}
-            </div>
-            <div className="text-xs text-gray-500 mt-2">awaiting decision</div>
-          </div>
         </div>
 
-        {/* Two Column Layout */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Live Activity Feed */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold font-display text-navy">Live Activity</h2>
-              <Link href="/client/applications" className="text-sm text-teal hover:text-teal/80">
-                View All →
+        {/* Mid-Funnel Alert - Applications needing follow-up */}
+        {stats?.midFunnelCount && stats.midFunnelCount > 0 && (
+          <div className="bg-warning/10 border border-warning/30 rounded-2xl p-4 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-warning/20 rounded-full flex items-center justify-center text-warning">
+                ⚠️
+              </div>
+              <div className="flex-1">
+                <div className="font-semibold text-navy">
+                  {stats.midFunnelCount} application{stats.midFunnelCount !== 1 ? 's' : ''} in progress
+                </div>
+                <div className="text-sm text-gray-600">
+                  Customers have started but not completed their application. Consider following up.
+                </div>
+              </div>
+              <Link
+                href="/client/applications?status=initiated"
+                className="px-4 py-2 bg-warning text-white rounded-lg hover:bg-warning/90 transition-colors text-sm font-medium"
+              >
+                View
               </Link>
             </div>
-            {recentActivity.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-4xl mb-3">📋</div>
-                <p className="text-gray-500">No recent activity</p>
-                <p className="text-sm text-gray-400 mt-1">
-                  Activity will appear here when customers apply
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {recentActivity.map((activity) => {
-                  const { icon, color } = getActivityIcon(activity.type);
-                  return (
-                    <div key={activity.id} className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${color}`}>
-                        {icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {activity.customerName}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          ${activity.amount.toLocaleString()} • {activity.type}
-                        </p>
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {activity.timestamp}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
+        )}
 
-          {/* Quick Actions */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold font-display text-navy mb-6">Quick Actions</h2>
-            <div className="space-y-3">
-              {canAccess('application:send_link') && (
-                <Link
-                  href="/client/new"
-                  className="flex items-center gap-4 p-4 rounded-xl bg-teal/10 hover:bg-teal/20 transition-colors"
-                >
-                  <div className="w-12 h-12 bg-teal text-white rounded-xl flex items-center justify-center text-xl">
-                    📱
-                  </div>
-                  <div>
-                    <div className="font-semibold text-navy">Send Financing Link</div>
-                    <div className="text-sm text-gray-600">SMS, Email, or QR Code</div>
-                  </div>
-                </Link>
-              )}
-              <Link
-                href="/client/applications"
-                className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-12 h-12 bg-navy text-white rounded-xl flex items-center justify-center text-xl">
-                  📋
-                </div>
-                <div>
-                  <div className="font-semibold text-navy">View Applications</div>
-                  <div className="text-sm text-gray-600">Track customer financing requests</div>
-                </div>
-              </Link>
-              <Link
-                href="/client/loans"
-                className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-12 h-12 bg-mint text-white rounded-xl flex items-center justify-center text-xl">
-                  💰
-                </div>
-                <div>
-                  <div className="font-semibold text-navy">View Funded Loans</div>
-                  <div className="text-sm text-gray-600">Track active customer loans</div>
-                </div>
-              </Link>
-              {canAccess('analytics:view') && (
-                <Link
-                  href="/client/analytics"
-                  className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="w-12 h-12 bg-cyan text-white rounded-xl flex items-center justify-center text-xl">
-                    📊
-                  </div>
-                  <div>
-                    <div className="font-semibold text-navy">View Analytics</div>
-                    <div className="text-sm text-gray-600">Performance metrics and trends</div>
-                  </div>
-                </Link>
-              )}
-            </div>
+        {/* Live Activity Feed - Full Width */}
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold font-display text-navy">Live Activity</h2>
+            <Link href="/client/applications" className="text-sm text-teal hover:text-teal/80">
+              View All →
+            </Link>
           </div>
+          {recentActivity.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-3">📋</div>
+              <p className="text-gray-500">No recent activity</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Activity will appear here when customers apply
+              </p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {recentActivity.map((activity) => {
+                const { icon, color } = getActivityIcon(activity.type);
+                return (
+                  <div key={activity.id} className="flex items-center gap-4 p-3 rounded-xl bg-gray-50">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${color}`}>
+                      {icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {activity.customerName}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        ${activity.amount.toLocaleString()} • {activity.type}
+                      </p>
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {activity.timestamp}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Conversion Funnel */}

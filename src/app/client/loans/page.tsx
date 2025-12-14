@@ -96,9 +96,9 @@ export default function LoansPage() {
           <p className="text-gray-600 mt-1">Track your customers&apos; active loans</p>
         </div>
 
-        {/* Stats */}
+        {/* Stats - 4 tiles on mobile, 5 on desktop */}
         {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="text-sm text-gray-600 mb-1">Total Loans</div>
               <div className="text-3xl font-bold text-navy">{stats.totalLoans}</div>
@@ -111,7 +111,7 @@ export default function LoansPage() {
               <div className="text-sm text-gray-600 mb-1">This Month</div>
               <div className="text-2xl font-bold text-navy">${stats.fundedThisMonth.toLocaleString()}</div>
             </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="bg-white rounded-2xl shadow-lg p-6 hidden lg:block">
               <div className="text-sm text-gray-600 mb-1">YTD</div>
               <div className="text-2xl font-bold text-navy">${stats.fundedYTD.toLocaleString()}</div>
             </div>

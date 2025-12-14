@@ -37,6 +37,11 @@ export async function GET() {
           pendingReview: 0,
           totalFunded: 0,
           fundedThisMonth: 0,
+          soldThisMonth: 0,
+          soldCount: 0,
+          fundedCount: 0,
+          avgLoanSize: 0,
+          midFunnelCount: 0,
           conversionFunnel: {
             initiated: 0,
             submitted: 0,
@@ -85,9 +90,38 @@ export async function GET() {
       (sum, a) => sum + (a.loan ? Number(a.loan.fundedAmount) : 0),
       0
     );
-    const fundedThisMonth = fundedApps
-      .filter(a => a.loan?.fundingDate && a.loan.fundingDate >= startOfMonth)
-      .reduce((sum, a) => sum + (a.loan ? Number(a.loan.fundedAmount) : 0), 0);
+    
+    // Funded this month
+    const fundedThisMonthApps = fundedApps.filter(
+      a => a.loan?.fundingDate && a.loan.fundingDate >= startOfMonth
+    );
+    const fundedThisMonth = fundedThisMonthApps.reduce(
+      (sum, a) => sum + (a.loan ? Number(a.loan.fundedAmount) : 0),
+      0
+    );
+    const fundedCount = fundedThisMonthApps.length;
+
+    // Sold = approved + funded (selected an offer) this month
+    const soldApps = applications.filter(
+      a => (a.status === 'approved' || a.status === 'funded') && a.createdAt >= startOfMonth
+    );
+    const soldThisMonth = soldApps.reduce(
+      (sum, a) => sum + Number(a.job.estimateAmount),
+      0
+    );
+    const soldCount = soldApps.length;
+
+    // Average loan size (last 30 days)
+    const recentFundedApps = fundedApps.filter(a => a.createdAt >= thirtyDaysAgo);
+    const avgLoanSize = recentFundedApps.length > 0
+      ? Math.round(
+          recentFundedApps.reduce((sum, a) => sum + (a.loan ? Number(a.loan.fundedAmount) : 0), 0) /
+          recentFundedApps.length
+        )
+      : 0;
+
+    // Mid-funnel: applications that are initiated but not yet submitted
+    const midFunnelCount = applications.filter(a => a.status === 'initiated').length;
 
     // Conversion funnel (last 30 days)
     const recentApps = applications.filter(a => a.createdAt >= thirtyDaysAgo);
@@ -115,6 +149,11 @@ export async function GET() {
         pendingReview,
         totalFunded,
         fundedThisMonth,
+        soldThisMonth,
+        soldCount,
+        fundedCount,
+        avgLoanSize,
+        midFunnelCount,
         conversionFunnel,
       },
       recentActivity,

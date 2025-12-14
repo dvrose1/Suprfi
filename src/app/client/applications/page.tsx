@@ -101,19 +101,21 @@ export default function ApplicationsPage() {
           <p className="text-gray-600 mt-1">Track your customers&apos; financing requests</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+        {/* Stats - 4 tiles on mobile, 5 on desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
           {[
-            { key: 'all', label: 'All', count: Object.values(stats).reduce((a, b) => a + b, 0) },
-            { key: 'initiated', label: 'Started', count: stats.initiated || 0 },
-            { key: 'submitted', label: 'Submitted', count: stats.submitted || 0 },
-            { key: 'approved', label: 'Approved', count: stats.approved || 0 },
-            { key: 'funded', label: 'Funded', count: stats.funded || 0 },
+            { key: 'all', label: 'All', count: Object.values(stats).reduce((a, b) => a + b, 0), hideOnMobile: false },
+            { key: 'initiated', label: 'In Progress', count: stats.initiated || 0, hideOnMobile: false },
+            { key: 'submitted', label: 'Submitted', count: stats.submitted || 0, hideOnMobile: true },
+            { key: 'approved', label: 'Approved', count: stats.approved || 0, hideOnMobile: false },
+            { key: 'funded', label: 'Funded', count: stats.funded || 0, hideOnMobile: false },
           ].map((stat) => (
             <button
               key={stat.key}
               onClick={() => setStatusFilter(stat.key as StatusFilter)}
               className={`p-4 rounded-xl transition-all ${
+                stat.hideOnMobile ? 'hidden lg:block' : ''
+              } ${
                 statusFilter === stat.key
                   ? 'bg-teal text-white shadow-lg'
                   : 'bg-white hover:shadow-md'
