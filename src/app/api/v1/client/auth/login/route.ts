@@ -4,8 +4,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { createContractorSession, setContractorSessionCookie } from '@/lib/auth/contractor-session';
+import { createContractorSession } from '@/lib/auth/contractor-session';
 import { logContractorAudit } from '@/lib/auth/contractor-audit';
+
+const SESSION_COOKIE_NAME = 'contractor_session';
+const SESSION_DURATION_HOURS = 24;
+const REMEMBER_ME_DURATION_DAYS = 30;
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,9 +78,6 @@ export async function POST(request: NextRequest) {
     
     const token = await createContractorSession(user.id, rememberMe, ipAddress, userAgent);
 
-    // Set session cookie
-    await setContractorSessionCookie(token, rememberMe);
-
     // Log successful login
     await logContractorAudit({
       userId: user.id,
@@ -85,7 +86,8 @@ export async function POST(request: NextRequest) {
       userAgent,
     });
 
-    return NextResponse.json({
+    // Set cookie directly on response
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -96,6 +98,20 @@ export async function POST(request: NextRequest) {
         contractorName: user.contractor.businessName,
       },
     });
+
+    const maxAge = rememberMe
+      ? REMEMBER_ME_DURATION_DAYS * 24 * 60 * 60
+      : SESSION_DURATION_HOURS * 60 * 60;
+
+    response.cookies.set(SESSION_COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge,
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

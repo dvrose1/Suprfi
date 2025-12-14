@@ -3,8 +3,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createBorrowerSession, setBorrowerSessionCookie } from '@/lib/auth/borrower-session';
+import { createBorrowerSession } from '@/lib/auth/borrower-session';
 import { verifyPassword } from '@/lib/auth/password';
+
+const SESSION_COOKIE_NAME = 'borrower_session';
+const SESSION_DURATION_HOURS = 24;
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,10 +58,17 @@ export async function POST(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || undefined;
     const token = await createBorrowerSession(customer.id, ipAddress, userAgent);
 
-    // Set cookie
-    await setBorrowerSessionCookie(token);
+    // Set cookie on response directly
+    const response = NextResponse.json({ success: true });
+    response.cookies.set(SESSION_COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: SESSION_DURATION_HOURS * 60 * 60,
+    });
 
-    return NextResponse.json({ success: true });
+    return response;
   } catch (error) {
     console.error('Borrower login error:', error);
     return NextResponse.json(
