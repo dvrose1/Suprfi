@@ -25,7 +25,7 @@ interface BorrowerAuthContextType {
 const BorrowerAuthContext = createContext<BorrowerAuthContextType | null>(null);
 
 // Auth pages that don't require authentication
-const publicPaths = ['/portal/login', '/portal/magic-link'];
+const publicPaths = ['/portal/login', '/portal/magic-link', '/portal/forgot-password'];
 
 export function BorrowerAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<BorrowerUser | null>(null);

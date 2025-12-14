@@ -72,7 +72,7 @@ export default function PortalPaymentsPage() {
     switch (status) {
       case 'paid':
         return (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
             <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
@@ -81,13 +81,13 @@ export default function PortalPaymentsPage() {
         );
       case 'pending':
         return (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning">
             Upcoming
           </span>
         );
       case 'overdue':
         return (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-error/10 text-error">
             Overdue
           </span>
         );
@@ -98,9 +98,9 @@ export default function PortalPaymentsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-warm-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-supr-green border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div className="w-8 h-8 border-4 border-teal border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="mt-2 text-gray-600">Loading payments...</p>
         </div>
       </div>
@@ -110,24 +110,22 @@ export default function PortalPaymentsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-warm-white">
       {/* Header */}
-      <header className="bg-supr-dark text-white">
+      <header className="bg-navy text-white">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/portal" className="p-2 -ml-2 hover:bg-white/10 rounded-lg transition">
+              <Link href="/portal" className="p-2 -ml-2 hover:bg-white/10 rounded-lg transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
-              <div>
-                <h1 className="text-lg font-bold">Payments</h1>
-              </div>
+              <h1 className="text-lg font-bold font-display">Payments</h1>
             </div>
             <button
               onClick={logout}
-              className="text-sm text-gray-400 hover:text-white transition"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
             >
               Sign Out
             </button>
@@ -140,16 +138,16 @@ export default function PortalPaymentsPage() {
         {/* Summary Cards */}
         {data && (
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 shadow-lg">
               <p className="text-xs text-gray-500 mb-1">Total Paid</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold font-display text-success">
                 {formatCurrency(data.summary.totalPaid)}
               </p>
               <p className="text-xs text-gray-500">{data.summary.paymentsMade} payments</p>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm">
+            <div className="bg-white rounded-2xl p-4 shadow-lg">
               <p className="text-xs text-gray-500 mb-1">Remaining</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-xl font-bold font-display text-navy">
                 {formatCurrency(data.summary.totalUpcoming)}
               </p>
               <p className="text-xs text-gray-500">{data.summary.paymentsRemaining} payments</p>
@@ -161,9 +159,9 @@ export default function PortalPaymentsPage() {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               activeTab === 'upcoming'
-                ? 'bg-supr-dark text-white'
+                ? 'bg-navy text-white'
                 : 'bg-white text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -171,9 +169,9 @@ export default function PortalPaymentsPage() {
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
               activeTab === 'history'
-                ? 'bg-supr-dark text-white'
+                ? 'bg-navy text-white'
                 : 'bg-white text-gray-600 hover:bg-gray-100'
             }`}
           >
@@ -182,16 +180,16 @@ export default function PortalPaymentsPage() {
         </div>
 
         {/* Payment List */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {activeTab === 'upcoming' ? (
             data?.upcomingPayments.length === 0 ? (
               <div className="p-8 text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6 text-success" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-900 font-medium">All caught up!</p>
+                <p className="text-navy font-semibold font-display">All caught up!</p>
                 <p className="text-sm text-gray-500">No upcoming payments.</p>
               </div>
             ) : (
@@ -199,13 +197,13 @@ export default function PortalPaymentsPage() {
                 {data?.upcomingPayments.map((payment, i) => (
                   <div key={`${payment.loanId}-${i}`} className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">{formatDate(payment.date)}</p>
+                      <p className="font-medium text-navy">{formatDate(payment.date)}</p>
                       <p className="text-sm text-gray-500">
                         {payment.lenderName} · Payment {payment.paymentNumber} of {payment.totalPayments}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">{formatCurrency(payment.amount)}</p>
+                      <p className="font-semibold text-navy">{formatCurrency(payment.amount)}</p>
                       {getStatusBadge(payment.status)}
                     </div>
                   </div>
@@ -222,13 +220,13 @@ export default function PortalPaymentsPage() {
                 {data?.paidPayments.map((payment, i) => (
                   <div key={`${payment.loanId}-${i}`} className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-gray-900">{formatDate(payment.date)}</p>
+                      <p className="font-medium text-navy">{formatDate(payment.date)}</p>
                       <p className="text-sm text-gray-500">
                         {payment.lenderName} · Payment {payment.paymentNumber} of {payment.totalPayments}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">{formatCurrency(payment.amount)}</p>
+                      <p className="font-semibold text-navy">{formatCurrency(payment.amount)}</p>
                       {getStatusBadge(payment.status)}
                     </div>
                   </div>
@@ -239,14 +237,14 @@ export default function PortalPaymentsPage() {
         </div>
 
         {/* Info Note */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+        <div className="mt-6 p-4 bg-teal/10 border border-teal/20 rounded-xl">
           <div className="flex gap-3">
-            <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-teal flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="text-sm font-medium text-blue-900">About Payments</p>
-              <p className="text-sm text-blue-700 mt-1">
+              <p className="text-sm font-medium text-navy">About Payments</p>
+              <p className="text-sm text-gray-600 mt-1">
                 Payments are automatically processed on the due date. If you need to make changes 
                 or have questions, please contact our support team.
               </p>
@@ -269,12 +267,12 @@ export default function PortalPaymentsPage() {
           </Link>
           <Link
             href="/portal/payments"
-            className="flex-1 flex flex-col items-center py-3 text-supr-green"
+            className="flex-1 flex flex-col items-center py-3 text-teal"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            <span className="text-xs mt-1">Payments</span>
+            <span className="text-xs mt-1 font-medium">Payments</span>
           </Link>
         </div>
       </nav>

@@ -1,27 +1,51 @@
 // ABOUTME: Borrower portal login API
-// ABOUTME: Verify email + loan ID and create session
+// ABOUTME: Login with email + password (for returning users)
 
 import { NextRequest, NextResponse } from 'next/server';
-import { findCustomerByEmailAndLoan, createBorrowerSession, setBorrowerSessionCookie } from '@/lib/auth/borrower-session';
+import { prisma } from '@/lib/prisma';
+import { createBorrowerSession, setBorrowerSessionCookie } from '@/lib/auth/borrower-session';
+import { verifyPassword } from '@/lib/auth/password';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, loanId } = body;
+    const { email, password } = body;
 
-    if (!email || !loanId) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email and Loan ID are required' },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    // Find customer by email and loan ID
-    const result = await findCustomerByEmailAndLoan(email.toLowerCase().trim(), loanId.trim());
+    // Find customer by email who has at least one funded loan
+    const customer = await prisma.customer.findFirst({
+      where: {
+        email: { equals: email.toLowerCase().trim(), mode: 'insensitive' },
+        applications: {
+          some: {
+            loan: { isNot: null },
+          },
+        },
+      },
+      select: {
+        id: true,
+        passwordHash: true,
+      },
+    });
 
-    if (!result) {
+    if (!customer || !customer.passwordHash) {
       return NextResponse.json(
-        { error: 'No loan found with this email and Loan ID combination' },
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Verify password
+    const isValid = await verifyPassword(password, customer.passwordHash);
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
         { status: 401 }
       );
     }
@@ -29,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Create session
     const ipAddress = request.headers.get('x-forwarded-for') || undefined;
     const userAgent = request.headers.get('user-agent') || undefined;
-    const token = await createBorrowerSession(result.customerId, ipAddress, userAgent);
+    const token = await createBorrowerSession(customer.id, ipAddress, userAgent);
 
     // Set cookie
     await setBorrowerSessionCookie(token);
