@@ -13,14 +13,26 @@ interface Loan {
   customer: {
     name: string;
   };
+  // Merchant-relevant fields
+  totalSaleAmount: number;
   fundedAmount: number;
+  merchantFee: number;
+  netFundedAmount: number;
   fundingDate: string;
   status: string;
+  serviceType: string | null;
+  technicianName: string | null;
+  crmCustomerId: string | null;
+  crmJobId: string | null;
+  // Legacy fields (kept for admin portal)
   monthlyPayment: number;
   termMonths: number;
   paymentsRemaining: number;
   paymentProgress: number;
 }
+
+type SortField = 'date' | 'customer' | 'amount' | 'status';
+type SortDirection = 'asc' | 'desc';
 
 interface LoanStats {
   totalLoans: number;
@@ -36,6 +48,8 @@ export default function LoansPage() {
   const [stats, setStats] = useState<LoanStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   useEffect(() => {
     if (user) {
@@ -169,7 +183,33 @@ export default function LoansPage() {
           ))}
         </div>
 
-        {/* Loans List */}
+        {/* Sort Controls */}
+        <div className="flex items-center gap-2 mb-4 text-sm">
+          <span className="text-gray-500">Sort by:</span>
+          {(['date', 'customer', 'amount', 'status'] as SortField[]).map((field) => (
+            <button
+              key={field}
+              onClick={() => {
+                if (sortField === field) {
+                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                } else {
+                  setSortField(field);
+                  setSortDirection('desc');
+                }
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                sortField === field
+                  ? 'bg-navy text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {field.charAt(0).toUpperCase() + field.slice(1)}
+              {sortField === field && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+            </button>
+          ))}
+        </div>
+
+        {/* Loans List - Simplified Merchant View */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin w-8 h-8 border-4 border-teal border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -191,50 +231,93 @@ export default function LoansPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {loans.map((loan) => (
+            {[...loans]
+              .sort((a, b) => {
+                let comparison = 0;
+                switch (sortField) {
+                  case 'date':
+                    comparison = new Date(b.fundingDate).getTime() - new Date(a.fundingDate).getTime();
+                    break;
+                  case 'customer':
+                    comparison = a.customer.name.localeCompare(b.customer.name);
+                    break;
+                  case 'amount':
+                    comparison = b.fundedAmount - a.fundedAmount;
+                    break;
+                  case 'status':
+                    comparison = a.status.localeCompare(b.status);
+                    break;
+                }
+                return sortDirection === 'asc' ? -comparison : comparison;
+              })
+              .map((loan) => (
               <Link
                 key={loan.id}
                 href={`/client/loans/${loan.id}`}
                 className="block bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="font-semibold text-navy text-lg">{loan.customer.name}</h3>
-                    <p className="text-sm text-gray-500">
-                      Funded {new Date(loan.fundingDate).toLocaleDateString()}
-                    </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-6 flex-1 min-w-0">
+                    <div className="min-w-0 flex-shrink-0">
+                      <h3 className="font-semibold text-navy text-lg">{loan.customer.name}</h3>
+                      <p className="text-sm text-gray-500">
+                        {loan.fundingDate ? new Date(loan.fundingDate).toLocaleDateString() : 'Pending'}
+                      </p>
+                      {loan.technicianName && (
+                        <p className="text-xs text-teal">Rep: {loan.technicianName}</p>
+                      )}
+                    </div>
+                    {loan.serviceType && (
+                      <div className="hidden md:block text-center min-w-[100px]">
+                        <div className="text-sm text-gray-500">Service</div>
+                        <div className="text-sm text-navy capitalize">{loan.serviceType}</div>
+                      </div>
+                    )}
+                    {/* Merchant Fee Breakdown */}
+                    <div className="hidden sm:flex items-center gap-4 ml-auto">
+                      <div className="text-center">
+                        <div className="text-xs text-gray-500">Sale Amount</div>
+                        <div className="text-lg font-bold text-navy">${loan.totalSaleAmount.toLocaleString()}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-gray-500">Fees</div>
+                        <div className="text-lg font-semibold text-warning">${loan.merchantFee.toLocaleString()}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-gray-500">Funded</div>
+                        <div className="text-lg font-bold text-mint">${loan.netFundedAmount.toLocaleString()}</div>
+                      </div>
+                    </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusStyle(loan.status)}`}>
-                    {getStatusLabel(loan.status)}
-                  </span>
+                  <div className="flex items-center gap-4 ml-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${getStatusStyle(loan.status)}`}>
+                      {getStatusLabel(loan.status)}
+                    </span>
+                    <span className="text-gray-400 hidden sm:inline">→</span>
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div>
-                    <div className="text-sm text-gray-500">Funded Amount</div>
-                    <div className="text-xl font-bold text-navy">${loan.fundedAmount.toLocaleString()}</div>
+                {/* Mobile: Show fee breakdown below */}
+                <div className="flex items-center justify-between mt-4 sm:hidden border-t border-gray-100 pt-4">
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500">Sale</div>
+                    <div className="font-bold text-navy">${loan.totalSaleAmount.toLocaleString()}</div>
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-500">Monthly Payment</div>
-                    <div className="text-xl font-bold text-navy">${loan.monthlyPayment.toLocaleString()}</div>
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500">Fees</div>
+                    <div className="font-semibold text-warning">${loan.merchantFee.toLocaleString()}</div>
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-500">Payments Remaining</div>
-                    <div className="text-xl font-bold text-navy">{loan.paymentsRemaining} / {loan.termMonths}</div>
-                  </div>
-                </div>
-                {/* Payment Progress Bar */}
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-500">Payment Progress</span>
-                    <span className="text-teal font-medium">{loan.paymentProgress}%</span>
-                  </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-teal rounded-full transition-all"
-                      style={{ width: `${loan.paymentProgress}%` }}
-                    />
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500">Funded</div>
+                    <div className="font-bold text-mint">${loan.netFundedAmount.toLocaleString()}</div>
                   </div>
                 </div>
+                {/* CRM IDs if available */}
+                {(loan.crmCustomerId || loan.crmJobId) && (
+                  <div className="flex gap-4 mt-3 text-xs text-gray-400">
+                    {loan.crmCustomerId && <span>Customer ID: {loan.crmCustomerId}</span>}
+                    {loan.crmJobId && <span>Job ID: {loan.crmJobId}</span>}
+                  </div>
+                )}
               </Link>
             ))}
           </div>

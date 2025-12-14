@@ -38,6 +38,8 @@ interface RecentActivity {
 }
 
 type ActivityFilter = 'all' | 'initiated' | 'submitted' | 'approved' | 'funded';
+type ActivitySortField = 'date' | 'technician' | 'amount' | 'type';
+type SortDirection = 'asc' | 'desc';
 
 export default function ClientDashboardPage() {
   const { user, loading, canAccess } = useContractorAuth();
@@ -45,6 +47,8 @@ export default function ClientDashboardPage() {
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
+  const [activitySort, setActivitySort] = useState<ActivitySortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -202,7 +206,7 @@ export default function ClientDashboardPage() {
           </div>
         )}
 
-        {/* Live Activity Feed - Full Width */}
+        {/* Live Activity Feed - Single Column with Sorting */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h2 className="text-xl font-semibold font-display text-navy">Live Activity</h2>
@@ -225,6 +229,33 @@ export default function ClientDashboardPage() {
               </Link>
             </div>
           </div>
+          
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2 mb-4 text-sm">
+            <span className="text-gray-500">Sort by:</span>
+            {(['date', 'technician', 'amount', 'type'] as ActivitySortField[]).map((field) => (
+              <button
+                key={field}
+                onClick={() => {
+                  if (activitySort === field) {
+                    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                  } else {
+                    setActivitySort(field);
+                    setSortDirection('desc');
+                  }
+                }}
+                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                  activitySort === field
+                    ? 'bg-navy text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {field.charAt(0).toUpperCase() + field.slice(1)}
+                {activitySort === field && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+              </button>
+            ))}
+          </div>
+          
           {recentActivity.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-4xl mb-3">📋</div>
@@ -240,9 +271,27 @@ export default function ClientDashboardPage() {
                   <p className="text-gray-500">No {activityFilter} activity</p>
                 </div>
               ) : (
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-3">
                   {recentActivity
                     .filter(a => activityFilter === 'all' || a.type === activityFilter)
+                    .sort((a, b) => {
+                      let comparison = 0;
+                      switch (activitySort) {
+                        case 'date':
+                          comparison = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+                          break;
+                        case 'technician':
+                          comparison = (a.technicianName || '').localeCompare(b.technicianName || '');
+                          break;
+                        case 'amount':
+                          comparison = b.amount - a.amount;
+                          break;
+                        case 'type':
+                          comparison = a.type.localeCompare(b.type);
+                          break;
+                      }
+                      return sortDirection === 'asc' ? -comparison : comparison;
+                    })
                     .map((activity) => {
                       const { icon, color } = getActivityIcon(activity.type);
                       return (

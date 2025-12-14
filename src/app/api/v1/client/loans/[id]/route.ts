@@ -63,7 +63,15 @@ export async function GET(
 
     const selectedOffer = loan.application.decision?.offers[0];
 
+    // Calculate merchant fee info
+    const totalSaleAmount = Number(loan.application.job.estimateAmount);
+    const fundedAmount = Number(loan.fundedAmount);
+    const merchantFeeRate = 0.03; // 3% default - in production would come from contractor settings
+    const merchantFee = Math.round(fundedAmount * merchantFeeRate * 100) / 100;
+    const netFundedAmount = fundedAmount - merchantFee;
+
     // Generate payment schedule (mock - in real app would come from loan servicer)
+    // NOTE: Keeping this for admin portal - merchants don't need to see this
     const termMonths = selectedOffer?.termMonths || 36;
     const monthlyPayment = selectedOffer ? Number(selectedOffer.monthlyPayment) : 0;
     const fundingDate = loan.fundingDate || new Date();
@@ -109,7 +117,11 @@ export async function GET(
           name: `${loan.application.customer.firstName} ${loan.application.customer.lastName}`,
           maskedEmail: maskEmail(loan.application.customer.email),
         },
-        fundedAmount: Number(loan.fundedAmount),
+        // Merchant-relevant fields
+        totalSaleAmount,
+        fundedAmount,
+        merchantFee,
+        netFundedAmount,
         fundingDate: loan.fundingDate?.toISOString(),
         status: loan.status,
         lenderName: loan.lenderName,
@@ -117,6 +129,7 @@ export async function GET(
         serviceType: loan.application.job.serviceType,
         crmCustomerId: loan.application.customer.crmCustomerId,
         crmJobId: loan.application.job.crmJobId,
+        // Legacy fields for admin portal
         offer: selectedOffer ? {
           termMonths: selectedOffer.termMonths,
           apr: Number(selectedOffer.apr),

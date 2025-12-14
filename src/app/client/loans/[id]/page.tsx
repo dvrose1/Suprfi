@@ -14,7 +14,11 @@ interface LoanDetail {
     name: string;
     maskedEmail: string;
   };
+  // Merchant-relevant fields
+  totalSaleAmount: number;
   fundedAmount: number;
+  merchantFee: number;
+  netFundedAmount: number;
   fundingDate: string;
   status: string;
   lenderName: string | null;
@@ -22,6 +26,7 @@ interface LoanDetail {
   serviceType: string | null;
   crmCustomerId: string | null;
   crmJobId: string | null;
+  // Legacy fields for admin portal
   offer: {
     termMonths: number;
     apr: number;
@@ -155,7 +160,7 @@ export default function LoanDetailPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Loan Summary */}
+        {/* Loan Summary - Merchant View */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <div className="flex items-start justify-between mb-6">
             <div>
@@ -173,30 +178,37 @@ export default function LoanDetailPage() {
             </Link>
           </div>
 
-          <div className="grid sm:grid-cols-4 gap-6 mb-6">
-            <div>
-              <div className="text-sm text-gray-500 mb-1">Funded Amount</div>
-              <div className="text-3xl font-bold text-navy">${loan.fundedAmount.toLocaleString()}</div>
+          {/* Merchant Fee Breakdown - Primary Info */}
+          <div className="grid sm:grid-cols-3 gap-6 mb-6">
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="text-sm text-gray-500 mb-1">Total Sale Amount</div>
+              <div className="text-3xl font-bold text-navy">${loan.totalSaleAmount.toLocaleString()}</div>
             </div>
-            <div>
-              <div className="text-sm text-gray-500 mb-1">Monthly Payment</div>
-              <div className="text-3xl font-bold text-navy">
-                ${loan.offer?.monthlyPayment.toLocaleString() || 0}
-              </div>
+            <div className="bg-warning/10 rounded-xl p-4">
+              <div className="text-sm text-gray-500 mb-1">Merchant Fee (3%)</div>
+              <div className="text-3xl font-bold text-warning">${loan.merchantFee.toLocaleString()}</div>
             </div>
-            <div>
-              <div className="text-sm text-gray-500 mb-1">Term</div>
-              <div className="text-3xl font-bold text-navy">{loan.offer?.termMonths || 0} mo</div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-500 mb-1">APR</div>
-              <div className="text-3xl font-bold text-navy">{loan.offer?.apr || 0}%</div>
+            <div className="bg-mint/10 rounded-xl p-4">
+              <div className="text-sm text-gray-500 mb-1">Net Funded Amount</div>
+              <div className="text-3xl font-bold text-mint">${loan.netFundedAmount.toLocaleString()}</div>
             </div>
           </div>
 
           {/* Additional Details */}
           <div className="border-t border-gray-100 pt-4">
-            <div className="grid sm:grid-cols-4 gap-4 text-sm">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">Status:</span>
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusStyle(loan.status)}`}>
+                  {loan.status === 'repaying' ? 'Active' : loan.status.replace('_', ' ')}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500">Funding Date:</span>
+                <span className="ml-2 text-navy">
+                  {loan.fundingDate ? new Date(loan.fundingDate).toLocaleDateString() : 'Pending'}
+                </span>
+              </div>
               {loan.serviceType && (
                 <div>
                   <span className="text-gray-500">Service Type:</span>
@@ -209,19 +221,24 @@ export default function LoanDetailPage() {
                   <span className="ml-2 text-navy">{loan.lenderName}</span>
                 </div>
               )}
-              {loan.crmCustomerId && (
-                <div>
-                  <span className="text-gray-500">CRM Customer ID:</span>
-                  <span className="ml-2 text-navy font-mono text-xs">{loan.crmCustomerId}</span>
-                </div>
-              )}
-              {loan.crmJobId && (
-                <div>
-                  <span className="text-gray-500">CRM Job ID:</span>
-                  <span className="ml-2 text-navy font-mono text-xs">{loan.crmJobId}</span>
-                </div>
-              )}
             </div>
+            {/* CRM IDs */}
+            {(loan.crmCustomerId || loan.crmJobId) && (
+              <div className="flex gap-6 mt-4 pt-4 border-t border-gray-100 text-sm">
+                {loan.crmCustomerId && (
+                  <div>
+                    <span className="text-gray-500">CRM Customer ID:</span>
+                    <span className="ml-2 text-navy font-mono text-xs">{loan.crmCustomerId}</span>
+                  </div>
+                )}
+                {loan.crmJobId && (
+                  <div>
+                    <span className="text-gray-500">CRM Job ID:</span>
+                    <span className="ml-2 text-navy font-mono text-xs">{loan.crmJobId}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

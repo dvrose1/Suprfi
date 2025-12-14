@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
       },
       include: {
         customer: true,
+        job: true,
         loan: true,
         decision: {
           include: {
@@ -75,11 +76,45 @@ export async function GET(request: NextRequest) {
       .reduce((sum, a) => sum + Number(a.loan!.fundedAmount), 0);
     const activeLoans = allLoans.filter(a => a.loan!.status === 'repaying' || a.loan!.status === 'funded').length;
 
-    // Format loans
+    // Get contractor job info for each application
+    const appJobIds = applications.map(a => a.jobId);
+    const contractorJobsData = await prisma.contractorJob.findMany({
+      where: { jobId: { in: appJobIds } },
+      include: { contractor: true },
+    });
+    const contractorJobMap = new Map(contractorJobsData.map(cj => [cj.jobId, cj]));
+
+    // Get technician names
+    const initiatorIds = contractorJobsData
+      .filter(cj => cj.initiatedBy)
+      .map(cj => cj.initiatedBy as string);
+    const technicians = initiatorIds.length > 0
+      ? await prisma.contractorUser.findMany({
+          where: { id: { in: initiatorIds } },
+          select: { id: true, name: true, email: true },
+        })
+      : [];
+    const technicianMap = new Map(technicians.map(t => [t.id, t.name || t.email]));
+
+    // Format loans with merchant-relevant info
     const loans = filteredApps.map(app => {
       const selectedOffer = app.decision?.offers[0];
       const termMonths = selectedOffer?.termMonths || 36;
       const monthlyPayment = selectedOffer ? Number(selectedOffer.monthlyPayment) : 0;
+      
+      // Get job and contractor info
+      const job = app.job;
+      const contractorJob = contractorJobMap.get(app.jobId);
+      const technicianName = contractorJob?.initiatedBy 
+        ? technicianMap.get(contractorJob.initiatedBy) 
+        : null;
+      
+      // Calculate merchant fee (default 3% - in production would come from contractor settings)
+      const totalSaleAmount = Number(job.estimateAmount);
+      const fundedAmount = Number(app.loan!.fundedAmount);
+      const merchantFeeRate = 0.03; // 3% default
+      const merchantFee = Math.round(fundedAmount * merchantFeeRate * 100) / 100;
+      const netFundedAmount = fundedAmount - merchantFee;
       
       // Calculate payment progress (mock - in real app would track actual payments)
       const daysSinceFunding = app.loan!.fundingDate
@@ -95,9 +130,18 @@ export async function GET(request: NextRequest) {
         customer: {
           name: `${app.customer.firstName} ${app.customer.lastName.charAt(0)}.`,
         },
-        fundedAmount: Number(app.loan!.fundedAmount),
+        // Merchant-relevant fields
+        totalSaleAmount,
+        fundedAmount,
+        merchantFee,
+        netFundedAmount,
         fundingDate: app.loan!.fundingDate?.toISOString(),
         status: app.loan!.status,
+        serviceType: job.serviceType,
+        technicianName,
+        crmCustomerId: app.customer.crmCustomerId,
+        crmJobId: job.crmJobId,
+        // Keep legacy fields for backwards compatibility (will port to admin)
         monthlyPayment,
         termMonths,
         paymentsRemaining,

@@ -35,6 +35,8 @@ interface Technician {
 }
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'accepted' | 'declined' | 'expired' | 'refunded' | 'cancelled';
+type SortField = 'date' | 'amount' | 'status' | 'technician' | 'customer';
+type SortDirection = 'asc' | 'desc';
 
 export default function ApplicationsPage() {
   const { user, loading: authLoading, canAccess } = useContractorAuth();
@@ -45,6 +47,8 @@ export default function ApplicationsPage() {
   const [search, setSearch] = useState('');
   const [stats, setStats] = useState<Record<string, number>>({});
   const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -184,7 +188,33 @@ export default function ApplicationsPage() {
           </div>
         </form>
 
-        {/* Applications Grid */}
+        {/* Sort Controls */}
+        <div className="flex items-center gap-2 mb-4 text-sm">
+          <span className="text-gray-500">Sort by:</span>
+          {(['date', 'customer', 'amount', 'status', 'technician'] as SortField[]).map((field) => (
+            <button
+              key={field}
+              onClick={() => {
+                if (sortField === field) {
+                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                } else {
+                  setSortField(field);
+                  setSortDirection('desc');
+                }
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                sortField === field
+                  ? 'bg-navy text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {field.charAt(0).toUpperCase() + field.slice(1)}
+              {sortField === field && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+            </button>
+          ))}
+        </div>
+
+        {/* Applications List - Linear Layout */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin w-8 h-8 border-4 border-teal border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -209,29 +239,43 @@ export default function ApplicationsPage() {
             )}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {applications.map((app) => (
+          <div className="space-y-4">
+            {[...applications]
+              .sort((a, b) => {
+                let comparison = 0;
+                switch (sortField) {
+                  case 'date':
+                    comparison = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                    break;
+                  case 'customer':
+                    comparison = a.customer.name.localeCompare(b.customer.name);
+                    break;
+                  case 'amount':
+                    comparison = b.job.amount - a.job.amount;
+                    break;
+                  case 'status':
+                    comparison = a.status.localeCompare(b.status);
+                    break;
+                  case 'technician':
+                    comparison = (a.technician?.name || '').localeCompare(b.technician?.name || '');
+                    break;
+                }
+                return sortDirection === 'asc' ? -comparison : comparison;
+              })
+              .map((app) => (
               <Link
                 key={app.id}
                 href={`/client/applications/${app.id}`}
-                className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow"
+                className="block bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="font-semibold text-navy text-lg">{app.customer.name}</h3>
-                    <p className="text-sm text-gray-500">{app.customer.maskedEmail}</p>
-                    {app.technician && (
-                      <p className="text-xs text-teal mt-1">Rep: {app.technician.name}</p>
-                    )}
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusStyle(app.status)}`}>
-                    {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                  </span>
-                </div>
-                <div className="border-t border-gray-100 pt-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-2xl font-bold text-navy">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-6 flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-navy text-lg truncate">{app.customer.name}</h3>
+                      <p className="text-sm text-gray-500">{app.customer.maskedEmail}</p>
+                    </div>
+                    <div className="hidden sm:block text-center">
+                      <div className="text-xl font-bold text-navy">
                         ${app.job.amount.toLocaleString()}
                       </div>
                       {app.job.serviceType && (
@@ -240,13 +284,35 @@ export default function ApplicationsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="text-right text-sm text-gray-500">
-                      <div>{new Date(app.createdAt).toLocaleDateString()}</div>
+                    {app.technician && (
+                      <div className="hidden md:block text-center min-w-[120px]">
+                        <div className="text-sm text-gray-500">Rep</div>
+                        <div className="text-sm text-teal font-medium truncate">{app.technician.name}</div>
+                      </div>
+                    )}
+                    <div className="hidden sm:block text-center min-w-[100px]">
+                      <div className="text-sm text-gray-500">{new Date(app.createdAt).toLocaleDateString()}</div>
                       {app.fundedAt && (
-                        <div className="text-mint">Funded {new Date(app.fundedAt).toLocaleDateString()}</div>
+                        <div className="text-xs text-mint">Funded {new Date(app.fundedAt).toLocaleDateString()}</div>
                       )}
                     </div>
                   </div>
+                  <div className="flex items-center gap-4 ml-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${getStatusStyle(app.status)}`}>
+                      {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                    </span>
+                    <span className="text-gray-400">→</span>
+                  </div>
+                </div>
+                {/* Mobile: Show amount and date below */}
+                <div className="flex items-center justify-between mt-3 sm:hidden border-t border-gray-100 pt-3">
+                  <div>
+                    <span className="text-lg font-bold text-navy">${app.job.amount.toLocaleString()}</span>
+                    {app.job.serviceType && (
+                      <span className="text-sm text-gray-500 ml-2 capitalize">{app.job.serviceType}</span>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-500">{new Date(app.createdAt).toLocaleDateString()}</div>
                 </div>
               </Link>
             ))}
