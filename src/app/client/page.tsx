@@ -145,6 +145,38 @@ export default function ClientDashboardPage() {
           </div>
         </div>
 
+        {/* Conversion Funnel - Moved up above Live Activity */}
+        {stats?.conversionFunnel && (
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <h2 className="text-xl font-semibold font-display text-navy mb-6">Conversion Funnel (30 days)</h2>
+            <div className="flex items-center justify-between gap-4">
+              {['initiated', 'submitted', 'approved', 'funded'].map((stage, index) => (
+                <div key={stage} className="flex-1 text-center">
+                  <div className="relative">
+                    <div className={`h-2 rounded-full ${
+                      index === 0 ? 'bg-gray-200' :
+                      index === 1 ? 'bg-cyan' :
+                      index === 2 ? 'bg-teal' :
+                      'bg-mint'
+                    }`}></div>
+                    {index < 3 && (
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 text-gray-400">
+                        →
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-3">
+                    <div className="text-2xl font-bold text-navy">
+                      {stats.conversionFunnel[stage as keyof typeof stats.conversionFunnel]}
+                    </div>
+                    <div className="text-sm text-gray-500 capitalize">{stage}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Mid-Funnel Alert - Applications needing follow-up */}
         {stats?.midFunnelCount && stats.midFunnelCount > 0 && (
           <div className="bg-warning/10 border border-warning/30 rounded-2xl p-4 mb-8">
@@ -239,37 +271,7 @@ export default function ClientDashboardPage() {
           )}
         </div>
 
-        {/* Conversion Funnel */}
-        {stats?.conversionFunnel && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 mt-8">
-            <h2 className="text-xl font-semibold font-display text-navy mb-6">Conversion Funnel (30 days)</h2>
-            <div className="flex items-center justify-between gap-4">
-              {['initiated', 'submitted', 'approved', 'funded'].map((stage, index) => (
-                <div key={stage} className="flex-1 text-center">
-                  <div className="relative">
-                    <div className={`h-2 rounded-full ${
-                      index === 0 ? 'bg-gray-200' :
-                      index === 1 ? 'bg-cyan' :
-                      index === 2 ? 'bg-teal' :
-                      'bg-mint'
-                    }`}></div>
-                    {index < 3 && (
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 text-gray-400">
-                        →
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-3">
-                    <div className="text-2xl font-bold text-navy">
-                      {stats.conversionFunnel[stage as keyof typeof stats.conversionFunnel]}
-                    </div>
-                    <div className="text-sm text-gray-500 capitalize">{stage}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+
       </main>
     </div>
   );

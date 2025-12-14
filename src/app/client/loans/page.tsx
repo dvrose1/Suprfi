@@ -66,14 +66,36 @@ export default function LoansPage() {
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'funded':
-      case 'repaying':
         return 'bg-mint/20 text-mint border-mint/30';
-      case 'paid_off':
+      case 'approved_scheduled':
+      case 'approved_not_scheduled':
         return 'bg-teal/20 text-teal border-teal/30';
-      case 'defaulted':
+      case 'in_progress':
+      case 'pending_funding':
+        return 'bg-cyan/20 text-cyan border-cyan/30';
+      case 'cancelled':
         return 'bg-error/20 text-error border-error/30';
       default:
         return 'bg-gray-100 text-gray-600 border-gray-200';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'approved_not_scheduled':
+        return 'Approved - Not Scheduled';
+      case 'approved_scheduled':
+        return 'Approved - Scheduled';
+      case 'in_progress':
+        return 'In Progress';
+      case 'pending_funding':
+        return 'Pending Funding';
+      case 'funded':
+        return 'Funded';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   };
 
@@ -122,19 +144,27 @@ export default function LoansPage() {
           </div>
         )}
 
-        {/* Filters */}
-        <div className="flex gap-2 mb-6">
-          {['all', 'repaying', 'paid_off'].map((status) => (
+        {/* Loan Status Filters */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {[
+            { key: 'all', label: 'All' },
+            { key: 'approved_not_scheduled', label: 'Approved - Not Scheduled' },
+            { key: 'approved_scheduled', label: 'Approved - Scheduled' },
+            { key: 'in_progress', label: 'In Progress' },
+            { key: 'pending_funding', label: 'Pending Funding' },
+            { key: 'funded', label: 'Funded' },
+            { key: 'cancelled', label: 'Cancelled' },
+          ].map((status) => (
             <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
+              key={status.key}
+              onClick={() => setStatusFilter(status.key)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                statusFilter === status
+                statusFilter === status.key
                   ? 'bg-teal text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              {status === 'all' ? 'All' : status === 'repaying' ? 'Active' : 'Paid Off'}
+              {status.label}
             </button>
           ))}
         </div>
@@ -175,7 +205,7 @@ export default function LoansPage() {
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusStyle(loan.status)}`}>
-                    {loan.status === 'repaying' ? 'Active' : loan.status.replace('_', ' ')}
+                    {getStatusLabel(loan.status)}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-4">

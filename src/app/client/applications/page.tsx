@@ -34,7 +34,7 @@ interface Technician {
   name: string;
 }
 
-type StatusFilter = 'all' | 'initiated' | 'submitted' | 'approved' | 'funded' | 'declined';
+type StatusFilter = 'all' | 'pending' | 'approved' | 'accepted' | 'declined' | 'expired' | 'refunded' | 'cancelled';
 
 export default function ApplicationsPage() {
   const { user, loading: authLoading, canAccess } = useContractorAuth();
@@ -84,14 +84,18 @@ export default function ApplicationsPage() {
 
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'funded':
+      case 'accepted':
         return 'bg-mint/20 text-mint border-mint/30';
       case 'approved':
         return 'bg-teal/20 text-teal border-teal/30';
-      case 'submitted':
+      case 'pending':
         return 'bg-cyan/20 text-cyan border-cyan/30';
       case 'declined':
+      case 'cancelled':
         return 'bg-error/20 text-error border-error/30';
+      case 'expired':
+      case 'refunded':
+        return 'bg-warning/20 text-warning border-warning/30';
       default:
         return 'bg-gray-100 text-gray-600 border-gray-200';
     }
@@ -116,32 +120,33 @@ export default function ApplicationsPage() {
           <p className="text-gray-600 mt-1">Track your customers&apos; financing requests</p>
         </div>
 
-        {/* Stats - 4 tiles on mobile, 5 on desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
+        {/* Status Filter Tabs */}
+        <div className="flex flex-wrap gap-2 mb-6">
           {[
-            { key: 'all', label: 'All', count: Object.values(stats).reduce((a, b) => a + b, 0), hideOnMobile: false },
-            { key: 'initiated', label: 'In Progress', count: stats.initiated || 0, hideOnMobile: false },
-            { key: 'submitted', label: 'Submitted', count: stats.submitted || 0, hideOnMobile: true },
-            { key: 'approved', label: 'Approved', count: stats.approved || 0, hideOnMobile: false },
-            { key: 'funded', label: 'Funded', count: stats.funded || 0, hideOnMobile: false },
+            { key: 'all', label: 'All' },
+            { key: 'pending', label: 'Pending' },
+            { key: 'approved', label: 'Approved' },
+            { key: 'accepted', label: 'Accepted' },
+            { key: 'declined', label: 'Declined' },
+            { key: 'expired', label: 'Expired' },
+            { key: 'refunded', label: 'Refunded' },
+            { key: 'cancelled', label: 'Cancelled' },
           ].map((stat) => (
             <button
               key={stat.key}
               onClick={() => setStatusFilter(stat.key as StatusFilter)}
-              className={`p-4 rounded-xl transition-all ${
-                stat.hideOnMobile ? 'hidden lg:block' : ''
-              } ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 statusFilter === stat.key
                   ? 'bg-teal text-white shadow-lg'
-                  : 'bg-white hover:shadow-md'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <div className={`text-2xl font-bold ${statusFilter === stat.key ? '' : 'text-navy'}`}>
-                {stat.count}
-              </div>
-              <div className={`text-sm ${statusFilter === stat.key ? 'text-white/80' : 'text-gray-500'}`}>
-                {stat.label}
-              </div>
+              {stat.label}
+              {stats[stat.key] !== undefined && (
+                <span className={`ml-2 ${statusFilter === stat.key ? 'text-white/80' : 'text-gray-400'}`}>
+                  ({stat.key === 'all' ? Object.values(stats).reduce((a, b) => a + b, 0) : stats[stat.key] || 0})
+                </span>
+              )}
             </button>
           ))}
         </div>
