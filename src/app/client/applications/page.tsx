@@ -20,9 +20,18 @@ interface Application {
     amount: number;
     serviceType: string | null;
   };
+  technician?: {
+    id: string;
+    name: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
   fundedAt?: string;
+}
+
+interface Technician {
+  id: string;
+  name: string;
 }
 
 type StatusFilter = 'all' | 'initiated' | 'submitted' | 'approved' | 'funded' | 'declined';
@@ -32,14 +41,17 @@ export default function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [technicianFilter, setTechnicianFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [stats, setStats] = useState<Record<string, number>>({});
+  const [technicians, setTechnicians] = useState<Technician[]>([]);
 
   const fetchApplications = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (technicianFilter !== 'all') params.set('technician', technicianFilter);
       if (search) params.set('search', search);
 
       const res = await fetch(`/api/v1/client/applications?${params}`);
@@ -47,6 +59,9 @@ export default function ApplicationsPage() {
         const data = await res.json();
         setApplications(data.applications);
         setStats(data.stats);
+        if (data.technicians) {
+          setTechnicians(data.technicians);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch applications:', err);
@@ -60,7 +75,7 @@ export default function ApplicationsPage() {
       fetchApplications();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, statusFilter]);
+  }, [user, statusFilter, technicianFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,9 +146,9 @@ export default function ApplicationsPage() {
           ))}
         </div>
 
-        {/* Search */}
+        {/* Search and Filters */}
         <form onSubmit={handleSearch} className="mb-6">
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input
               type="text"
               value={search}
@@ -141,6 +156,20 @@ export default function ApplicationsPage() {
               placeholder="Search by customer name..."
               className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent"
             />
+            {technicians.length > 1 && (
+              <select
+                value={technicianFilter}
+                onChange={(e) => setTechnicianFilter(e.target.value)}
+                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
+              >
+                <option value="all">All Technicians</option>
+                {technicians.map((tech) => (
+                  <option key={tech.id} value={tech.id}>
+                    {tech.name}
+                  </option>
+                ))}
+              </select>
+            )}
             <button
               type="submit"
               className="px-6 py-3 bg-navy text-white rounded-xl font-medium hover:bg-navy/90 transition-colors"
@@ -186,6 +215,9 @@ export default function ApplicationsPage() {
                   <div>
                     <h3 className="font-semibold text-navy text-lg">{app.customer.name}</h3>
                     <p className="text-sm text-gray-500">{app.customer.maskedEmail}</p>
+                    {app.technician && (
+                      <p className="text-xs text-teal mt-1">Rep: {app.technician.name}</p>
+                    )}
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusStyle(app.status)}`}>
                     {app.status.charAt(0).toUpperCase() + app.status.slice(1)}

@@ -16,20 +16,44 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const technicianId = searchParams.get('technician');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    // Get contractor's job IDs
+    // Build contractor jobs filter
+    const contractorJobsWhere: Record<string, unknown> = { 
+      contractorId: user.contractorId 
+    };
+    
+    // Filter by technician if specified
+    if (technicianId && technicianId !== 'all') {
+      contractorJobsWhere.initiatedBy = technicianId;
+    }
+
+    // Get contractor's job IDs (with optional technician filter)
     const contractorJobs = await prisma.contractorJob.findMany({
-      where: { contractorId: user.contractorId },
-      select: { jobId: true },
+      where: contractorJobsWhere,
+      select: { jobId: true, initiatedBy: true },
     });
     const jobIds = contractorJobs.map(cj => cj.jobId);
+    
+    // Build a map of jobId -> initiatedBy for later use
+    const jobTechnicianMap = new Map(
+      contractorJobs.map(cj => [cj.jobId, cj.initiatedBy])
+    );
+
+    // Get all technicians for this contractor (for filter dropdown)
+    const technicians = await prisma.contractorUser.findMany({
+      where: { contractorId: user.contractorId, isActive: true },
+      select: { id: true, name: true, email: true, role: true },
+      orderBy: { name: 'asc' },
+    });
 
     if (jobIds.length === 0) {
       return NextResponse.json({
         applications: [],
         stats: {},
+        technicians: technicians.map(t => ({ id: t.id, name: t.name || t.email })),
         pagination: { page: 1, limit, total: 0, pages: 0 },
       });
     }
@@ -80,27 +104,40 @@ export async function GET(request: NextRequest) {
       stats[app.status] = (stats[app.status] || 0) + 1;
     });
 
+    // Build technician lookup map
+    const technicianMap = new Map(
+      technicians.map(t => [t.id, t.name || t.email])
+    );
+
     // Format response
-    const formattedApplications = applications.map(app => ({
-      id: app.id,
-      status: app.status,
-      customer: {
-        name: `${app.customer.firstName} ${app.customer.lastName.charAt(0)}.`,
-        maskedEmail: maskEmail(app.customer.email),
-        maskedPhone: maskPhone(app.customer.phone),
-      },
-      job: {
-        amount: Number(app.job.estimateAmount),
-        serviceType: app.job.serviceType,
-      },
-      createdAt: app.createdAt.toISOString(),
-      updatedAt: app.updatedAt.toISOString(),
-      fundedAt: app.loan?.fundingDate?.toISOString(),
-    }));
+    const formattedApplications = applications.map(app => {
+      const technicianUserId = jobTechnicianMap.get(app.jobId);
+      return {
+        id: app.id,
+        status: app.status,
+        customer: {
+          name: `${app.customer.firstName} ${app.customer.lastName.charAt(0)}.`,
+          maskedEmail: maskEmail(app.customer.email),
+          maskedPhone: maskPhone(app.customer.phone),
+        },
+        job: {
+          amount: Number(app.job.estimateAmount),
+          serviceType: app.job.serviceType,
+        },
+        technician: technicianUserId ? {
+          id: technicianUserId,
+          name: technicianMap.get(technicianUserId) || 'Unknown',
+        } : null,
+        createdAt: app.createdAt.toISOString(),
+        updatedAt: app.updatedAt.toISOString(),
+        fundedAt: app.loan?.fundingDate?.toISOString(),
+      };
+    });
 
     return NextResponse.json({
       applications: formattedApplications,
       stats,
+      technicians: technicians.map(t => ({ id: t.id, name: t.name || t.email })),
       pagination: {
         page,
         limit,
