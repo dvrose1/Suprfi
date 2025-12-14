@@ -42,13 +42,23 @@ export async function GET(
       return NextResponse.json({ error: 'Loan not found' }, { status: 404 });
     }
 
-    // Verify ownership
+    // Verify ownership and get technician info
     const contractorJob = await prisma.contractorJob.findUnique({
       where: { jobId: loan.application.jobId },
     });
 
     if (!contractorJob || contractorJob.contractorId !== user.contractorId) {
       return NextResponse.json({ error: 'Loan not found' }, { status: 404 });
+    }
+
+    // Get technician name if available
+    let technicianName: string | null = null;
+    if (contractorJob.initiatedBy) {
+      const technician = await prisma.contractorUser.findUnique({
+        where: { id: contractorJob.initiatedBy },
+        select: { name: true, email: true },
+      });
+      technicianName = technician?.name || technician?.email || null;
     }
 
     const selectedOffer = loan.application.decision?.offers[0];
@@ -103,6 +113,10 @@ export async function GET(
         fundingDate: loan.fundingDate?.toISOString(),
         status: loan.status,
         lenderName: loan.lenderName,
+        technicianName,
+        serviceType: loan.application.job.serviceType,
+        crmCustomerId: loan.application.customer.crmCustomerId,
+        crmJobId: loan.application.job.crmJobId,
         offer: selectedOffer ? {
           termMonths: selectedOffer.termMonths,
           apr: Number(selectedOffer.apr),

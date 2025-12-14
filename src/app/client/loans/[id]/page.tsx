@@ -18,6 +18,10 @@ interface LoanDetail {
   fundingDate: string;
   status: string;
   lenderName: string | null;
+  technicianName: string | null;
+  serviceType: string | null;
+  crmCustomerId: string | null;
+  crmJobId: string | null;
   offer: {
     termMonths: number;
     apr: number;
@@ -157,6 +161,9 @@ export default function LoanDetailPage() {
             <div>
               <h1 className="text-2xl font-bold text-navy">{loan.customer.name}</h1>
               <p className="text-gray-500">{loan.customer.maskedEmail}</p>
+              {loan.technicianName && (
+                <p className="text-sm text-teal mt-1">Sales Rep: {loan.technicianName}</p>
+              )}
             </div>
             <Link
               href={`/client/applications/${loan.applicationId}`}
@@ -166,7 +173,7 @@ export default function LoanDetailPage() {
             </Link>
           </div>
 
-          <div className="grid sm:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-4 gap-6 mb-6">
             <div>
               <div className="text-sm text-gray-500 mb-1">Funded Amount</div>
               <div className="text-3xl font-bold text-navy">${loan.fundedAmount.toLocaleString()}</div>
@@ -184,6 +191,36 @@ export default function LoanDetailPage() {
             <div>
               <div className="text-sm text-gray-500 mb-1">APR</div>
               <div className="text-3xl font-bold text-navy">{loan.offer?.apr || 0}%</div>
+            </div>
+          </div>
+
+          {/* Additional Details */}
+          <div className="border-t border-gray-100 pt-4">
+            <div className="grid sm:grid-cols-4 gap-4 text-sm">
+              {loan.serviceType && (
+                <div>
+                  <span className="text-gray-500">Service Type:</span>
+                  <span className="ml-2 text-navy capitalize">{loan.serviceType}</span>
+                </div>
+              )}
+              {loan.lenderName && (
+                <div>
+                  <span className="text-gray-500">Lender:</span>
+                  <span className="ml-2 text-navy">{loan.lenderName}</span>
+                </div>
+              )}
+              {loan.crmCustomerId && (
+                <div>
+                  <span className="text-gray-500">CRM Customer ID:</span>
+                  <span className="ml-2 text-navy font-mono text-xs">{loan.crmCustomerId}</span>
+                </div>
+              )}
+              {loan.crmJobId && (
+                <div>
+                  <span className="text-gray-500">CRM Job ID:</span>
+                  <span className="ml-2 text-navy font-mono text-xs">{loan.crmJobId}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

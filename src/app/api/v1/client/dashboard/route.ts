@@ -20,12 +20,20 @@ export async function GET() {
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
 
-    // Get contractor's jobs
+    // Get contractor's jobs with technician info
     const contractorJobs = await prisma.contractorJob.findMany({
       where: { contractorId: user.contractorId },
-      select: { jobId: true },
+      select: { jobId: true, initiatedBy: true },
     });
     const jobIds = contractorJobs.map(cj => cj.jobId);
+    const jobTechnicianMap = new Map(contractorJobs.map(cj => [cj.jobId, cj.initiatedBy]));
+
+    // Get all technicians for this contractor
+    const technicians = await prisma.contractorUser.findMany({
+      where: { contractorId: user.contractorId },
+      select: { id: true, name: true, email: true },
+    });
+    const technicianMap = new Map(technicians.map(t => [t.id, t.name || t.email]));
 
     // If no jobs, return empty stats
     if (jobIds.length === 0) {
@@ -132,14 +140,19 @@ export async function GET() {
       funded: recentApps.filter(a => a.status === 'funded').length,
     };
 
-    // Recent activity
-    const recentActivity = applications.slice(0, 10).map(app => ({
-      id: app.id,
-      type: app.status as 'submitted' | 'approved' | 'funded' | 'declined',
-      customerName: `${app.customer.firstName} ${app.customer.lastName.charAt(0)}.`,
-      amount: Number(app.job.estimateAmount),
-      timestamp: formatRelativeTime(app.updatedAt),
-    }));
+    // Recent activity with technician info
+    const recentActivity = applications.slice(0, 15).map(app => {
+      const technicianId = jobTechnicianMap.get(app.jobId);
+      const technicianName = technicianId ? technicianMap.get(technicianId) : undefined;
+      return {
+        id: app.id,
+        type: app.status as 'initiated' | 'submitted' | 'approved' | 'funded' | 'declined',
+        customerName: `${app.customer.firstName} ${app.customer.lastName.charAt(0)}.`,
+        amount: Number(app.job.estimateAmount),
+        timestamp: formatRelativeTime(app.updatedAt),
+        technicianName,
+      };
+    });
 
     return NextResponse.json({
       stats: {

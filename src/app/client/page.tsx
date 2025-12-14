@@ -30,17 +30,21 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string;
-  type: 'submitted' | 'approved' | 'funded' | 'declined';
+  type: 'initiated' | 'submitted' | 'approved' | 'funded' | 'declined';
   customerName: string;
   amount: number;
   timestamp: string;
+  technicianName?: string;
 }
+
+type ActivityFilter = 'all' | 'initiated' | 'submitted' | 'approved' | 'funded';
 
 export default function ClientDashboardPage() {
   const { user, loading, canAccess } = useContractorAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -82,6 +86,8 @@ export default function ClientDashboardPage() {
         return { icon: '✓', color: 'bg-teal/20 text-teal' };
       case 'submitted':
         return { icon: '📋', color: 'bg-cyan/20 text-cyan' };
+      case 'initiated':
+        return { icon: '🚀', color: 'bg-warning/20 text-warning' };
       case 'declined':
         return { icon: '✗', color: 'bg-error/20 text-error' };
       default:
@@ -166,11 +172,26 @@ export default function ClientDashboardPage() {
 
         {/* Live Activity Feed - Full Width */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h2 className="text-xl font-semibold font-display text-navy">Live Activity</h2>
-            <Link href="/client/applications" className="text-sm text-teal hover:text-teal/80">
-              View All →
-            </Link>
+            <div className="flex items-center gap-2 flex-wrap">
+              {(['all', 'initiated', 'submitted', 'approved', 'funded'] as ActivityFilter[]).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActivityFilter(filter)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    activityFilter === filter
+                      ? 'bg-teal text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                </button>
+              ))}
+              <Link href="/client/applications" className="text-sm text-teal hover:text-teal/80 ml-2">
+                View All →
+              </Link>
+            </div>
           </div>
           {recentActivity.length === 0 ? (
             <div className="text-center py-8">
@@ -181,29 +202,40 @@ export default function ClientDashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {recentActivity.map((activity) => {
-                const { icon, color } = getActivityIcon(activity.type);
-                return (
-                  <div key={activity.id} className="flex items-center gap-4 p-3 rounded-xl bg-gray-50">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${color}`}>
-                      {icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {activity.customerName}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        ${activity.amount.toLocaleString()} • {activity.type}
-                      </p>
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {activity.timestamp}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <>
+              {recentActivity.filter(a => activityFilter === 'all' || a.type === activityFilter).length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No {activityFilter} activity</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {recentActivity
+                    .filter(a => activityFilter === 'all' || a.type === activityFilter)
+                    .map((activity) => {
+                      const { icon, color } = getActivityIcon(activity.type);
+                      return (
+                        <div key={activity.id} className="flex items-center gap-4 p-3 rounded-xl bg-gray-50">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${color}`}>
+                            {icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {activity.customerName}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              ${activity.amount.toLocaleString()} • {activity.type}
+                              {activity.technicianName && ` • ${activity.technicianName}`}
+                            </p>
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {activity.timestamp}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </>
           )}
         </div>
 
