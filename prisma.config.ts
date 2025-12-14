@@ -1,8 +1,8 @@
 import { config as loadEnv } from "dotenv";
 import { defineConfig } from "prisma/config";
 
-// Load environment variables from .env.local
-const envResult = loadEnv({ path: ".env.local" });
+// Load environment variables from .env
+const envResult = loadEnv({ path: ".env" });
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

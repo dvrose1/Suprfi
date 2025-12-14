@@ -67,6 +67,25 @@ export default function AnalyticsPage() {
     }
   };
 
+  const downloadReport = async (reportType: string) => {
+    try {
+      const res = await fetch(`/api/v1/client/reports/${reportType}?days=${dateRange}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${reportType}-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (err) {
+      console.error('Failed to download report:', err);
+    }
+  };
+
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-warm-white flex items-center justify-center">
@@ -95,16 +114,43 @@ export default function AnalyticsPage() {
                 <Link href="/client/analytics" className="text-navy font-medium">Analytics</Link>
               </nav>
             </div>
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="365">Last year</option>
-            </select>
+            <div className="flex items-center gap-3">
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal focus:border-transparent"
+              >
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="365">Last year</option>
+              </select>
+              <div className="relative group">
+                <button className="px-4 py-2 bg-navy text-white rounded-lg hover:bg-navy/90 transition-colors flex items-center gap-2">
+                  📥 Export
+                </button>
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                  <button
+                    onClick={() => downloadReport('applications')}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 rounded-t-lg"
+                  >
+                    Applications Report
+                  </button>
+                  <button
+                    onClick={() => downloadReport('loans')}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                  >
+                    Loans Report
+                  </button>
+                  <button
+                    onClick={() => downloadReport('summary')}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 rounded-b-lg"
+                  >
+                    Summary Report
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </header>
