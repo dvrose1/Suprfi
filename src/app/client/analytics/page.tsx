@@ -18,6 +18,7 @@ interface AnalyticsData {
     approvalRateByMonth: Array<{ month: string; rate: number }>;
     fundingByMonth: Array<{ month: string; amount: number }>;
     applicationsByMonth: Array<{ month: string; count: number }>;
+    soldByMonth: Array<{ month: string; amount: number; count: number }>;
   };
   breakdown: {
     byStatus: Record<string, number>;
@@ -185,26 +186,34 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8 mb-8">
-              {/* Approval Rate Trend */}
+            <div className="grid lg:grid-cols-3 gap-8 mb-8">
+              {/* Sold by Month */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">Approval Rate Trend</h2>
+                <h2 className="text-lg font-semibold text-navy mb-4">Sold by Month</h2>
                 <div className="h-48 flex items-end justify-between gap-2">
-                  {data.trends.approvalRateByMonth.map((item, index) => (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div
-                        className="w-full bg-teal rounded-t transition-all hover:bg-teal/80"
-                        style={{ height: `${item.rate}%` }}
-                      />
-                      <div className="text-xs text-gray-500 mt-2">{item.month}</div>
-                    </div>
-                  ))}
+                  {data.trends.soldByMonth.map((item, index) => {
+                    const maxAmount = Math.max(...data.trends.soldByMonth.map(i => i.amount));
+                    const height = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center">
+                        <div className="text-xs text-navy font-medium mb-1">
+                          ${(item.amount / 1000).toFixed(0)}k
+                        </div>
+                        <div
+                          className="w-full bg-teal rounded-t transition-all hover:bg-teal/80"
+                          style={{ height: `${height}%`, minHeight: item.amount > 0 ? '8px' : '0' }}
+                        />
+                        <div className="text-xs text-gray-500 mt-2">{item.month}</div>
+                        <div className="text-xs text-gray-400">{item.count} deals</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Funding by Month */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">Funding by Month</h2>
+                <h2 className="text-lg font-semibold text-navy mb-4">Funded by Month</h2>
                 <div className="h-48 flex items-end justify-between gap-2">
                   {data.trends.fundingByMonth.map((item, index) => {
                     const maxAmount = Math.max(...data.trends.fundingByMonth.map(i => i.amount));
@@ -222,6 +231,23 @@ export default function AnalyticsPage() {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+
+              {/* Approval Rate Trend */}
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-navy mb-4">Approval Rate</h2>
+                <div className="h-48 flex items-end justify-between gap-2">
+                  {data.trends.approvalRateByMonth.map((item, index) => (
+                    <div key={index} className="flex-1 flex flex-col items-center">
+                      <div className="text-xs text-navy font-medium mb-1">{item.rate}%</div>
+                      <div
+                        className="w-full bg-cyan rounded-t transition-all hover:bg-cyan/80"
+                        style={{ height: `${item.rate}%` }}
+                      />
+                      <div className="text-xs text-gray-500 mt-2">{item.month}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

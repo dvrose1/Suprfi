@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
     const approvalRateByMonth = [];
     const fundingByMonth = [];
     const applicationsByMonth = [];
+    const soldByMonth = [];
 
     for (let i = 5; i >= 0; i--) {
       const monthDate = new Date();
@@ -93,9 +94,13 @@ export async function GET(request: NextRequest) {
         .filter(a => a.loan)
         .reduce((sum, a) => sum + Number(a.loan!.fundedAmount), 0);
 
+      // Sold = approved + funded deals (job estimate amount)
+      const monthSold = monthApproved.reduce((sum, a) => sum + Number(a.job.estimateAmount), 0);
+
       approvalRateByMonth.push({ month: monthNames[monthDate.getMonth()], rate: monthRate });
       fundingByMonth.push({ month: monthNames[monthDate.getMonth()], amount: monthFunded });
       applicationsByMonth.push({ month: monthNames[monthDate.getMonth()], count: monthApps.length });
+      soldByMonth.push({ month: monthNames[monthDate.getMonth()], amount: monthSold, count: monthApproved.length });
     }
 
     // Breakdown by status
@@ -142,6 +147,7 @@ export async function GET(request: NextRequest) {
         approvalRateByMonth,
         fundingByMonth,
         applicationsByMonth,
+        soldByMonth,
       },
       breakdown: {
         byStatus,
@@ -174,6 +180,7 @@ function getEmptyAnalytics() {
       approvalRateByMonth: [],
       fundingByMonth: [],
       applicationsByMonth: [],
+      soldByMonth: [],
     },
     breakdown: {
       byStatus: {},
