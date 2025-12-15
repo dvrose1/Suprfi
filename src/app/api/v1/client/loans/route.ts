@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
+    const search = searchParams.get('search')?.toLowerCase();
 
     // Get contractor's job IDs
     const contractorJobs = await prisma.contractorJob.findMany({
@@ -55,10 +56,16 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Filter by status if provided
+    // Filter by status and search
     let filteredApps = applications;
     if (status && status !== 'all') {
-      filteredApps = applications.filter(a => a.loan?.status === status);
+      filteredApps = filteredApps.filter(a => a.loan?.status === status);
+    }
+    if (search) {
+      filteredApps = filteredApps.filter(a => {
+        const customerName = `${a.customer.firstName} ${a.customer.lastName}`.toLowerCase();
+        return customerName.includes(search);
+      });
     }
 
     // Calculate stats

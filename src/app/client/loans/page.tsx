@@ -31,7 +31,8 @@ interface Loan {
   paymentProgress: number;
 }
 
-type SortField = 'date' | 'customer' | 'amount' | 'status';
+type StatusFilter = 'all' | 'approved_not_scheduled' | 'approved_scheduled' | 'in_progress' | 'pending_funding' | 'funded' | 'cancelled';
+type SortField = 'date' | 'amount' | 'technician';
 type SortDirection = 'asc' | 'desc';
 
 interface LoanStats {
@@ -47,7 +48,8 @@ export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [stats, setStats] = useState<LoanStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
@@ -63,6 +65,7 @@ export default function LoansPage() {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.set('status', statusFilter);
+      if (search) params.set('search', search);
 
       const res = await fetch(`/api/v1/client/loans?${params}`);
       if (res.ok) {
@@ -158,56 +161,53 @@ export default function LoansPage() {
           </div>
         )}
 
-        {/* Loan Status Filters */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {[
-            { key: 'all', label: 'All' },
-            { key: 'approved_not_scheduled', label: 'Approved - Not Scheduled' },
-            { key: 'approved_scheduled', label: 'Approved - Scheduled' },
-            { key: 'in_progress', label: 'In Progress' },
-            { key: 'pending_funding', label: 'Pending Funding' },
-            { key: 'funded', label: 'Funded' },
-            { key: 'cancelled', label: 'Cancelled' },
-          ].map((status) => (
-            <button
-              key={status.key}
-              onClick={() => setStatusFilter(status.key)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                statusFilter === status.key
-                  ? 'bg-teal text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
+        {/* Search and Filters */}
+        <form onSubmit={(e) => { e.preventDefault(); fetchLoans(); }} className="mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by customer name..."
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent"
+            />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
             >
-              {status.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Sort Controls */}
-        <div className="flex items-center gap-2 mb-4 text-sm">
-          <span className="text-gray-500">Sort by:</span>
-          {(['date', 'customer', 'amount', 'status'] as SortField[]).map((field) => (
-            <button
-              key={field}
-              onClick={() => {
-                if (sortField === field) {
-                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                } else {
-                  setSortField(field);
-                  setSortDirection('desc');
-                }
+              <option value="all">All Statuses</option>
+              <option value="approved_not_scheduled">Approved - Not Scheduled</option>
+              <option value="approved_scheduled">Approved - Scheduled</option>
+              <option value="in_progress">In Progress</option>
+              <option value="pending_funding">Pending Funding</option>
+              <option value="funded">Funded</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <select
+              value={`${sortField}-${sortDirection}`}
+              onChange={(e) => {
+                const [field, direction] = e.target.value.split('-') as [SortField, SortDirection];
+                setSortField(field);
+                setSortDirection(direction);
               }}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                sortField === field
-                  ? 'bg-navy text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
+              className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
             >
-              {field.charAt(0).toUpperCase() + field.slice(1)}
-              {sortField === field && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="amount-desc">Highest Amount</option>
+              <option value="amount-asc">Lowest Amount</option>
+              <option value="technician-asc">Technician A-Z</option>
+              <option value="technician-desc">Technician Z-A</option>
+            </select>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-navy text-white rounded-xl font-medium hover:bg-navy/90 transition-colors"
+            >
+              Search
             </button>
-          ))}
-        </div>
+          </div>
+        </form>
 
         {/* Loans List - Simplified Merchant View */}
         {loading ? (
@@ -238,14 +238,11 @@ export default function LoansPage() {
                   case 'date':
                     comparison = new Date(b.fundingDate).getTime() - new Date(a.fundingDate).getTime();
                     break;
-                  case 'customer':
-                    comparison = a.customer.name.localeCompare(b.customer.name);
-                    break;
                   case 'amount':
                     comparison = b.fundedAmount - a.fundedAmount;
                     break;
-                  case 'status':
-                    comparison = a.status.localeCompare(b.status);
+                  case 'technician':
+                    comparison = (a.technicianName || '').localeCompare(b.technicianName || '');
                     break;
                 }
                 return sortDirection === 'asc' ? -comparison : comparison;

@@ -34,8 +34,8 @@ interface Technician {
   name: string;
 }
 
-type StatusFilter = 'all' | 'pending' | 'approved' | 'accepted' | 'declined' | 'expired' | 'refunded' | 'cancelled';
-type SortField = 'date' | 'amount' | 'status' | 'technician' | 'customer';
+type StatusFilter = 'all' | 'pending' | 'approved' | 'declined' | 'expired' | 'refunded' | 'cancelled';
+type SortField = 'date' | 'technician';
 type SortDirection = 'asc' | 'desc';
 
 export default function ApplicationsPage() {
@@ -88,8 +88,6 @@ export default function ApplicationsPage() {
 
   const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'accepted':
-        return 'bg-mint/20 text-mint border-mint/30';
       case 'approved':
         return 'bg-teal/20 text-teal border-teal/30';
       case 'pending':
@@ -124,37 +122,6 @@ export default function ApplicationsPage() {
           <p className="text-gray-600 mt-1">Track your customers&apos; financing requests</p>
         </div>
 
-        {/* Status Filter Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {[
-            { key: 'all', label: 'All' },
-            { key: 'pending', label: 'Pending' },
-            { key: 'approved', label: 'Approved' },
-            { key: 'accepted', label: 'Accepted' },
-            { key: 'declined', label: 'Declined' },
-            { key: 'expired', label: 'Expired' },
-            { key: 'refunded', label: 'Refunded' },
-            { key: 'cancelled', label: 'Cancelled' },
-          ].map((stat) => (
-            <button
-              key={stat.key}
-              onClick={() => setStatusFilter(stat.key as StatusFilter)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                statusFilter === stat.key
-                  ? 'bg-teal text-white shadow-lg'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {stat.label}
-              {stats[stat.key] !== undefined && (
-                <span className={`ml-2 ${statusFilter === stat.key ? 'text-white/80' : 'text-gray-400'}`}>
-                  ({stat.key === 'all' ? Object.values(stats).reduce((a, b) => a + b, 0) : stats[stat.key] || 0})
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-
         {/* Search and Filters */}
         <form onSubmit={handleSearch} className="mb-6">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -165,6 +132,33 @@ export default function ApplicationsPage() {
               placeholder="Search by customer name..."
               className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent"
             />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="declined">Declined</option>
+              <option value="expired">Expired</option>
+              <option value="refunded">Refunded</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <select
+              value={`${sortField}-${sortDirection}`}
+              onChange={(e) => {
+                const [field, direction] = e.target.value.split('-') as [SortField, SortDirection];
+                setSortField(field);
+                setSortDirection(direction);
+              }}
+              className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
+            >
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="technician-asc">Technician A-Z</option>
+              <option value="technician-desc">Technician Z-A</option>
+            </select>
             {technicians.length > 1 && (
               <select
                 value={technicianFilter}
@@ -187,32 +181,6 @@ export default function ApplicationsPage() {
             </button>
           </div>
         </form>
-
-        {/* Sort Controls */}
-        <div className="flex items-center gap-2 mb-4 text-sm">
-          <span className="text-gray-500">Sort by:</span>
-          {(['date', 'customer', 'amount', 'status', 'technician'] as SortField[]).map((field) => (
-            <button
-              key={field}
-              onClick={() => {
-                if (sortField === field) {
-                  setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                } else {
-                  setSortField(field);
-                  setSortDirection('desc');
-                }
-              }}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                sortField === field
-                  ? 'bg-navy text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              {field.charAt(0).toUpperCase() + field.slice(1)}
-              {sortField === field && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
-            </button>
-          ))}
-        </div>
 
         {/* Applications List - Linear Layout */}
         {loading ? (
@@ -246,15 +214,6 @@ export default function ApplicationsPage() {
                 switch (sortField) {
                   case 'date':
                     comparison = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-                    break;
-                  case 'customer':
-                    comparison = a.customer.name.localeCompare(b.customer.name);
-                    break;
-                  case 'amount':
-                    comparison = b.job.amount - a.job.amount;
-                    break;
-                  case 'status':
-                    comparison = a.status.localeCompare(b.status);
                     break;
                   case 'technician':
                     comparison = (a.technician?.name || '').localeCompare(b.technician?.name || '');
