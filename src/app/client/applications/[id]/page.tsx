@@ -315,6 +315,21 @@ export default function ApplicationDetailPage() {
               </div>
             )}
 
+            {/* CRM Information */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h2 className="text-lg font-semibold text-navy mb-4">CRM Information</h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm text-gray-500">CRM</div>
+                  <div className="font-medium text-navy">—</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Job ID</div>
+                  <div className="font-medium text-navy font-mono text-sm">—</div>
+                </div>
+              </div>
+            </div>
+
             {/* Timeline */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <h2 className="text-lg font-semibold text-navy mb-4">Activity Timeline</h2>

@@ -38,7 +38,7 @@ interface RecentActivity {
 }
 
 type ActivityFilter = 'all' | 'initiated' | 'submitted' | 'approved' | 'funded';
-type ActivitySortField = 'date' | 'technician' | 'amount' | 'type';
+type ActivitySortField = 'date' | 'technician';
 type SortDirection = 'asc' | 'desc';
 
 export default function ClientDashboardPage() {
@@ -210,50 +210,36 @@ export default function ClientDashboardPage() {
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <h2 className="text-xl font-semibold font-display text-navy">Live Activity</h2>
-            <div className="flex items-center gap-2 flex-wrap">
-              {(['all', 'initiated', 'submitted', 'approved', 'funded'] as ActivityFilter[]).map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setActivityFilter(filter)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    activityFilter === filter
-                      ? 'bg-teal text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
-                </button>
-              ))}
-              <Link href="/client/applications" className="text-sm text-teal hover:text-teal/80 ml-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <select
+                value={activityFilter}
+                onChange={(e) => setActivityFilter(e.target.value as ActivityFilter)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
+              >
+                <option value="all">All Activity</option>
+                <option value="initiated">Initiated</option>
+                <option value="submitted">Submitted</option>
+                <option value="approved">Approved</option>
+                <option value="funded">Funded</option>
+              </select>
+              <select
+                value={`${activitySort}-${sortDirection}`}
+                onChange={(e) => {
+                  const [field, direction] = e.target.value.split('-') as [ActivitySortField, SortDirection];
+                  setActivitySort(field);
+                  setSortDirection(direction);
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-teal focus:border-transparent bg-white"
+              >
+                <option value="date-desc">Newest First</option>
+                <option value="date-asc">Oldest First</option>
+                <option value="technician-asc">Technician A-Z</option>
+                <option value="technician-desc">Technician Z-A</option>
+              </select>
+              <Link href="/client/applications" className="text-sm text-teal hover:text-teal/80">
                 View All →
               </Link>
             </div>
-          </div>
-          
-          {/* Sort Controls */}
-          <div className="flex items-center gap-2 mb-4 text-sm">
-            <span className="text-gray-500">Sort by:</span>
-            {(['date', 'technician', 'amount', 'type'] as ActivitySortField[]).map((field) => (
-              <button
-                key={field}
-                onClick={() => {
-                  if (activitySort === field) {
-                    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                  } else {
-                    setActivitySort(field);
-                    setSortDirection('desc');
-                  }
-                }}
-                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                  activitySort === field
-                    ? 'bg-navy text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {field.charAt(0).toUpperCase() + field.slice(1)}
-                {activitySort === field && (sortDirection === 'asc' ? ' ↑' : ' ↓')}
-              </button>
-            ))}
           </div>
           
           {recentActivity.length === 0 ? (
@@ -282,12 +268,6 @@ export default function ClientDashboardPage() {
                           break;
                         case 'technician':
                           comparison = (a.technicianName || '').localeCompare(b.technicianName || '');
-                          break;
-                        case 'amount':
-                          comparison = b.amount - a.amount;
-                          break;
-                        case 'type':
-                          comparison = a.type.localeCompare(b.type);
                           break;
                       }
                       return sortDirection === 'asc' ? -comparison : comparison;

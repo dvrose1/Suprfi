@@ -89,18 +89,7 @@ export default function LoanDetailPage() {
     }
   };
 
-  const getPaymentStatusStyle = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-mint/20 text-mint';
-      case 'upcoming':
-        return 'bg-gray-100 text-gray-600';
-      case 'overdue':
-        return 'bg-error/20 text-error';
-      default:
-        return 'bg-gray-100 text-gray-600';
-    }
-  };
+
 
   if (authLoading || !user) {
     return (
@@ -134,10 +123,6 @@ export default function LoanDetailPage() {
       </div>
     );
   }
-
-  const paidPayments = loan.paymentSchedule.filter(p => p.status === 'paid').length;
-  const totalPayments = loan.paymentSchedule.length;
-  const progressPercent = Math.round((paidPayments / totalPayments) * 100);
 
   return (
     <div className="min-h-screen bg-warm-white">
@@ -242,66 +227,18 @@ export default function LoanDetailPage() {
           </div>
         </div>
 
-        {/* Payment Progress */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-navy mb-4">Payment Progress</h2>
-          <div className="mb-4">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-500">{paidPayments} of {totalPayments} payments made</span>
-              <span className="text-teal font-medium">{progressPercent}% complete</span>
-            </div>
-            <div className="h-4 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-teal to-mint rounded-full transition-all"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </div>
-          <div className="grid sm:grid-cols-3 gap-4 text-center">
-            <div className="p-4 bg-mint/10 rounded-xl">
-              <div className="text-2xl font-bold text-mint">{paidPayments}</div>
-              <div className="text-sm text-gray-500">Paid</div>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-xl">
-              <div className="text-2xl font-bold text-gray-600">{totalPayments - paidPayments}</div>
-              <div className="text-sm text-gray-500">Remaining</div>
-            </div>
-            <div className="p-4 bg-teal/10 rounded-xl">
-              <div className="text-2xl font-bold text-teal">
-                ${((totalPayments - paidPayments) * (loan.offer?.monthlyPayment || 0)).toLocaleString()}
-              </div>
-              <div className="text-sm text-gray-500">Balance</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Payment Schedule */}
+        {/* CRM Information */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-lg font-semibold text-navy mb-4">Payment Schedule</h2>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {loan.paymentSchedule.map((payment) => (
-              <div
-                key={payment.month}
-                className="flex items-center justify-between p-3 rounded-xl bg-gray-50"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-sm font-medium text-navy">
-                    {payment.month}
-                  </div>
-                  <div>
-                    <div className="font-medium text-navy">
-                      ${payment.amount.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Due {new Date(payment.dueDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPaymentStatusStyle(payment.status)}`}>
-                  {payment.status === 'paid' ? '✓ Paid' : payment.status === 'overdue' ? 'Overdue' : 'Upcoming'}
-                </span>
-              </div>
-            ))}
+          <h2 className="text-lg font-semibold text-navy mb-4">CRM Information</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <div className="text-sm text-gray-500">CRM</div>
+              <div className="font-medium text-navy">{loan.crmCustomerId ? 'ServiceTitan' : '—'}</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">Job ID</div>
+              <div className="font-medium text-navy font-mono text-sm">{loan.crmJobId || '—'}</div>
+            </div>
           </div>
         </div>
       </main>

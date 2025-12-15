@@ -3,6 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 
+interface PaymentScheduleItem {
+  month: number
+  dueDate: string
+  amount: number
+  status: 'paid' | 'upcoming' | 'overdue'
+}
+
 interface ApplicationDetail {
   id: string
   status: string
@@ -45,6 +52,15 @@ interface ApplicationDetail {
       totalAmount: number
       selected: boolean
     }>
+  } | null
+  loan: {
+    id: string
+    lenderLoanId: string | null
+    lenderName: string | null
+    fundedAmount: number
+    fundingDate: string | null
+    status: string
+    paymentSchedule: PaymentScheduleItem[] | null
   } | null
   plaidData: any
   personaData: any
@@ -592,6 +608,114 @@ export default function ApplicationDetailPage() {
                 <div className="text-gray-500 text-sm">Identity verification not started.</div>
               )}
             </div>
+
+            {/* Loan & Payment Info (only shown for funded applications) */}
+            {application.loan && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">💰 Loan & Payments</h2>
+                  <span className={`text-xs px-2 py-1 rounded font-medium ${
+                    application.loan.status === 'funded' || application.loan.status === 'repaying'
+                      ? 'bg-green-100 text-green-800'
+                      : application.loan.status === 'paid_off'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {application.loan.status.replace('_', ' ').toUpperCase()}
+                  </span>
+                </div>
+                
+                {/* Loan Summary */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-green-50 rounded-lg p-3">
+                    <div className="text-xs text-gray-500">Funded Amount</div>
+                    <div className="text-xl font-bold text-green-600">
+                      ${application.loan.fundedAmount.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="text-xs text-gray-500">Funding Date</div>
+                    <div className="font-medium text-gray-900">
+                      {application.loan.fundingDate 
+                        ? new Date(application.loan.fundingDate).toLocaleDateString() 
+                        : 'Pending'}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="text-xs text-gray-500">Lender</div>
+                    <div className="font-medium text-gray-900">
+                      {application.loan.lenderName || 'SuprFi'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Progress */}
+                {application.loan.paymentSchedule && Array.isArray(application.loan.paymentSchedule) && application.loan.paymentSchedule.length > 0 && (
+                  <>
+                    {(() => {
+                      const schedule = application.loan.paymentSchedule as PaymentScheduleItem[]
+                      const paidPayments = schedule.filter(p => p.status === 'paid').length
+                      const totalPayments = schedule.length
+                      const progressPercent = Math.round((paidPayments / totalPayments) * 100)
+                      
+                      return (
+                        <>
+                          <div className="mb-4">
+                            <div className="text-sm font-medium text-gray-700 mb-2">Payment Progress</div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-gray-500">{paidPayments} of {totalPayments} payments made</span>
+                              <span className="text-green-600 font-medium">{progressPercent}% complete</span>
+                            </div>
+                            <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all"
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Payment Schedule */}
+                          <div className="pt-4 border-t border-gray-200">
+                            <div className="text-sm font-medium text-gray-700 mb-3">Payment Schedule</div>
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                              {schedule.map((payment) => (
+                                <div
+                                  key={payment.month}
+                                  className="flex items-center justify-between p-2 rounded bg-gray-50 text-sm"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-medium text-gray-700 border">
+                                      {payment.month}
+                                    </div>
+                                    <div>
+                                      <div className="font-medium text-gray-900">
+                                        ${payment.amount.toLocaleString()}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        Due {new Date(payment.dueDate).toLocaleDateString()}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    payment.status === 'paid'
+                                      ? 'bg-green-100 text-green-700'
+                                      : payment.status === 'overdue'
+                                      ? 'bg-red-100 text-red-700'
+                                      : 'bg-gray-100 text-gray-600'
+                                  }`}>
+                                    {payment.status === 'paid' ? '✓ Paid' : payment.status === 'overdue' ? 'Overdue' : 'Upcoming'}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

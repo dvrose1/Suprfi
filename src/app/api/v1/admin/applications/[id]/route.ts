@@ -95,6 +95,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           fundedAmount: Number(application.loan.fundedAmount),
           fundingDate: application.loan.fundingDate?.toISOString(),
           status: application.loan.status,
+          paymentSchedule: application.loan.paymentSchedule,
         } : null,
       },
     })
