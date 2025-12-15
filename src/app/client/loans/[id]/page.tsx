@@ -239,6 +239,14 @@ export default function LoanDetailPage() {
               <div className="text-sm text-gray-500">Job ID</div>
               <div className="font-medium text-navy font-mono text-sm">{loan.crmJobId || '—'}</div>
             </div>
+            <div>
+              <div className="text-sm text-gray-500">Scheduled Service Date</div>
+              <div className="font-medium text-navy">—</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">Service Completed Date</div>
+              <div className="font-medium text-navy">—</div>
+            </div>
           </div>
         </div>
       </main>

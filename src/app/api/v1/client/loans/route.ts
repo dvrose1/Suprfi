@@ -70,18 +70,29 @@ export async function GET(request: NextRequest) {
 
     // Calculate stats
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const allLoans = applications.filter(a => a.loan);
-    const totalFunded = allLoans.reduce((sum, a) => sum + Number(a.loan!.fundedAmount), 0);
-    const fundedThisMonth = allLoans
-      .filter(a => a.loan!.fundingDate && a.loan!.fundingDate >= startOfMonth)
-      .reduce((sum, a) => sum + Number(a.loan!.fundedAmount), 0);
-    const fundedYTD = allLoans
-      .filter(a => a.loan!.fundingDate && a.loan!.fundingDate >= startOfYear)
-      .reduce((sum, a) => sum + Number(a.loan!.fundedAmount), 0);
-    const activeLoans = allLoans.filter(a => a.loan!.status === 'repaying' || a.loan!.status === 'funded').length;
+    
+    // Loans accepted in last 30 days (all loans created in last 30 days)
+    const loansAccepted30d = allLoans.filter(a => 
+      a.loan!.createdAt && a.loan!.createdAt >= thirtyDaysAgo
+    ).length;
+    
+    // Not Scheduled count (approved but not scheduled)
+    const notScheduledCount = allLoans.filter(a => 
+      a.loan!.status === 'approved_not_scheduled' || a.loan!.status === 'pending'
+    ).length;
+    
+    // Pending count (jobs in progress)
+    const pendingCount = allLoans.filter(a => 
+      a.loan!.status === 'in_progress' || a.loan!.status === 'pending_funding'
+    ).length;
+    
+    // Funded in last 30 days
+    const fundedLast30d = allLoans.filter(a => 
+      a.loan!.status === 'funded' && a.loan!.fundingDate && a.loan!.fundingDate >= thirtyDaysAgo
+    ).length;
 
     // Get contractor job info for each application
     const appJobIds = applications.map(a => a.jobId);
@@ -166,11 +177,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       loans,
       stats: {
-        totalLoans: allLoans.length,
-        activeLoans,
-        totalFunded,
-        fundedThisMonth,
-        fundedYTD,
+        loansAccepted30d,
+        notScheduledCount,
+        pendingCount,
+        fundedLast30d,
       },
     });
   } catch (error) {

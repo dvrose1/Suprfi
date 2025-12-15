@@ -36,11 +36,10 @@ type SortField = 'date' | 'amount' | 'technician';
 type SortDirection = 'asc' | 'desc';
 
 interface LoanStats {
-  totalLoans: number;
-  activeLoans: number;
-  totalFunded: number;
-  fundedThisMonth: number;
-  fundedYTD: number;
+  loansAccepted30d: number;
+  notScheduledCount: number;
+  pendingCount: number;
+  fundedLast30d: number;
 }
 
 export default function LoansPage() {
@@ -135,28 +134,27 @@ export default function LoansPage() {
           <p className="text-gray-600 mt-1">Track your customers&apos; active loans</p>
         </div>
 
-        {/* Stats - 4 tiles on mobile, 5 on desktop */}
+        {/* Stats - 4 tiles */}
         {stats && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="text-sm text-gray-600 mb-1">Total Loans</div>
-              <div className="text-3xl font-bold text-navy">{stats.totalLoans}</div>
+              <div className="text-sm text-gray-600 mb-1">Loans Accepted</div>
+              <div className="text-3xl font-bold text-navy">{stats.loansAccepted30d}</div>
+              <div className="text-xs text-gray-500 mt-1">Last 30 days</div>
             </div>
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="text-sm text-gray-600 mb-1">Active</div>
-              <div className="text-3xl font-bold text-mint">{stats.activeLoans}</div>
+              <div className="text-sm text-gray-600 mb-1">Not Scheduled</div>
+              <div className="text-3xl font-bold text-warning">{stats.notScheduledCount}</div>
             </div>
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="text-sm text-gray-600 mb-1">This Month</div>
-              <div className="text-2xl font-bold text-navy">${stats.fundedThisMonth.toLocaleString()}</div>
-            </div>
-            <div className="bg-white rounded-2xl shadow-lg p-6 hidden lg:block">
-              <div className="text-sm text-gray-600 mb-1">YTD</div>
-              <div className="text-2xl font-bold text-navy">${stats.fundedYTD.toLocaleString()}</div>
+              <div className="text-sm text-gray-600 mb-1">Pending</div>
+              <div className="text-3xl font-bold text-cyan">{stats.pendingCount}</div>
+              <div className="text-xs text-gray-500 mt-1">Jobs in progress</div>
             </div>
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="text-sm text-gray-600 mb-1">Lifetime</div>
-              <div className="text-2xl font-bold text-teal">${stats.totalFunded.toLocaleString()}</div>
+              <div className="text-sm text-gray-600 mb-1">Funded</div>
+              <div className="text-3xl font-bold text-mint">{stats.fundedLast30d}</div>
+              <div className="text-xs text-gray-500 mt-1">Last 30 days</div>
             </div>
           </div>
         )}
