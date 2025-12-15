@@ -75,21 +75,6 @@ export default function LoanDetailPage() {
     }
   };
 
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case 'repaying':
-      case 'funded':
-        return 'bg-mint text-white';
-      case 'paid_off':
-        return 'bg-teal text-white';
-      case 'defaulted':
-        return 'bg-error text-white';
-      default:
-        return 'bg-gray-200 text-gray-700';
-    }
-  };
-
-
 
   if (authLoading || !user) {
     return (
@@ -137,9 +122,6 @@ export default function LoanDetailPage() {
               <span className="text-gray-300">|</span>
               <span className="font-medium text-navy">Loan Details</span>
             </div>
-            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusStyle(loan.status)}`}>
-              {loan.status === 'repaying' ? 'Active' : loan.status.replace('_', ' ')}
-            </span>
           </div>
         </div>
       </header>
@@ -181,13 +163,7 @@ export default function LoanDetailPage() {
 
           {/* Additional Details */}
           <div className="border-t border-gray-100 pt-4">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-              <div>
-                <span className="text-gray-500">Status:</span>
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusStyle(loan.status)}`}>
-                  {loan.status === 'repaying' ? 'Active' : loan.status.replace('_', ' ')}
-                </span>
-              </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
               <div>
                 <span className="text-gray-500">Funding Date:</span>
                 <span className="ml-2 text-navy">

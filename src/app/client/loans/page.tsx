@@ -285,9 +285,6 @@ export default function LoansPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-4 ml-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${getStatusStyle(loan.status)}`}>
-                      {getStatusLabel(loan.status)}
-                    </span>
                     <span className="text-gray-400 hidden sm:inline">→</span>
                   </div>
                 </div>
