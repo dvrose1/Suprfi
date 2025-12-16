@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
+import { formatServiceType } from '@/lib/utils/format';
 
 interface ApplicationDetail {
   id: string;
@@ -271,7 +272,7 @@ export default function ApplicationDetailPage() {
                     ${application.job.amount.toLocaleString()}
                   </div>
                   {application.job.serviceType && (
-                    <div className="text-gray-500 capitalize">{application.job.serviceType}</div>
+                    <div className="text-gray-500">{formatServiceType(application.job.serviceType)}</div>
                   )}
                 </div>
                 {application.offers.length > 0 && (

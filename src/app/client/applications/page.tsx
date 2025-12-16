@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
+import { formatServiceType } from '@/lib/utils/format';
 
 interface Application {
   id: string;
@@ -34,7 +35,7 @@ interface Technician {
   name: string;
 }
 
-type StatusFilter = 'all' | 'pending' | 'approved' | 'declined' | 'expired' | 'refunded' | 'cancelled';
+type StatusFilter = 'all' | 'pending' | 'approved' | 'declined' | 'expired' | 'cancelled';
 type SortField = 'date' | 'technician';
 type SortDirection = 'asc' | 'desc';
 
@@ -96,7 +97,6 @@ export default function ApplicationsPage() {
       case 'cancelled':
         return 'bg-error/20 text-error border-error/30';
       case 'expired':
-      case 'refunded':
         return 'bg-warning/20 text-warning border-warning/30';
       default:
         return 'bg-gray-100 text-gray-600 border-gray-200';
@@ -142,7 +142,6 @@ export default function ApplicationsPage() {
               <option value="approved">Approved</option>
               <option value="declined">Declined</option>
               <option value="expired">Expired</option>
-              <option value="refunded">Refunded</option>
               <option value="cancelled">Cancelled</option>
             </select>
             <select
@@ -238,8 +237,8 @@ export default function ApplicationsPage() {
                         ${app.job.amount.toLocaleString()}
                       </div>
                       {app.job.serviceType && (
-                        <div className="text-sm text-gray-500 capitalize">
-                          {app.job.serviceType}
+                        <div className="text-sm text-gray-500">
+                          {formatServiceType(app.job.serviceType)}
                         </div>
                       )}
                     </div>
@@ -268,7 +267,7 @@ export default function ApplicationsPage() {
                   <div>
                     <span className="text-lg font-bold text-navy">${app.job.amount.toLocaleString()}</span>
                     {app.job.serviceType && (
-                      <span className="text-sm text-gray-500 ml-2 capitalize">{app.job.serviceType}</span>
+                      <span className="text-sm text-gray-500 ml-2">{formatServiceType(app.job.serviceType)}</span>
                     )}
                   </div>
                   <div className="text-sm text-gray-500">{new Date(app.createdAt).toLocaleDateString()}</div>

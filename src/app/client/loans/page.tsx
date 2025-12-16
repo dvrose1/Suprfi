@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
+import { formatServiceType } from '@/lib/utils/format';
 
 interface Loan {
   id: string;
@@ -265,7 +266,7 @@ export default function LoansPage() {
                     {loan.serviceType && (
                       <div className="hidden md:block text-center min-w-[100px]">
                         <div className="text-sm text-gray-500">Service</div>
-                        <div className="text-sm text-navy capitalize">{loan.serviceType}</div>
+                        <div className="text-sm text-navy">{formatServiceType(loan.serviceType)}</div>
                       </div>
                     )}
                     {/* Merchant Fee Breakdown */}

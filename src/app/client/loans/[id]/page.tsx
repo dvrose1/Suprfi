@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
+import { formatServiceType } from '@/lib/utils/format';
 
 interface LoanDetail {
   id: string;
@@ -173,7 +174,7 @@ export default function LoanDetailPage() {
               {loan.serviceType && (
                 <div>
                   <span className="text-gray-500">Service Type:</span>
-                  <span className="ml-2 text-navy capitalize">{loan.serviceType}</span>
+                  <span className="ml-2 text-navy">{formatServiceType(loan.serviceType)}</span>
                 </div>
               )}
               {loan.lenderName && (
@@ -206,14 +207,18 @@ export default function LoanDetailPage() {
         {/* CRM Information */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="text-lg font-semibold text-navy mb-4">CRM Information</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm text-gray-500">CRM</div>
-              <div className="font-medium text-navy">{loan.crmCustomerId ? 'ServiceTitan' : '—'}</div>
-            </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <div className="text-sm text-gray-500">Job ID</div>
               <div className="font-medium text-navy font-mono text-sm">{loan.crmJobId || '—'}</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">Job Status</div>
+              <div className="font-medium text-navy">—</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">Sold By</div>
+              <div className="font-medium text-navy">{loan.technicianName || '—'}</div>
             </div>
             <div>
               <div className="text-sm text-gray-500">Scheduled Service Date</div>
