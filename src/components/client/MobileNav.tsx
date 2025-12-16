@@ -39,12 +39,12 @@ export default function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center justify-center -mt-6"
+                className="flex flex-col items-center justify-center -mt-6 min-w-[60px]"
               >
                 <div className="w-14 h-14 bg-teal rounded-full flex items-center justify-center shadow-lg">
                   <Icon className="w-7 h-7 text-white" />
                 </div>
-                <span className="text-xs text-teal font-medium mt-1">{item.label}</span>
+                <span className="text-xs text-teal font-medium mt-1 text-center">{item.label}</span>
               </Link>
             );
           }

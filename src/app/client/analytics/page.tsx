@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
                   <div className="text-white/80 text-sm mb-2">Approval Rate</div>
-                  <div className="flex items-end gap-4">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <div>
                       <div className="text-4xl font-bold">{data.benchmarks.yourApprovalRate}%</div>
                       <div className="text-sm text-white/60">Your rate</div>
@@ -189,7 +189,7 @@ export default function AnalyticsPage() {
                       <div className="text-sm">Network avg</div>
                     </div>
                     {data.benchmarks.yourApprovalRate > data.benchmarks.networkAvgApprovalRate && (
-                      <span className="px-2 py-1 bg-mint/20 text-mint rounded-full text-sm">
+                      <span className="px-2 py-1 bg-mint/20 text-mint rounded-full text-sm flex items-center justify-center whitespace-nowrap">
                         +{(data.benchmarks.yourApprovalRate - data.benchmarks.networkAvgApprovalRate).toFixed(1)}%
                       </span>
                     )}
@@ -197,7 +197,7 @@ export default function AnalyticsPage() {
                 </div>
                 <div>
                   <div className="text-white/80 text-sm mb-2">Time to Fund</div>
-                  <div className="flex items-end gap-4">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <div>
                       <div className="text-4xl font-bold">{data.benchmarks.yourAvgTimeToFund}</div>
                       <div className="text-sm text-white/60">Your avg (days)</div>
@@ -207,7 +207,7 @@ export default function AnalyticsPage() {
                       <div className="text-sm">Network avg</div>
                     </div>
                     {data.benchmarks.yourAvgTimeToFund < data.benchmarks.networkAvgTimeToFund && (
-                      <span className="px-2 py-1 bg-mint/20 text-mint rounded-full text-sm">
+                      <span className="px-2 py-1 bg-mint/20 text-mint rounded-full text-sm flex items-center justify-center whitespace-nowrap">
                         {Math.round((1 - data.benchmarks.yourAvgTimeToFund / data.benchmarks.networkAvgTimeToFund) * 100)}% faster
                       </span>
                     )}
