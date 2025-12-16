@@ -148,15 +148,6 @@ export default function ClientHeader({ hideNav }: ClientHeaderProps) {
 
             {/* Nav Links */}
             <div className="py-2">
-              {canAccess('analytics:view') && (
-                <Link
-                  href="/client/analytics"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-gray-700 hover:bg-gray-50"
-                >
-                  Analytics
-                </Link>
-              )}
               {canAccess('team:view') && (
                 <Link
                   href="/client/team"
