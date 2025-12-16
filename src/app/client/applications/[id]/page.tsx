@@ -39,6 +39,9 @@ interface ApplicationDetail {
     fundingDate: string;
     status: string;
   } | null;
+  technician: {
+    name: string;
+  } | null;
   timeline: Array<{
     event: string;
     timestamp: string;
