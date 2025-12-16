@@ -32,7 +32,7 @@ interface Loan {
   paymentProgress: number;
 }
 
-type StatusFilter = 'all' | 'approved_not_scheduled' | 'approved_scheduled' | 'in_progress' | 'pending_funding' | 'funded' | 'cancelled';
+type StatusFilter = 'all' | 'approved_not_scheduled' | 'approved_scheduled' | 'in_progress' | 'pending_funding' | 'funded' | 'refunded' | 'cancelled';
 type SortField = 'date' | 'amount' | 'technician';
 type SortDirection = 'asc' | 'desc';
 
@@ -92,6 +92,8 @@ export default function LoansPage() {
         return 'bg-cyan/20 text-cyan border-cyan/30';
       case 'cancelled':
         return 'bg-error/20 text-error border-error/30';
+      case 'refunded':
+        return 'bg-warning/20 text-warning border-warning/30';
       default:
         return 'bg-gray-100 text-gray-600 border-gray-200';
     }
@@ -103,6 +105,8 @@ export default function LoansPage() {
         return 'Approved - Not Scheduled';
       case 'approved_scheduled':
         return 'Approved - Scheduled';
+      case 'refunded':
+        return 'Refunded';
       case 'in_progress':
         return 'In Progress';
       case 'pending_funding':
@@ -181,6 +185,7 @@ export default function LoansPage() {
               <option value="in_progress">In Progress</option>
               <option value="pending_funding">Pending Funding</option>
               <option value="funded">Funded</option>
+              <option value="refunded">Refunded</option>
               <option value="cancelled">Cancelled</option>
             </select>
             <select
