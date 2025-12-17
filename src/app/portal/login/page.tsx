@@ -81,7 +81,8 @@ export default function PortalLoginPage() {
         return;
       }
 
-      router.push('/portal');
+      // Use hard navigation to ensure cookie is recognized
+      window.location.href = '/portal';
     } catch {
       setError('An error occurred. Please try again.');
     } finally {

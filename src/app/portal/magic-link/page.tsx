@@ -46,7 +46,7 @@ function MagicLinkContent() {
         setStatus('set-password');
       } else {
         setStatus('success');
-        setTimeout(() => router.push('/portal'), 1500);
+        setTimeout(() => { window.location.href = '/portal'; }, 1500);
       }
     } catch {
       setStatus('error');
@@ -85,7 +85,7 @@ function MagicLinkContent() {
       }
 
       setStatus('success');
-      setTimeout(() => router.push('/portal'), 1500);
+      setTimeout(() => { window.location.href = '/portal'; }, 1500);
     } catch {
       setError('An error occurred');
     } finally {
@@ -176,7 +176,7 @@ function MagicLinkContent() {
 
                 <button
                   type="button"
-                  onClick={() => router.push('/portal')}
+                  onClick={() => { window.location.href = '/portal'; }}
                   className="w-full text-teal hover:bg-teal/10 rounded-lg font-medium px-4 py-2 transition-colors"
                 >
                   Skip for now

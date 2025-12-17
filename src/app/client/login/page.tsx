@@ -34,7 +34,8 @@ export default function ClientLoginPage() {
         return;
       }
 
-      router.push('/client');
+      // Use hard navigation to ensure cookie is recognized
+      window.location.href = '/client';
     } catch {
       setError('An error occurred. Please try again.');
     } finally {
