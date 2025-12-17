@@ -83,6 +83,21 @@ Validate completed work against SuprFi standards before marking any task complet
 - [ ] No visual regressions from existing pages
 - [ ] Mobile responsive (test at 375px width)
 
+## Authentication Flow Checklist
+
+- [ ] Login redirects use `window.location.href` (not `router.push`) after setting cookies
+- [ ] Session cookies set with httpOnly, secure (in prod), sameSite: 'lax'
+- [ ] Protected routes redirect to login when not authenticated
+- [ ] Logout clears session cookie and redirects to login
+- [ ] Auth context fetches user on mount and handles loading state
+
+## Testing Checklist
+
+- [ ] Unit tests exist for new utility functions
+- [ ] API route tests cover success and error cases
+- [ ] E2E tests cover critical user flows (login, main features)
+- [ ] Tests pass locally before committing
+
 ## Verification Commands
 
 Run ALL of these before marking complete:
@@ -90,7 +105,15 @@ Run ALL of these before marking complete:
 ```bash
 npm run lint
 npx tsc --noEmit
+npm test
+npm run test:e2e
 npm run build
+```
+
+Or run everything at once:
+
+```bash
+npm run test:all
 ```
 
 ## Completion Criteria
@@ -100,4 +123,6 @@ The skill is complete when:
 - All verification commands succeed
 - No TypeScript errors
 - No ESLint errors
+- All unit tests pass
+- All E2E tests pass
 - Build succeeds without warnings
