@@ -1,11 +1,19 @@
+// ABOUTME: CRM offer-financing endpoint - accepts requests from multiple CRMs (FieldRoutes, Jobber, etc.)
+// ABOUTME: Creates application, generates token, sends SMS to borrower
+
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { generateApplicationToken } from '@/lib/utils/token'
 import { sendApplicationLink } from '@/lib/services/sms'
 
+// Supported CRM types
+const CRM_TYPES = ['fieldroutes', 'jobber', 'servicetitan', 'housecall'] as const
+type CrmType = typeof CRM_TYPES[number]
+
 // Request validation schema
 const OfferFinancingSchema = z.object({
+  crm_type: z.enum(CRM_TYPES).optional().default('fieldroutes'),
   crm_customer_id: z.string(),
   customer: z.object({
     first_name: z.string(),
@@ -47,6 +55,7 @@ export async function POST(request: NextRequest) {
     const data = OfferFinancingSchema.parse(body)
 
     console.log('📋 Offer financing request received:', {
+      crm_type: data.crm_type,
       crm_customer_id: data.crm_customer_id,
       customer_name: `${data.customer.first_name} ${data.customer.last_name}`,
       job_id: data.job.crm_job_id,
@@ -155,6 +164,7 @@ export async function POST(request: NextRequest) {
         actor: 'system',
         action: 'created',
         payload: {
+          crm_type: data.crm_type,
           crm_customer_id: data.crm_customer_id,
           crm_job_id: data.job.crm_job_id,
           sms_sent: smsResult.success,
@@ -162,7 +172,24 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // 7. Return response
+    // 7. Log CRM sync
+    await prisma.crmSyncLog.create({
+      data: {
+        crmType: data.crm_type,
+        direction: 'inbound',
+        entityType: 'offer_financing',
+        entityId: application.id,
+        crmEntityId: data.job.crm_job_id,
+        status: 'success',
+        requestPayload: {
+          crm_customer_id: data.crm_customer_id,
+          crm_job_id: data.job.crm_job_id,
+          estimate_amount: data.job.estimate_amount,
+        },
+      },
+    })
+
+    // 8. Return response
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'
     
     return NextResponse.json({
@@ -202,9 +229,11 @@ export async function GET() {
   return NextResponse.json({
     endpoint: '/api/v1/crm/offer-financing',
     method: 'POST',
-    description: 'Trigger a financing offer from CRM',
+    description: 'Trigger a financing offer from CRM (FieldRoutes, Jobber, ServiceTitan, HouseCall)',
     authentication: 'API Key (x-api-key header)',
+    supported_crms: CRM_TYPES,
     request_body: {
+      crm_type: 'string (optional, default: fieldroutes) - one of: fieldroutes, jobber, servicetitan, housecall',
       crm_customer_id: 'string',
       customer: {
         first_name: 'string',
