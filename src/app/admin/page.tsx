@@ -227,6 +227,13 @@ export default function AdminPage() {
                   <div className="text-sm text-gray-600">View all admin actions</div>
                 </Link>
               )}
+              <Link
+                href="/admin/settings/integrations"
+                className="block w-full px-4 py-3 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 text-left"
+              >
+                <div className="font-medium">CRM Integrations</div>
+                <div className="text-sm text-orange-600">Connect Jobber, FieldRoutes, and more</div>
+              </Link>
             </div>
           </div>
         </div>
