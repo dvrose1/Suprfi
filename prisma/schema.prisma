@@ -504,6 +504,45 @@ model BorrowerMagicLink {
 }
 
 // ============================================
+// CRM CONNECTIONS (OAuth tokens for external CRMs)
+// ============================================
+
+model CrmConnection {
+  id            String    @id @default(cuid())
+  crmType       String    // "jobber", "servicetitan", "housecall", etc.
+  
+  // Account identification
+  accountId     String    // External account ID from the CRM
+  accountName   String?   // Friendly name (e.g., business name)
+  
+  // OAuth tokens (encrypted at rest via application layer)
+  accessToken   String
+  refreshToken  String?
+  tokenType     String    @default("Bearer")
+  expiresAt     DateTime?
+  scope         String?   // OAuth scopes granted
+  
+  // Connection status
+  isActive      Boolean   @default(true)
+  lastUsedAt    DateTime?
+  lastError     String?
+  
+  // Link to contractor if applicable
+  contractorId  String?
+  
+  // Metadata
+  metadata      Json?     // Additional CRM-specific data
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@unique([crmType, accountId])
+  @@index([crmType])
+  @@index([contractorId])
+  @@index([isActive])
+}
+
+// ============================================
 // WAITLIST
 // ============================================
 
