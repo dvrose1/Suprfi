@@ -106,8 +106,20 @@ export async function exchangeCodeForToken(
       return { success: false, error: `Token exchange failed: ${response.status}` }
     }
 
-    const data: JobberTokenResponse = await response.json()
-    return { success: true, data }
+    const data = await response.json()
+    console.log('Jobber token response:', JSON.stringify(data, null, 2))
+    
+    // Jobber may return expires_in or we derive from created_at
+    const tokenResponse: JobberTokenResponse = {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: data.token_type || 'Bearer',
+      expires_in: data.expires_in || 3600, // Default to 1 hour if not provided
+      scope: data.scope || '',
+      created_at: data.created_at || Math.floor(Date.now() / 1000),
+    }
+    
+    return { success: true, data: tokenResponse }
   } catch (error) {
     console.error('Jobber token exchange error:', error)
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
@@ -230,19 +242,23 @@ export async function executeGraphQL<T>(
   }
 
   try {
+    console.log('Executing Jobber GraphQL query to:', JOBBER_API_URL)
+    
     const response = await fetch(JOBBER_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${tokenResult.accessToken}`,
-        'X-JOBBER-GRAPHQL-VERSION': '2024-06-18',
+        'X-JOBBER-GRAPHQL-VERSION': '2023-11-15',
       },
       body: JSON.stringify({ query, variables }),
     })
 
+    console.log('Jobber GraphQL response status:', response.status)
+
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Jobber GraphQL error:', errorText)
+      console.error('Jobber GraphQL error response:', errorText)
       return { success: false, error: `GraphQL request failed: ${response.status}` }
     }
 
