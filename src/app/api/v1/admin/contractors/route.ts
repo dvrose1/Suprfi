@@ -1,23 +1,21 @@
 // ABOUTME: Admin API endpoint for contractor management
-// ABOUTME: Lists approved contractors from waitlist with filtering and search
+// ABOUTME: CRUD operations for contractor partners
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import crypto from 'crypto';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search');
-    const status = searchParams.get('status'); // approved, suspended, active
+    const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
     const skip = (page - 1) * limit;
 
-    // Build where clause - only contractors with approved status or beyond
-    const where: Record<string, unknown> = {
-      type: 'contractor',
-      status: { in: ['approved', 'active', 'suspended'] },
-    };
+    // Build where clause for Contractor model
+    const where: Record<string, unknown> = {};
 
     if (status && status !== 'all') {
       where.status = status;
@@ -33,26 +31,25 @@ export async function GET(request: NextRequest) {
 
     // Get contractors with pagination
     const [contractors, total] = await Promise.all([
-      prisma.waitlist.findMany({
+      prisma.contractor.findMany({
         where,
         orderBy: { updatedAt: 'desc' },
         skip,
         take: limit,
+        include: {
+          _count: {
+            select: { users: true },
+          },
+        },
       }),
-      prisma.waitlist.count({ where }),
+      prisma.contractor.count({ where }),
     ]);
 
     // Get stats
     const [totalApproved, totalActive, totalSuspended] = await Promise.all([
-      prisma.waitlist.count({ 
-        where: { type: 'contractor', status: 'approved' } 
-      }),
-      prisma.waitlist.count({ 
-        where: { type: 'contractor', status: 'active' } 
-      }),
-      prisma.waitlist.count({ 
-        where: { type: 'contractor', status: 'suspended' } 
-      }),
+      prisma.contractor.count({ where: { status: 'approved' } }),
+      prisma.contractor.count({ where: { status: 'active' } }),
+      prisma.contractor.count({ where: { status: 'suspended' } }),
     ]);
 
     return NextResponse.json({
@@ -79,11 +76,101 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Create new contractor
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const {
+      businessName,
+      serviceType,
+      phone,
+      website,
+      state,
+      adminName,
+      adminEmail,
+      sendInvite = true,
+    } = body;
+
+    if (!businessName || !adminEmail) {
+      return NextResponse.json(
+        { error: 'Business name and admin email are required' },
+        { status: 400 }
+      );
+    }
+
+    // Check if email already exists
+    const existingUser = await prisma.contractorUser.findUnique({
+      where: { email: adminEmail.toLowerCase() },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'A user with this email already exists' },
+        { status: 400 }
+      );
+    }
+
+    // Create contractor and invite user in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create contractor
+      const contractor = await tx.contractor.create({
+        data: {
+          email: adminEmail.toLowerCase(),
+          businessName,
+          name: adminName || null,
+          phone: phone || null,
+          serviceType: serviceType || null,
+          state: state || null,
+          status: 'approved',
+          source: 'admin_created',
+        },
+      });
+
+      // Create user with invite token
+      const inviteToken = crypto.randomBytes(32).toString('hex');
+      const inviteExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      const user = await tx.contractorUser.create({
+        data: {
+          contractorId: contractor.id,
+          email: adminEmail.toLowerCase(),
+          name: adminName || null,
+          passwordHash: '', // Will be set when they accept invite
+          role: 'admin',
+          isActive: false, // Activate when they set password
+          inviteToken,
+          inviteExpiresAt: inviteExpires,
+        },
+      });
+
+      return { contractor, user, inviteToken };
+    });
+
+    // TODO: Send invite email if sendInvite is true
+    if (sendInvite) {
+      console.log(`Would send invite email to ${adminEmail} with token: ${result.inviteToken}`);
+      // await sendInviteEmail(adminEmail, result.inviteToken);
+    }
+
+    return NextResponse.json({
+      success: true,
+      contractor: result.contractor,
+      inviteLink: `/client/invite/${result.inviteToken}`,
+    });
+  } catch (error) {
+    console.error('Admin contractor create error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create contractor' },
+      { status: 500 }
+    );
+  }
+}
+
 // Update contractor status
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, status, notes } = body;
+    const { id, status } = body;
 
     if (!id || !status) {
       return NextResponse.json(
@@ -101,8 +188,8 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Get contractor first to verify it exists and is a contractor
-    const contractor = await prisma.waitlist.findUnique({ where: { id } });
+    // Get contractor first to verify it exists
+    const contractor = await prisma.contractor.findUnique({ where: { id } });
 
     if (!contractor) {
       return NextResponse.json(
@@ -111,20 +198,10 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    if (contractor.type !== 'contractor') {
-      return NextResponse.json(
-        { error: 'Entry is not a contractor' },
-        { status: 400 }
-      );
-    }
-
     // Update contractor
-    const updated = await prisma.waitlist.update({
+    const updated = await prisma.contractor.update({
       where: { id },
-      data: { 
-        status,
-        // Store notes in utmParams as a workaround (or we can add a notes field later)
-      },
+      data: { status },
     });
 
     return NextResponse.json({ 

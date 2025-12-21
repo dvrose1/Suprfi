@@ -51,22 +51,31 @@ export async function GET(request: NextRequest) {
     const cookieStore = await cookies()
     const storedState = cookieStore.get('jobber_oauth_state')?.value
 
-    // Parse state to get contractor ID if present
+    // Parse state to get contractor ID and source if present
     let contractorId: string | null = null
+    let source: string = 'admin'
     try {
       const stateData = JSON.parse(Buffer.from(state, 'base64url').toString())
       contractorId = stateData.contractorId
+      source = stateData.source || 'admin'
       
       // Check timestamp (reject if older than 15 minutes to be more lenient)
       if (Date.now() - stateData.timestamp > 15 * 60 * 1000) {
         console.error('Jobber OAuth state expired:', { timestamp: stateData.timestamp, now: Date.now() })
-        return NextResponse.redirect(
-          `${baseUrl}/admin/settings/integrations?error=${encodeURIComponent('Authorization expired, please try again')}`
-        )
+        const redirectUrl = source === 'client' 
+          ? `${baseUrl}/client/settings?tab=integrations&error=${encodeURIComponent('Authorization expired, please try again')}`
+          : `${baseUrl}/admin/settings/integrations?error=${encodeURIComponent('Authorization expired, please try again')}`
+        return NextResponse.redirect(redirectUrl)
       }
     } catch (e) {
       console.error('Failed to parse OAuth state:', e)
     }
+    
+    // Determine redirect base URL based on source
+    const successRedirectBase = source === 'client' 
+      ? `${baseUrl}/client/settings?tab=integrations` 
+      : `${baseUrl}/admin/settings/integrations`
+    const errorRedirectBase = successRedirectBase
 
     // State mismatch check - log but be lenient in dev mode
     if (!storedState || storedState !== state) {
@@ -84,7 +93,7 @@ export async function GET(request: NextRequest) {
     // Check configuration
     if (!isJobberConfigured()) {
       return NextResponse.redirect(
-        `${baseUrl}/admin/settings/integrations?error=${encodeURIComponent('Jobber OAuth not configured')}`
+        `${errorRedirectBase}&error=${encodeURIComponent('Jobber OAuth not configured')}`
       )
     }
 
@@ -95,7 +104,7 @@ export async function GET(request: NextRequest) {
     if (!tokenResult.success) {
       console.error('Jobber token exchange failed:', tokenResult.error)
       return NextResponse.redirect(
-        `${baseUrl}/admin/settings/integrations?error=${encodeURIComponent(tokenResult.error)}`
+        `${errorRedirectBase}&error=${encodeURIComponent(tokenResult.error)}`
       )
     }
 
@@ -129,7 +138,7 @@ export async function GET(request: NextRequest) {
       await prisma.crmConnection.delete({ where: { id: tempConnection.id } })
       console.error('Failed to get Jobber account info:', accountResult.error)
       return NextResponse.redirect(
-        `${baseUrl}/admin/settings/integrations?error=${encodeURIComponent('Failed to get account info: ' + accountResult.error)}`
+        `${errorRedirectBase}&error=${encodeURIComponent('Failed to get account info: ' + accountResult.error)}`
       )
     }
 
@@ -192,10 +201,11 @@ export async function GET(request: NextRequest) {
 
     // Redirect to success page
     return NextResponse.redirect(
-      `${baseUrl}/admin/settings/integrations?success=jobber&account=${encodeURIComponent(accountName)}`
+      `${successRedirectBase}&success=jobber&account=${encodeURIComponent(accountName)}`
     )
   } catch (err) {
     console.error('❌ Jobber OAuth callback error:', err)
+    // Default to admin redirect on unexpected errors
     return NextResponse.redirect(
       `${baseUrl}/admin/settings/integrations?error=${encodeURIComponent(err instanceof Error ? err.message : 'Unknown error')}`
     )

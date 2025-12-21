@@ -130,8 +130,18 @@ export default function ClientLoginPage() {
           </form>
         </div>
 
-        {/* Footer */}
+        {/* Sign Up Link */}
         <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link href="/client/signup" className="text-teal hover:underline font-medium">
+              Sign up
+            </Link>
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-4">
           <p className="text-sm text-gray-500">
             Need help?{' '}
             <a href="mailto:support@suprfi.com" className="text-teal hover:underline">

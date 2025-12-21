@@ -3,8 +3,9 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 
 interface Settings {
@@ -31,16 +32,46 @@ interface Settings {
   }>;
 }
 
-type Tab = 'profile' | 'notifications' | 'api' | 'security';
+type Tab = 'profile' | 'notifications' | 'api' | 'security' | 'integrations';
 
-export default function SettingsPage() {
+interface CrmConnection {
+  id: string;
+  crmType: string;
+  accountId: string;
+  accountName: string | null;
+  lastUsedAt: string | null;
+  lastError: string | null;
+  connectedAt: string;
+}
+
+function SettingsPage() {
   const { user, loading: authLoading, canAccess, refreshUser } = useContractorAuth();
+  const searchParams = useSearchParams();
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Handle URL params for tab selection and messages
+  useEffect(() => {
+    const tab = searchParams.get('tab') as Tab;
+    if (tab && ['profile', 'notifications', 'api', 'security', 'integrations'].includes(tab)) {
+      setActiveTab(tab);
+    }
+    
+    const successParam = searchParams.get('success');
+    const errorParam = searchParams.get('error');
+    const account = searchParams.get('account');
+    
+    if (successParam === 'jobber' && account) {
+      setSuccess(`Successfully connected Jobber account: ${account}`);
+    }
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+    }
+  }, [searchParams]);
 
   // Form states
   const [profileName, setProfileName] = useState('');
@@ -55,10 +86,13 @@ export default function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [crmConnections, setCrmConnections] = useState<CrmConnection[]>([]);
+  const [disconnectingCrm, setDisconnectingCrm] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchSettings();
+      fetchCrmConnections();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -77,6 +111,43 @@ export default function SettingsPage() {
       console.error('Failed to fetch settings:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCrmConnections = async () => {
+    try {
+      const res = await fetch('/api/v1/client/integrations');
+      if (res.ok) {
+        const data = await res.json();
+        setCrmConnections(data.connections || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch CRM connections:', err);
+    }
+  };
+
+  const handleDisconnectCrm = async (connectionId: string) => {
+    if (!confirm('Are you sure you want to disconnect this CRM? This will stop automatic financing offers.')) {
+      return;
+    }
+    
+    setDisconnectingCrm(connectionId);
+    try {
+      const res = await fetch(`/api/v1/client/integrations/${connectionId}`, {
+        method: 'DELETE',
+      });
+      
+      if (res.ok) {
+        setCrmConnections(prev => prev.filter(c => c.id !== connectionId));
+        setSuccess('CRM disconnected successfully');
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to disconnect');
+      }
+    } catch {
+      setError('Failed to disconnect');
+    } finally {
+      setDisconnectingCrm(null);
     }
   };
 
@@ -203,6 +274,7 @@ export default function SettingsPage() {
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'profile', label: 'Profile', icon: '👤' },
     { id: 'notifications', label: 'Notifications', icon: '🔔' },
+    { id: 'integrations', label: 'Integrations', icon: '🔗' },
     ...(canAccess('settings:manage_api_key') ? [{ id: 'api' as Tab, label: 'API Keys', icon: '🔑' }] : []),
     { id: 'security', label: 'Security', icon: '🔒' },
   ];
@@ -344,6 +416,93 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {/* Integrations Tab */}
+            {activeTab === 'integrations' && (
+              <div className="space-y-6">
+                {/* Jobber Integration */}
+                <div className="bg-white rounded-2xl shadow-lg p-6">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                      <span className="text-2xl font-bold text-green-600">J</span>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-navy">Jobber</h2>
+                      <p className="text-gray-500 text-sm">Automatically offer financing when quotes are created</p>
+                    </div>
+                  </div>
+
+                  {crmConnections.filter(c => c.crmType === 'jobber').length > 0 ? (
+                    <div className="space-y-4">
+                      {crmConnections
+                        .filter(c => c.crmType === 'jobber')
+                        .map(conn => (
+                          <div key={conn.id} className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-100">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                <span className="font-medium text-navy">
+                                  {conn.accountName || `Account ${conn.accountId}`}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-500 mt-1">
+                                Connected {new Date(conn.connectedAt).toLocaleDateString()}
+                              </p>
+                              {conn.lastUsedAt && (
+                                <p className="text-xs text-gray-400">
+                                  Last sync: {new Date(conn.lastUsedAt).toLocaleString()}
+                                </p>
+                              )}
+                              {conn.lastError && (
+                                <p className="text-xs text-red-500 mt-1">{conn.lastError}</p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handleDisconnectCrm(conn.id)}
+                              disabled={disconnectingCrm === conn.id}
+                              className="px-4 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                            >
+                              {disconnectingCrm === conn.id ? 'Disconnecting...' : 'Disconnect'}
+                            </button>
+                          </div>
+                        ))}
+                      
+                      <div className="pt-4 border-t border-gray-100">
+                        <p className="text-sm text-gray-600 mb-3">
+                          When a quote of $500 or more is created in Jobber, we&apos;ll automatically text 
+                          your customer with a financing link.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-gray-600 mb-4">
+                        Connect your Jobber account to automatically send financing offers when you create quotes.
+                      </p>
+                      <a
+                        href="/api/v1/auth/jobber/connect?source=client"
+                        className="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Connect Jobber Account
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Other Integrations Coming Soon */}
+                <div className="bg-white rounded-2xl shadow-lg p-6 opacity-60">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                      <span className="text-xl text-gray-400">+</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-500">More Integrations Coming Soon</h3>
+                      <p className="text-sm text-gray-400">ServiceTitan, Housecall Pro, and more</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* API Keys Tab */}
             {activeTab === 'api' && canAccess('settings:manage_api_key') && (
               <div className="bg-white rounded-2xl shadow-lg p-6">
@@ -457,5 +616,18 @@ export default function SettingsPage() {
         )}
       </main>
     </div>
+  );
+}
+
+// Wrapper component for Suspense boundary
+export default function SettingsPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-warm-white flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-teal border-t-transparent rounded-full"></div>
+      </div>
+    }>
+      <SettingsPage />
+    </Suspense>
   );
 }

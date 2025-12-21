@@ -21,14 +21,31 @@ export async function GET(request: NextRequest) {
     }, { status: 503 })
   }
 
-  // Get optional contractor ID from query params (for linking connection to a contractor)
+  // Get optional contractor ID from query params or from session (for linking connection to a contractor)
   const searchParams = request.nextUrl.searchParams
-  const contractorId = searchParams.get('contractor_id')
+  let contractorId = searchParams.get('contractor_id')
+  const source = searchParams.get('source') // 'client' or 'admin'
+
+  // If source is 'client', get contractor ID from session
+  if (source === 'client' && !contractorId) {
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get('contractor_session')?.value
+    
+    if (sessionToken) {
+      // Import dynamically to avoid circular dependency issues
+      const { validateContractorSession } = await import('@/lib/auth/contractor-session')
+      const sessionUser = await validateContractorSession(sessionToken)
+      if (sessionUser) {
+        contractorId = sessionUser.contractorId
+      }
+    }
+  }
 
   // Generate state token for CSRF protection
   const stateData = {
     nonce: crypto.randomUUID(),
     contractorId,
+    source: source || 'admin',
     timestamp: Date.now(),
   }
   const state = Buffer.from(JSON.stringify(stateData)).toString('base64url')
