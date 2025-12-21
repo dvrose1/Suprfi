@@ -28,6 +28,11 @@ model Customer {
   city           String?
   state          String?
   postalCode     String?
+  
+  // Financing opt-in consent
+  financingOptIn    Boolean?   // null = not asked, true = opted in, false = opted out
+  financingOptInAt  DateTime?  // When they opted in/out
+  
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   
