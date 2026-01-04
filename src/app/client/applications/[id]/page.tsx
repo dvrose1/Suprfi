@@ -15,6 +15,8 @@ interface ApplicationDetail {
   token: string;
   customer: {
     name: string;
+    email: string;
+    phone: string;
     maskedEmail: string;
     maskedPhone: string;
   };
@@ -61,6 +63,7 @@ export default function ApplicationDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [showPII, setShowPII] = useState(false);
 
   useEffect(() => {
     if (user && params.id) {
@@ -210,10 +213,10 @@ export default function ApplicationDetailPage() {
         {/* Status Stepper */}
         {currentStep >= 0 && (
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               {STATUS_STEPS.map((step, index) => (
-                <div key={step} className="flex-1 flex items-center">
-                  <div className="flex flex-col items-center flex-1">
+                <div key={step} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
                         index <= currentStep
@@ -230,7 +233,7 @@ export default function ApplicationDetailPage() {
                     </span>
                   </div>
                   {index < STATUS_STEPS.length - 1 && (
-                    <div className={`h-1 flex-1 mx-2 rounded ${
+                    <div className={`h-1 flex-1 mx-4 rounded ${
                       index < currentStep ? 'bg-teal' : 'bg-gray-200'
                     }`} />
                   )}
@@ -245,7 +248,30 @@ export default function ApplicationDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Customer Info */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-lg font-semibold text-navy mb-4">Customer Information</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-navy">Customer Information</h2>
+                <button
+                  onClick={() => setShowPII(!showPII)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-navy bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  {showPII ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                      Hide Details
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Reveal Details
+                    </>
+                  )}
+                </button>
+              </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-gray-500">Name</div>
@@ -253,15 +279,21 @@ export default function ApplicationDetailPage() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">Email</div>
-                  <div className="font-medium text-navy">{application.customer.maskedEmail}</div>
+                  <div className="font-medium text-navy">
+                    {showPII ? application.customer.email : application.customer.maskedEmail}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">Phone</div>
-                  <div className="font-medium text-navy">{application.customer.maskedPhone}</div>
+                  <div className="font-medium text-navy">
+                    {showPII ? application.customer.phone : application.customer.maskedPhone}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">Application ID</div>
-                  <div className="font-mono text-sm text-gray-600">{application.id.slice(0, 12)}...</div>
+                  <div className="font-mono text-sm text-gray-600">
+                    {showPII ? application.id : `${application.id.slice(0, 12)}...`}
+                  </div>
                 </div>
               </div>
             </div>

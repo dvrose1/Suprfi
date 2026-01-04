@@ -66,6 +66,8 @@ export async function GET(
         token: application.token,
         customer: {
           name: `${application.customer.firstName} ${application.customer.lastName}`,
+          email: application.customer.email,
+          phone: application.customer.phone,
           maskedEmail: maskEmail(application.customer.email),
           maskedPhone: maskPhone(application.customer.phone),
         },

@@ -223,15 +223,21 @@ export default function AnalyticsPage() {
                 <div className="h-48 flex items-end justify-between gap-2">
                   {data.trends.soldByMonth.map((item, index) => {
                     const maxAmount = Math.max(...data.trends.soldByMonth.map(i => i.amount));
-                    const height = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
+                    const heightPercent = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
                     return (
-                      <div key={index} className="flex-1 flex flex-col items-center">
-                        <div className="text-xs text-navy font-medium mb-1">
-                          ${(item.amount / 1000).toFixed(0)}k
-                        </div>
+                      <div key={index} className="flex-1 flex flex-col items-center justify-end h-full">
+                        {item.amount > 0 && (
+                          <div className="text-xs text-navy font-medium mb-1">
+                            ${(item.amount / 1000).toFixed(0)}k
+                          </div>
+                        )}
                         <div
-                          className="w-full bg-teal rounded-t transition-all hover:bg-teal/80"
-                          style={{ height: `${height}%`, minHeight: item.amount > 0 ? '8px' : '0' }}
+                          className={`w-full rounded-t transition-all ${
+                            item.amount > 0 ? 'bg-teal hover:bg-teal/80' : 'bg-gray-100'
+                          }`}
+                          style={{ 
+                            height: item.amount > 0 ? `${Math.max(heightPercent, 15)}%` : '4px'
+                          }}
                         />
                         <div className="text-xs text-gray-500 mt-2">{item.month}</div>
                         <div className="text-xs text-gray-400">{item.count} deals</div>
@@ -247,15 +253,21 @@ export default function AnalyticsPage() {
                 <div className="h-48 flex items-end justify-between gap-2">
                   {data.trends.fundingByMonth.map((item, index) => {
                     const maxAmount = Math.max(...data.trends.fundingByMonth.map(i => i.amount));
-                    const height = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
+                    const heightPercent = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
                     return (
-                      <div key={index} className="flex-1 flex flex-col items-center">
-                        <div className="text-xs text-navy font-medium mb-1">
-                          ${(item.amount / 1000).toFixed(0)}k
-                        </div>
+                      <div key={index} className="flex-1 flex flex-col items-center justify-end h-full">
+                        {item.amount > 0 && (
+                          <div className="text-xs text-navy font-medium mb-1">
+                            ${(item.amount / 1000).toFixed(0)}k
+                          </div>
+                        )}
                         <div
-                          className="w-full bg-mint rounded-t transition-all hover:bg-mint/80"
-                          style={{ height: `${height}%`, minHeight: item.amount > 0 ? '8px' : '0' }}
+                          className={`w-full rounded-t transition-all ${
+                            item.amount > 0 ? 'bg-mint hover:bg-mint/80' : 'bg-gray-100'
+                          }`}
+                          style={{ 
+                            height: item.amount > 0 ? `${Math.max(heightPercent, 15)}%` : '4px'
+                          }}
                         />
                         <div className="text-xs text-gray-500 mt-2">{item.month}</div>
                       </div>
@@ -269,11 +281,17 @@ export default function AnalyticsPage() {
                 <h2 className="text-lg font-semibold text-navy mb-4">Approval Rate</h2>
                 <div className="h-48 flex items-end justify-between gap-2">
                   {data.trends.approvalRateByMonth.map((item, index) => (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div className="text-xs text-navy font-medium mb-1">{item.rate}%</div>
+                    <div key={index} className="flex-1 flex flex-col items-center justify-end h-full">
+                      {item.rate > 0 && (
+                        <div className="text-xs text-navy font-medium mb-1">{item.rate}%</div>
+                      )}
                       <div
-                        className="w-full bg-cyan rounded-t transition-all hover:bg-cyan/80"
-                        style={{ height: `${item.rate}%` }}
+                        className={`w-full rounded-t transition-all ${
+                          item.rate > 0 ? 'bg-cyan hover:bg-cyan/80' : 'bg-gray-100'
+                        }`}
+                        style={{ 
+                          height: item.rate > 0 ? `${Math.max(item.rate, 15)}%` : '4px'
+                        }}
                       />
                       <div className="text-xs text-gray-500 mt-2">{item.month}</div>
                     </div>
