@@ -93,22 +93,19 @@ node prisma/seed-demo.js
 |------|--------|--------------|
 | 12 | Click **"+ New"** or **Send Link** button | Quick send page |
 | 13 | Show 3 tabs: **QR Code**, **SMS**, **Email** | Multiple send options |
-| 14 | Click **SMS** tab | |
-| 15 | Fill in: | |
-| | - Customer Name: `Sarah Johnson` | |
-| | - Phone: `your-real-phone-number` | (to receive actual SMS) |
-| | - Amount: `$7,500` | |
-| | - Service: `HVAC` | |
-| 16 | Click **"Send via SMS"** | Show success confirmation |
-| 17 | Check your phone for the SMS | Show real SMS received! |
+| 14 | Fill in customer info and amount | Demo the UI |
+| 15 | Click **"Send via SMS"** | Show success confirmation |
 
-**Alternative (no SMS):** Use the demo API to create an application:
+**IMPORTANT - Local Dev Limitation:** SMS/Email are not actually sent in local dev (no Twilio/Resend configured). The UI will show success, but no message is sent.
+
+**To get the application link, use the demo API:**
 ```bash
 curl -X POST http://localhost:3000/api/v1/demo/create-application \
   -H "Content-Type: application/json" \
   -d '{"firstName":"Sarah","lastName":"Johnson","estimateAmount":7500}'
 ```
-Copy the `link` from the response.
+
+The response includes a `link` field - copy and paste that URL into your browser (or a new tab to simulate the customer's phone).
 
 **Key Talking Points:**
 - "30 seconds to offer financing"
