@@ -18,6 +18,7 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
   const [error, setError] = useState<string | null>(null)
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [manualEntryLoading, setManualEntryLoading] = useState(false)
+  const [mockMode, setMockMode] = useState(false)
 
   // Fetch link token on component mount
   useEffect(() => {
@@ -35,7 +36,14 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
         }
 
         const data = await response.json()
-        setLinkToken(data.linkToken)
+        
+        // Check if we're in mock mode
+        if (data.mockMode) {
+          setMockMode(true)
+          setLinkToken('mock')
+        } else {
+          setLinkToken(data.linkToken)
+        }
       } catch (err) {
         console.error('Error fetching link token:', err)
         setError('Failed to initialize Plaid. Please try again.')
@@ -47,6 +55,27 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
       fetchLinkToken()
     }
   }, [formData.plaidAccessToken])
+
+  // Handle mock bank connection (for demos)
+  const handleMockConnect = () => {
+    setLoading(true)
+    
+    // Simulate connection delay
+    setTimeout(() => {
+      updateFormData({
+        plaidAccessToken: 'mock_connected',
+        plaidAccountId: 'mock_account_123',
+        bankName: 'Chase Bank',
+        accountMask: '4567',
+      })
+      setLoading(false)
+      
+      // Auto-advance
+      setTimeout(() => {
+        onNext()
+      }, 500)
+    }, 1500)
+  }
 
   // Handle successful Plaid Link
   const onSuccess = useCallback(async (publicToken: string, metadata: any) => {
@@ -111,6 +140,12 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
   const { open, ready } = usePlaidLink(config)
 
   const handleConnect = () => {
+    // Use mock mode for demos
+    if (mockMode) {
+      handleMockConnect()
+      return
+    }
+    
     if (ready) {
       open()
     } else {
@@ -233,10 +268,10 @@ export function BankLinkStep({ formData, updateFormData, onNext, onBack }: BankL
           <button
             type="button"
             onClick={handleConnect}
-            disabled={!ready || loading}
+            disabled={(!ready && !mockMode) || loading}
             className="px-8 py-3 bg-teal text-white rounded-lg font-semibold hover:bg-teal/90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            {loading ? 'Connecting...' : !ready ? 'Loading...' : 'Connect Bank Account'}
+            {loading ? 'Connecting...' : (!ready && !mockMode) ? 'Loading...' : 'Connect Bank Account'}
           </button>
           
           <div className="mt-6 text-sm text-gray-500">
