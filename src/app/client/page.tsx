@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
+import { formatCurrency } from '@/lib/utils/format';
 
 interface DashboardStats {
   totalApplications: number;
@@ -284,7 +285,7 @@ export default function ClientDashboardPage() {
                               {activity.customerName}
                             </p>
                             <p className="text-xs text-gray-500">
-                              ${activity.amount.toLocaleString()} • {activity.type}
+                              {formatCurrency(activity.amount)} • {activity.type}
                               {activity.technicianName && ` • ${activity.technicianName}`}
                             </p>
                           </div>

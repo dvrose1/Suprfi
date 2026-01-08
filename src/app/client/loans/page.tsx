@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
-import { formatServiceType } from '@/lib/utils/format';
+import { formatServiceType, formatCurrency } from '@/lib/utils/format';
 
 interface Loan {
   id: string;
@@ -278,7 +278,7 @@ export default function LoansPage() {
                     <div className="hidden sm:flex items-center gap-4 ml-auto">
                       <div className="text-center">
                         <div className="text-xs text-gray-500">Sale Amount</div>
-                        <div className="text-lg font-bold text-navy">${loan.totalSaleAmount.toLocaleString()}</div>
+                        <div className="text-lg font-bold text-navy">{formatCurrency(loan.totalSaleAmount)}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-xs text-gray-500">Fees</div>
@@ -286,7 +286,7 @@ export default function LoansPage() {
                       </div>
                       <div className="text-center">
                         <div className="text-xs text-gray-500">Funded</div>
-                        <div className="text-lg font-bold text-mint">${loan.netFundedAmount.toLocaleString()}</div>
+                        <div className="text-lg font-bold text-mint">{formatCurrency(loan.netFundedAmount)}</div>
                       </div>
                     </div>
                   </div>
@@ -298,7 +298,7 @@ export default function LoansPage() {
                 <div className="flex items-center justify-between mt-4 sm:hidden border-t border-gray-100 pt-4">
                   <div className="text-center">
                     <div className="text-xs text-gray-500">Sale</div>
-                    <div className="font-bold text-navy">${loan.totalSaleAmount.toLocaleString()}</div>
+                    <div className="font-bold text-navy">{formatCurrency(loan.totalSaleAmount)}</div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs text-gray-500">Fees</div>
@@ -306,7 +306,7 @@ export default function LoansPage() {
                   </div>
                   <div className="text-center">
                     <div className="text-xs text-gray-500">Funded</div>
-                    <div className="font-bold text-mint">${loan.netFundedAmount.toLocaleString()}</div>
+                    <div className="font-bold text-mint">{formatCurrency(loan.netFundedAmount)}</div>
                   </div>
                 </div>
                 {/* CRM IDs if available */}

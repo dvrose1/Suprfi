@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { formatCurrency } from '@/lib/utils/format';
 
 const Hero: React.FC = () => {
   const [loanAmount, setLoanAmount] = useState(5000);
@@ -81,7 +82,7 @@ const Hero: React.FC = () => {
             <div className="mb-4 sm:mb-6">
               <label className="text-xs sm:text-sm text-gray-600 mb-2 block">How much do you need?</label>
               <div className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 text-navy font-mono">
-                ${loanAmount.toLocaleString()}
+                {formatCurrency(loanAmount)}
               </div>
               <input 
                 type="range" 
@@ -108,7 +109,7 @@ const Hero: React.FC = () => {
                   className="text-center p-2 sm:p-4 rounded-xl bg-gray-50 hover:bg-teal/10 transition-colors cursor-pointer"
                 >
                   <div className="text-lg sm:text-2xl font-bold text-navy font-mono">
-                    ${calculatePayment(loanAmount, term).toLocaleString()}
+                    {formatCurrency(calculatePayment(loanAmount, term))}
                   </div>
                   <div className="text-xs text-gray-500">{term} mo</div>
                 </div>

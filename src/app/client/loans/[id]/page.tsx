@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
-import { formatServiceType } from '@/lib/utils/format';
+import { formatServiceType, formatCurrency } from '@/lib/utils/format';
 
 interface LoanDetail {
   id: string;
@@ -150,7 +150,7 @@ export default function LoanDetailPage() {
           <div className="grid sm:grid-cols-3 gap-6 mb-6">
             <div className="bg-gray-50 rounded-xl p-4">
               <div className="text-sm text-gray-500 mb-1">Total Sale Amount</div>
-              <div className="text-3xl font-bold text-navy">${loan.totalSaleAmount.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-navy">{formatCurrency(loan.totalSaleAmount)}</div>
             </div>
             <div className="bg-warning/10 rounded-xl p-4">
               <div className="text-sm text-gray-500 mb-1">Merchant Fee (3%)</div>
@@ -158,7 +158,7 @@ export default function LoanDetailPage() {
             </div>
             <div className="bg-mint/10 rounded-xl p-4">
               <div className="text-sm text-gray-500 mb-1">Net Funded Amount</div>
-              <div className="text-3xl font-bold text-mint">${loan.netFundedAmount.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-mint">{formatCurrency(loan.netFundedAmount)}</div>
             </div>
           </div>
 

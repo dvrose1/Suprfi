@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface LoanDetails {
   loanNumber: string
@@ -92,13 +93,13 @@ export default function SuccessPage() {
                 <div>
                   <div className="text-sm text-gray-500 mb-1">Funded Amount</div>
                   <div className="text-2xl font-bold text-gray-900">
-                    ${loanDetails.fundedAmount.toLocaleString()}
+                    {formatCurrency(loanDetails.fundedAmount)}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">Monthly Payment</div>
                   <div className="text-xl font-semibold text-gray-900">
-                    ${loanDetails.monthlyPayment.toFixed(2)}
+                    {formatCurrency(loanDetails.monthlyPayment)}
                   </div>
                 </div>
                 <div>

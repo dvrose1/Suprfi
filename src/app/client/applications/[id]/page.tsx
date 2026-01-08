@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
-import { formatServiceType } from '@/lib/utils/format';
+import { formatServiceType, formatCurrency } from '@/lib/utils/format';
 
 interface ApplicationDetail {
   id: string;
@@ -304,7 +304,7 @@ export default function ApplicationDetailPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-3xl font-bold text-navy">
-                    ${application.job.amount.toLocaleString()}
+                    {formatCurrency(application.job.amount)}
                   </div>
                   {application.job.serviceType && (
                     <div className="text-gray-500">{formatServiceType(application.job.serviceType)}</div>
@@ -334,7 +334,7 @@ export default function ApplicationDetailPage() {
                   <div>
                     <div className="text-sm text-gray-500">Funded Amount</div>
                     <div className="text-xl font-bold text-navy">
-                      ${application.loan.fundedAmount.toLocaleString()}
+                      {formatCurrency(application.loan.fundedAmount)}
                     </div>
                   </div>
                   <div>

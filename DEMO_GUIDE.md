@@ -4,18 +4,45 @@ Complete step-by-step instructions for demonstrating SuprFi's embedded financing
 
 ---
 
-## Pre-Demo Setup (5 minutes)
+## Environment URLs
 
-### 1. Start the Development Server
+| Environment | Base URL |
+|-------------|----------|
+| **Local** | http://localhost:3000 |
+| **Staging** | https://suprfi-git-staging-dvrose1s-projects.vercel.app |
+
+> **Note:** All demo flows below work identically on both environments. Replace `localhost:3000` with the staging URL when testing remotely.
+
+---
+
+## Pre-Demo Setup
+
+### Local Development (5 minutes)
 ```bash
 cd /Users/doug/Documents/Dev/Suprfi
 npm run dev
 ```
 Server runs at: **http://localhost:3000**
 
-### 2. Reset Demo Accounts (if needed)
+### Reset Demo Accounts (Local or Staging)
+
+**For Local:**
 ```bash
 node prisma/seed-demo.js
+node prisma/seed-demo-data.js  # Optional: adds 12 months of realistic data
+```
+
+**For Staging:**
+```bash
+# Set the staging database URL temporarily
+DATABASE_URL="your-staging-database-url" node prisma/seed-demo.js
+DATABASE_URL="your-staging-database-url" node prisma/seed-demo-data.js
+```
+
+Or use the npm scripts:
+```bash
+npm run seed:demo           # Seeds demo accounts
+npm run seed:demo-data      # Seeds 12 months of application data
 ```
 
 ---
@@ -25,14 +52,16 @@ node prisma/seed-demo.js
 ### Admin Portal (SuprOps)
 | Field | Value |
 |-------|-------|
-| URL | http://localhost:3000/admin/login |
+| URL (Local) | http://localhost:3000/admin/login |
+| URL (Staging) | https://suprfi-git-staging-dvrose1s-projects.vercel.app/admin/login |
 | Email | `doug@suprfi.com` or `demo@suprfi.com` |
 | Password | `Demo1234!` |
 
 ### Merchant Portal (SuprClient)
 | Field | Value |
 |-------|-------|
-| URL | http://localhost:3000/client/login |
+| URL (Local) | http://localhost:3000/client/login |
+| URL (Staging) | https://suprfi-git-staging-dvrose1s-projects.vercel.app/client/login |
 | Email | `demo@contractor.com` |
 | Password | `Demo1234!` |
 

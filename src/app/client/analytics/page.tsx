@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
+import { formatCurrency } from '@/lib/utils/format';
 
 interface AnalyticsData {
   overview: {
@@ -165,7 +166,7 @@ export default function AnalyticsPage() {
               </div>
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="text-sm text-gray-600 mb-1">Avg Loan Amount</div>
-                <div className="text-3xl font-bold text-navy">${data.overview.avgLoanAmount.toLocaleString()}</div>
+                <div className="text-3xl font-bold text-navy">{formatCurrency(data.overview.avgLoanAmount)}</div>
               </div>
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="text-sm text-gray-600 mb-1">Avg Time to Fund</div>
@@ -228,7 +229,7 @@ export default function AnalyticsPage() {
                       <div key={index} className="flex-1 flex flex-col items-center justify-end h-full">
                         {item.amount > 0 && (
                           <div className="text-xs text-navy font-medium mb-1">
-                            ${(item.amount / 1000).toFixed(0)}k
+                            {formatCurrency(item.amount)}
                           </div>
                         )}
                         <div
@@ -258,7 +259,7 @@ export default function AnalyticsPage() {
                       <div key={index} className="flex-1 flex flex-col items-center justify-end h-full">
                         {item.amount > 0 && (
                           <div className="text-xs text-navy font-medium mb-1">
-                            ${(item.amount / 1000).toFixed(0)}k
+                            {formatCurrency(item.amount)}
                           </div>
                         )}
                         <div

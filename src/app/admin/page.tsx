@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/context';
 import { useRouter } from 'next/navigation';
+import { formatCurrency } from '@/lib/utils/format';
 
 interface DashboardStats {
   totalApps: number;
@@ -111,7 +112,7 @@ export default function AdminPage() {
           <div className="bg-white rounded-lg shadow p-4 sm:p-6">
             <div className="text-xs sm:text-sm text-gray-600">Total Funded</div>
             <div className="text-xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
-              ${(totalFunded || 0).toLocaleString()}
+              {formatCurrency(totalFunded || 0)}
             </div>
             <div className="text-xs text-gray-500 mt-1">Lifetime</div>
           </div>
@@ -152,7 +153,7 @@ export default function AdminPage() {
                           {app.customer.firstName} {app.customer.lastName}
                         </div>
                         <div className="text-xs sm:text-sm text-gray-500">
-                          ${Number(app.job.estimateAmount).toLocaleString()}
+                          {formatCurrency(Number(app.job.estimateAmount))}
                         </div>
                       </div>
                       <div className="text-xs text-gray-400">

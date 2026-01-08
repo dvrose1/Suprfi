@@ -6,9 +6,7 @@ const crypto = require('crypto');
 
 const prisma = new PrismaClient();
 
-// Demo contractor ID
-const DEMO_CONTRACTOR_ID = 'cmj3psk2a0000y8yc4nuagd6x';
-const DEMO_USER_ID = 'cmk0b0q800003ooubfeqf54k9';
+// Demo contractor and user will be looked up dynamically
 
 // First names and last names for realistic data
 const FIRST_NAMES = [
@@ -254,9 +252,9 @@ async function createApplication(contractorId, userId, createdAt) {
 async function main() {
   console.log('🌱 Seeding demo data for the past 12 months...\n');
   
-  // Verify contractor exists
-  const contractor = await prisma.contractor.findUnique({
-    where: { id: DEMO_CONTRACTOR_ID },
+  // Find demo contractor dynamically (created by seed-demo.js)
+  const contractor = await prisma.contractor.findFirst({
+    where: { businessName: 'Demo HVAC Services' },
   });
   
   if (!contractor) {
@@ -264,7 +262,22 @@ async function main() {
     return;
   }
   
+  // Find demo user dynamically
+  const demoUser = await prisma.contractorUser.findFirst({
+    where: { email: 'demo@contractor.com' },
+  });
+  
+  if (!demoUser) {
+    console.error('❌ Demo user not found! Run seed-demo.js first.');
+    return;
+  }
+  
+  const DEMO_CONTRACTOR_ID = contractor.id;
+  const DEMO_USER_ID = demoUser.id;
+  
   console.log(`📊 Creating data for: ${contractor.businessName}\n`);
+  console.log(`   Contractor ID: ${DEMO_CONTRACTOR_ID}`);
+  console.log(`   User ID: ${DEMO_USER_ID}\n`);
   
   const monthlyDistribution = getMonthlyApplicationCounts();
   let totalCreated = 0;

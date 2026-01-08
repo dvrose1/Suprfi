@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface SelectedOffer {
   id: string
@@ -205,19 +206,19 @@ export default function AgreementPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-teal/5 rounded-xl p-4 text-center">
               <div className="text-xs text-gray-500 mb-1">Service Amount</div>
-              <div className="text-xl font-bold text-navy">${principalAmount.toLocaleString()}</div>
+              <div className="text-xl font-bold text-navy">{formatCurrency(principalAmount)}</div>
             </div>
             {downPayment > 0 && (
               <div className="bg-teal/5 rounded-xl p-4 text-center">
                 <div className="text-xs text-gray-500 mb-1">Due Today</div>
-                <div className="text-xl font-bold text-navy">${downPayment.toFixed(2)}</div>
+                <div className="text-xl font-bold text-navy">{formatCurrency(downPayment)}</div>
               </div>
             )}
             <div className="bg-teal/5 rounded-xl p-4 text-center">
               <div className="text-xs text-gray-500 mb-1">
                 {numberOfPayments} Payment{numberOfPayments > 1 ? 's' : ''} of
               </div>
-              <div className="text-xl font-bold text-navy">${paymentAmount.toFixed(2)}</div>
+              <div className="text-xl font-bold text-navy">{formatCurrency(paymentAmount)}</div>
             </div>
             <div className="bg-teal/5 rounded-xl p-4 text-center">
               <div className="text-xs text-gray-500 mb-1">APR</div>
@@ -230,12 +231,12 @@ export default function AgreementPage() {
           <div className="border-t border-gray-100 pt-4 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Total You'll Pay</span>
-              <span className="font-bold text-navy">${Number(offer.totalAmount).toFixed(2)}</span>
+              <span className="font-bold text-navy">{formatCurrency(Number(offer.totalAmount))}</span>
             </div>
             {interestAmount > 0 && (
               <div className="flex justify-between">
                 <span className="text-gray-600">Finance Charge (Interest)</span>
-                <span className="font-semibold">${interestAmount.toFixed(2)}</span>
+                <span className="font-semibold">{formatCurrency(interestAmount)}</span>
               </div>
             )}
             {interestAmount === 0 && (
@@ -301,16 +302,16 @@ export default function AgreementPage() {
                 </p>
                 <p className="mb-3">
                   This is a payment plan agreement with 0% interest. By signing below, you agree to pay 
-                  the total amount of ${principalAmount.toLocaleString()} in {numberOfPayments + (downPayment > 0 ? 1 : 0)} payments.
+                  the total amount of {formatCurrency(principalAmount)} in {numberOfPayments + (downPayment > 0 ? 1 : 0)} payments.
                 </p>
                 {downPayment > 0 && (
                   <p className="mb-3">
-                    <strong>DOWN PAYMENT:</strong> A down payment of ${downPayment.toFixed(2)} is due today 
+                    <strong>DOWN PAYMENT:</strong> A down payment of {formatCurrency(downPayment)} is due today 
                     to confirm your service booking.
                   </p>
                 )}
                 <p className="mb-3">
-                  <strong>PAYMENT SCHEDULE:</strong> {numberOfPayments} payments of ${paymentAmount.toFixed(2)} will be 
+                  <strong>PAYMENT SCHEDULE:</strong> {numberOfPayments} payments of {formatCurrency(paymentAmount)} will be 
                   automatically debited from your bank account {paymentFrequency === 'biweekly' ? 'every 2 weeks' : 'monthly'}, 
                   starting {firstPaymentDate.toLocaleDateString()}.
                 </p>
@@ -322,9 +323,9 @@ export default function AgreementPage() {
                 </p>
                 <p className="mb-3">
                   This is a closed-end credit agreement. By signing below, you agree to repay the 
-                  Principal Amount of ${principalAmount.toLocaleString()} plus interest at an Annual Percentage 
+                  Principal Amount of {formatCurrency(principalAmount)} plus interest at an Annual Percentage 
                   Rate (APR) of {Number(offer.apr).toFixed(2)}% over {numberOfPayments} monthly payments 
-                  of ${paymentAmount.toFixed(2)} each.
+                  of {formatCurrency(paymentAmount)} each.
                 </p>
               </>
             )}
@@ -367,8 +368,8 @@ export default function AgreementPage() {
               />
               <span className="text-sm text-gray-700">
                 I have read and understand the payment terms, including the {offer.apr === 0 ? '0% APR' : `APR of ${Number(offer.apr).toFixed(2)}%`}, 
-                {' '}payment amount of ${paymentAmount.toFixed(2)}, and total repayment 
-                amount of ${Number(offer.totalAmount).toFixed(2)}.
+                {' '}payment amount of {formatCurrency(paymentAmount)}, and total repayment 
+                amount of {formatCurrency(Number(offer.totalAmount))}.
               </span>
             </label>
 

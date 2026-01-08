@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface Offer {
   id: string
@@ -266,7 +267,7 @@ export default function OffersPage() {
           </h2>
           <p className="text-center text-white/90 text-lg">
             Choose how you'd like to pay for your{' '}
-            <span className="font-bold">${loanAmount.toLocaleString()}</span> service
+            <span className="font-bold">{formatCurrency(loanAmount)}</span> service
           </p>
         </div>
 
@@ -331,7 +332,7 @@ export default function OffersPage() {
                           <div className="bg-gray-50 rounded-xl p-3">
                             <div className="text-xs text-gray-500 mb-1">Due Today</div>
                             <div className="text-lg font-bold text-navy">
-                              ${offer.downPaymentAmount.toLocaleString()}
+                              {formatCurrency(offer.downPaymentAmount)}
                             </div>
                             <div className="text-xs text-gray-400">{offer.downPaymentPercent}% down</div>
                           </div>
@@ -341,7 +342,7 @@ export default function OffersPage() {
                             {offer.numberOfPayments} Payment{offer.numberOfPayments > 1 ? 's' : ''} of
                           </div>
                           <div className="text-lg font-bold text-navy">
-                            ${offer.installmentAmount.toFixed(2)}
+                            {formatCurrency(offer.installmentAmount)}
                           </div>
                           <div className="text-xs text-gray-400">
                             {offer.paymentFrequency === 'biweekly' ? 'every 2 weeks' : 'per month'}
@@ -373,11 +374,11 @@ export default function OffersPage() {
                       <div className="mb-4">
                         <div className="text-sm text-gray-500 mb-1">Total You'll Pay</div>
                         <div className="text-3xl font-bold text-navy">
-                          ${offer.totalAmount.toFixed(2)}
+                          {formatCurrency(offer.totalAmount)}
                         </div>
                         {offer.totalAmount > offer.loanAmount && (
                           <div className="text-xs text-gray-400 mt-1">
-                            ${(offer.totalAmount - offer.loanAmount).toFixed(2)} in interest
+                            {formatCurrency(offer.totalAmount - offer.loanAmount)} in interest
                           </div>
                         )}
                         {offer.totalAmount === offer.loanAmount && (

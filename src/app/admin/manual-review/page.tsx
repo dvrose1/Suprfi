@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface ManualReview {
   id: string
@@ -239,7 +240,7 @@ export default function ManualReviewPage() {
                         {review.application.customerName}
                       </Link>
                       <div className="text-sm text-gray-600 mt-1">
-                        {review.application.customerEmail} | ${review.application.loanAmount.toLocaleString()} | {review.application.serviceType || 'N/A'}
+                        {review.application.customerEmail} | {formatCurrency(review.application.loanAmount)} | {review.application.serviceType || 'N/A'}
                       </div>
                       
                       <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">

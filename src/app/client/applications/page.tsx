@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
-import { formatServiceType } from '@/lib/utils/format';
+import { formatServiceType, formatCurrency } from '@/lib/utils/format';
 
 interface Application {
   id: string;
@@ -234,7 +234,7 @@ export default function ApplicationsPage() {
                     </div>
                     <div className="hidden sm:block text-center">
                       <div className="text-xl font-bold text-navy">
-                        ${app.job.amount.toLocaleString()}
+                        {formatCurrency(app.job.amount)}
                       </div>
                       {app.job.serviceType && (
                         <div className="text-sm text-gray-500">
@@ -265,7 +265,7 @@ export default function ApplicationsPage() {
                 {/* Mobile: Show amount and date below */}
                 <div className="flex items-center justify-between mt-3 sm:hidden border-t border-gray-100 pt-3">
                   <div>
-                    <span className="text-lg font-bold text-navy">${app.job.amount.toLocaleString()}</span>
+                    <span className="text-lg font-bold text-navy">{formatCurrency(app.job.amount)}</span>
                     {app.job.serviceType && (
                       <span className="text-sm text-gray-500 ml-2">{formatServiceType(app.job.serviceType)}</span>
                     )}

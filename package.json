@@ -15,7 +15,9 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:all": "npm run lint && npm run typecheck && npm run test && npm run test:e2e",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed:demo": "node prisma/seed-demo.js",
+    "seed:demo-data": "node prisma/seed-demo-data.js"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",

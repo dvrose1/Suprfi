@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface PaymentScheduleItem {
   month: number
@@ -277,7 +278,7 @@ export default function ApplicationDetailPage() {
                 <div>
                   <div className="text-sm text-gray-600">Loan Amount</div>
                   <div className="text-2xl font-bold text-gray-900">
-                    ${application.job.estimateAmount.toLocaleString()}
+                    {formatCurrency(application.job.estimateAmount)}
                   </div>
                 </div>
                 <div>
@@ -385,13 +386,13 @@ export default function ApplicationDetailPage() {
                                 {offer.termMonths} Month Plan
                               </div>
                               <div className="text-sm text-gray-600">
-                                ${offer.monthlyPayment.toFixed(2)}/month • {offer.apr.toFixed(2)}% APR
+                                {formatCurrency(offer.monthlyPayment)}/month • {offer.apr.toFixed(2)}% APR
                               </div>
                             </div>
                             <div className="text-right">
                               <div className="text-sm text-gray-600">Total</div>
                               <div className="font-semibold text-gray-900">
-                                ${offer.totalAmount.toFixed(2)}
+                                {formatCurrency(offer.totalAmount)}
                               </div>
                             </div>
                           </div>
@@ -630,7 +631,7 @@ export default function ApplicationDetailPage() {
                   <div className="bg-green-50 rounded-lg p-3">
                     <div className="text-xs text-gray-500">Funded Amount</div>
                     <div className="text-xl font-bold text-green-600">
-                      ${application.loan.fundedAmount.toLocaleString()}
+                      {formatCurrency(application.loan.fundedAmount)}
                     </div>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-3">
@@ -689,7 +690,7 @@ export default function ApplicationDetailPage() {
                                     </div>
                                     <div>
                                       <div className="font-medium text-gray-900">
-                                        ${payment.amount.toLocaleString()}
+                                        {formatCurrency(payment.amount)}
                                       </div>
                                       <div className="text-xs text-gray-500">
                                         Due {new Date(payment.dueDate).toLocaleDateString()}

@@ -1,6 +1,7 @@
 'use client'
 
 import type { FormData } from '../ApplicationForm'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface ReviewStepProps {
   formData: FormData
@@ -43,7 +44,7 @@ export function ReviewStep({ formData, updateFormData, job, onSubmit, onBack, is
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Estimated Amount:</span>
-            <span className="font-medium text-lg">${job.estimateAmount.toLocaleString()}</span>
+            <span className="font-medium text-lg">{formatCurrency(job.estimateAmount)}</span>
           </div>
         </div>
       </div>
