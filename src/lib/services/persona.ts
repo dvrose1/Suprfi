@@ -1,16 +1,8 @@
-import { config } from 'dotenv'
-
-// Load env
-config({ path: '.env.local' })
+// ABOUTME: Persona API client for identity verification (KYC)
+// ABOUTME: Creates and manages identity verification inquiries
 
 const PERSONA_API_URL = 'https://withpersona.com/api/v1'
 const PERSONA_API_KEY = process.env.PERSONA_API_KEY!
-
-// Debug Persona config
-console.log('Persona config:', {
-  apiKey: PERSONA_API_KEY ? 'set (' + PERSONA_API_KEY.length + ' chars)' : 'NOT SET',
-  templateId: process.env.PERSONA_TEMPLATE_ID ? 'set' : 'NOT SET',
-})
 
 async function personaRequest(endpoint: string, options: RequestInit = {}) {
   const response = await fetch(`${PERSONA_API_URL}${endpoint}`, {
