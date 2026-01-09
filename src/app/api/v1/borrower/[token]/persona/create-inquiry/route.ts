@@ -3,10 +3,15 @@ import { verifyApplicationToken } from '@/lib/utils/token'
 import { createInquiry } from '@/lib/services/persona'
 import { prisma } from '@/lib/prisma'
 
-// Check if we should use mock mode
-const USE_MOCK_PERSONA = !process.env.PERSONA_API_KEY || 
-                          process.env.PERSONA_API_KEY === '' ||
-                          process.env.USE_MOCK_PERSONA === 'true'
+// Check if we should use mock mode (evaluated at runtime)
+function shouldUseMockPersona(): boolean {
+  // Explicit mock mode takes priority
+  if (process.env.USE_MOCK_PERSONA === 'true') {
+    return true
+  }
+  // Fall back to mock if no API key configured
+  return !process.env.PERSONA_API_KEY || process.env.PERSONA_API_KEY === ''
+}
 
 export async function POST(
   request: NextRequest,
@@ -50,7 +55,7 @@ export async function POST(
     }
 
     // Use mock mode for demos when Persona isn't configured
-    if (USE_MOCK_PERSONA) {
+    if (shouldUseMockPersona()) {
       console.log('Using mock Persona mode - returning mock inquiry')
       return NextResponse.json({
         inquiryId: 'mock-inquiry-for-demo',
