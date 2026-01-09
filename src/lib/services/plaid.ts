@@ -1,3 +1,6 @@
+// ABOUTME: Plaid API client and service functions
+// ABOUTME: Handles bank linking, income verification, and identity verification
+
 import { 
   Configuration, 
   PlaidApi, 
@@ -10,17 +13,6 @@ import {
   CreditBankIncomeGetRequest,
   ConsumerReportPermissiblePurpose,
 } from 'plaid'
-import { config } from 'dotenv'
-
-// Load env
-config({ path: '.env.local' })
-
-// Debug Plaid config
-console.log('Plaid config:', {
-  clientId: process.env.PLAID_CLIENT_ID ? 'set (' + process.env.PLAID_CLIENT_ID.length + ' chars)' : 'NOT SET',
-  secret: process.env.PLAID_SECRET ? 'set (' + process.env.PLAID_SECRET.length + ' chars)' : 'NOT SET',
-  env: process.env.PLAID_ENV || 'sandbox (default)',
-})
 
 // Initialize Plaid client
 const configuration = new Configuration({
