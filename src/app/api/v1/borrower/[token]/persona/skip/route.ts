@@ -7,12 +7,14 @@ export async function POST(
   { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    // Only allow in sandbox/development mode
-    const isSandbox = process.env.NEXT_PUBLIC_PERSONA_ENV === 'sandbox' || process.env.NODE_ENV === 'development'
+    // Allow skip in sandbox, development, or mock mode
+    const canSkip = process.env.NEXT_PUBLIC_PERSONA_ENV === 'sandbox' || 
+                    process.env.NODE_ENV === 'development' ||
+                    process.env.USE_MOCK_PERSONA === 'true'
     
-    if (!isSandbox) {
+    if (!canSkip) {
       return NextResponse.json(
-        { error: 'Skip verification is only available in sandbox mode' },
+        { error: 'Skip verification is only available in sandbox/demo mode' },
         { status: 403 }
       )
     }
