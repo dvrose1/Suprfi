@@ -48,10 +48,21 @@ export async function GET(
 
     const loan = application.loan
     const paymentSchedule = loan.paymentSchedule as {
+      type?: string
+      name?: string
       termMonths?: number
+      termWeeks?: number
       apr?: number
       monthlyPayment?: number
+      installmentAmount?: number
+      numberOfPayments?: number
+      downPayment?: number
     } | null
+
+    // Determine payment frequency based on plan type
+    const isBNPL = paymentSchedule?.type === 'bnpl'
+    const paymentFrequency = paymentSchedule?.termWeeks ? 'biweekly' : 'monthly'
+    const paymentAmount = paymentSchedule?.installmentAmount || paymentSchedule?.monthlyPayment || 0
 
     return NextResponse.json({
       success: true,
@@ -59,9 +70,15 @@ export async function GET(
         id: loan.id,
         loanNumber: loan.lenderLoanId,
         fundedAmount: Number(loan.fundedAmount),
-        monthlyPayment: paymentSchedule?.monthlyPayment || 0,
+        paymentAmount,
+        paymentFrequency,
+        numberOfPayments: paymentSchedule?.numberOfPayments || 0,
         apr: paymentSchedule?.apr || 0,
         termMonths: paymentSchedule?.termMonths || 0,
+        termWeeks: paymentSchedule?.termWeeks || 0,
+        planType: paymentSchedule?.type || 'installment',
+        planName: paymentSchedule?.name || 'Payment Plan',
+        downPayment: paymentSchedule?.downPayment || 0,
         status: loan.status,
         fundingDate: loan.fundingDate?.toISOString(),
         customer: {

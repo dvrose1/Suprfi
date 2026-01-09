@@ -8,9 +8,15 @@ import { formatCurrency } from '@/lib/utils/format'
 interface LoanDetails {
   loanNumber: string
   fundedAmount: number
-  monthlyPayment: number
+  paymentAmount: number
+  paymentFrequency: 'biweekly' | 'monthly'
+  numberOfPayments: number
   apr: number
   termMonths: number
+  termWeeks: number
+  planType: string
+  planName: string
+  downPayment: number
   firstPaymentDate: string
   customer: {
     firstName: string
@@ -97,20 +103,24 @@ export default function SuccessPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">Monthly Payment</div>
+                  <div className="text-sm text-gray-500 mb-1">
+                    {loanDetails.paymentFrequency === 'biweekly' ? 'Payment (every 2 weeks)' : 'Monthly Payment'}
+                  </div>
                   <div className="text-xl font-semibold text-gray-900">
-                    {formatCurrency(loanDetails.monthlyPayment)}
+                    {formatCurrency(loanDetails.paymentAmount)}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">APR</div>
                   <div className="text-xl font-semibold text-gray-900">
-                    {loanDetails.apr.toFixed(2)}%
+                    {loanDetails.apr === 0 ? '0% (Interest-free)' : `${loanDetails.apr.toFixed(2)}%`}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">Term Length</div>
-                  <div className="font-semibold text-gray-900">{loanDetails.termMonths} months</div>
+                  <div className="text-sm text-gray-500 mb-1">Plan</div>
+                  <div className="font-semibold text-gray-900">
+                    {loanDetails.planName || (loanDetails.termWeeks ? `${loanDetails.termWeeks} weeks` : `${loanDetails.termMonths} months`)}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 mb-1">First Payment Due</div>
