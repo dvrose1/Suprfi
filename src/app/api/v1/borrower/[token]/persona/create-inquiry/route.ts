@@ -3,6 +3,11 @@ import { verifyApplicationToken } from '@/lib/utils/token'
 import { createInquiry } from '@/lib/services/persona'
 import { prisma } from '@/lib/prisma'
 
+// Check if we should use mock mode
+const USE_MOCK_PERSONA = !process.env.PERSONA_API_KEY || 
+                          process.env.PERSONA_API_KEY === '' ||
+                          process.env.USE_MOCK_PERSONA === 'true'
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
@@ -40,6 +45,18 @@ export async function POST(
         sessionToken: existingData.sessionToken,
         status: existingData.status || 'pending',
         alreadyCreated: true,
+        mockMode: existingData.mockMode || false,
+      })
+    }
+
+    // Use mock mode for demos when Persona isn't configured
+    if (USE_MOCK_PERSONA) {
+      console.log('Using mock Persona mode - returning mock inquiry')
+      return NextResponse.json({
+        inquiryId: 'mock-inquiry-for-demo',
+        sessionToken: 'mock-session-token',
+        status: 'pending',
+        mockMode: true,
       })
     }
 

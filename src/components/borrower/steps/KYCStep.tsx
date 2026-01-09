@@ -22,6 +22,7 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
   const [error, setError] = useState<string | null>(null)
   const [inquiryData, setInquiryData] = useState<any>(null)
   const [personaLoaded, setPersonaLoaded] = useState(false)
+  const [mockMode, setMockMode] = useState(false)
   
   // Allow skipping in sandbox/development mode
   const isSandbox = process.env.NEXT_PUBLIC_PERSONA_ENV === 'sandbox' || process.env.NODE_ENV === 'development'
@@ -65,6 +66,9 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
 
         const data = await response.json()
         setInquiryData(data)
+        if (data.mockMode) {
+          setMockMode(true)
+        }
       } catch (err) {
         console.error('Error creating inquiry:', err)
         setError('Failed to initialize identity verification. Please try again.')
@@ -229,17 +233,30 @@ export function KYCStep({ formData, updateFormData, onNext, onBack }: KYCStepPro
             You'll be asked to upload a photo of your government-issued ID. This process takes less than 2 minutes.
           </p>
           
-          <button
-            type="button"
-            onClick={handleVerify}
-            disabled={loading || !personaLoaded || !inquiryData?.inquiryId}
-            className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Loading...' : !personaLoaded ? 'Initializing...' : !inquiryData?.inquiryId ? 'Preparing...' : 'Verify Identity'}
-          </button>
+          {mockMode ? (
+            // Mock mode - show manual verify button
+            <button
+              type="button"
+              onClick={handleSkipVerification}
+              disabled={loading}
+              className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Verifying...' : 'Verify Identity (Demo Mode)'}
+            </button>
+          ) : (
+            // Real Persona mode
+            <button
+              type="button"
+              onClick={handleVerify}
+              disabled={loading || !personaLoaded || !inquiryData?.inquiryId}
+              className="px-8 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : !personaLoaded ? 'Initializing...' : !inquiryData?.inquiryId ? 'Preparing...' : 'Verify Identity'}
+            </button>
+          )}
           
-          {/* Skip option for sandbox/development */}
-          {isSandbox && (
+          {/* Skip option for sandbox/development (only if not already in mock mode) */}
+          {isSandbox && !mockMode && (
             <div className="mt-4">
               <button
                 type="button"
