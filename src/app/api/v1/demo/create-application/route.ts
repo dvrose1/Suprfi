@@ -53,7 +53,16 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Demo customer created:', customer.id)
 
-    // 2. Create demo job
+    // 2. Find demo contractor (created by seed-demo.js)
+    const demoContractor = await prisma.contractor.findFirst({
+      where: { businessName: 'Demo HVAC Services' },
+    })
+    
+    const demoUser = await prisma.contractorUser.findFirst({
+      where: { email: 'demo@contractor.com' },
+    })
+
+    // 3. Create demo job
     const job = await prisma.job.create({
       data: {
         crmJobId: `demo-job-${Date.now()}`,
@@ -66,7 +75,23 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Demo job created:', job.id)
 
-    // 3. Create application
+    // 4. Link job to demo contractor (so it shows in merchant dashboard)
+    if (demoContractor && demoUser) {
+      await prisma.contractorJob.create({
+        data: {
+          contractorId: demoContractor.id,
+          jobId: job.id,
+          initiatedBy: demoUser.id,
+          initiatedAt: new Date(),
+          sendMethod: 'api',
+        },
+      })
+      console.log('✅ Linked to demo contractor:', demoContractor.businessName)
+    } else {
+      console.log('⚠️ Demo contractor not found - application will only show in admin dashboard')
+    }
+
+    // 5. Create application
     const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
     const application = await prisma.application.create({
@@ -79,7 +104,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // 4. Generate token
+    // 6. Generate token
     const token = generateApplicationToken({
       applicationId: application.id,
       customerId: customer.id,
