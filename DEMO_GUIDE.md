@@ -255,27 +255,32 @@ If short on time, show just these steps:
 ## Demo API Endpoints
 
 ### Create Demo Application (no SMS)
+
+**Local:**
 ```bash
 curl -X POST http://localhost:3000/api/v1/demo/create-application \
   -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Demo",
-    "lastName": "User",
-    "email": "demo@example.com",
-    "phone": "5551234567",
-    "estimateAmount": 5000
-  }'
+  -d '{"firstName":"Demo","lastName":"User","estimateAmount":5000}'
+```
+
+**Staging:**
+```bash
+curl -X POST https://suprfi-git-staging-dvrose1s-projects.vercel.app/api/v1/demo/create-application \
+  -H "Content-Type: application/json" \
+  -d '{"firstName":"Demo","lastName":"User","estimateAmount":5000}'
 ```
 
 Returns:
 ```json
 {
   "success": true,
-  "link": "http://localhost:3000/apply/[TOKEN]",
+  "link": "https://[ENV-URL]/apply/[TOKEN]",
   "applicationId": "...",
   ...
 }
 ```
+
+> **Note:** Demo applications are automatically linked to the "Demo HVAC Services" contractor and will appear in the merchant dashboard.
 
 ### Trigger CRM Test (sends real SMS)
 ```
