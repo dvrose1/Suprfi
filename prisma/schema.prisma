@@ -156,13 +156,19 @@ model Loan {
   daysOverdue      Int           @default(0)
   defaultedAt      DateTime?
   
+  // Collections tracking
+  sentToCollections DateTime?
+  collectionAgency  String?
+  
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   
   payments         Payment[]
+  collectionNotes  CollectionNote[]
   
   @@index([status])
   @@index([lenderLoanId])
+  @@index([daysOverdue])
 }
 
 // ============================================
@@ -206,6 +212,25 @@ model Payment {
   @@index([status])
   @@index([dueDate])
   @@index([nextRetryDate])
+}
+
+// ============================================
+// COLLECTIONS
+// ============================================
+
+model CollectionNote {
+  id        String   @id @default(cuid())
+  loanId    String
+  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  
+  note      String   @db.Text
+  noteType  String   @default("general") // general, contact_attempt, payment_plan, escalation
+  
+  createdBy String   // Admin user ID
+  createdAt DateTime @default(now())
+  
+  @@index([loanId])
+  @@index([createdAt])
 }
 
 // ============================================

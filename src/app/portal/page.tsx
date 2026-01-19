@@ -280,6 +280,18 @@ export default function PortalDashboardPage() {
                       </p>
                     </div>
                   )}
+
+                  {/* Pay Off Button - only show for active loans */}
+                  {(loan.status === 'funded' || loan.status === 'repaying') && loan.remainingBalance > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <Link
+                        href={`/portal/payoff?loanId=${loan.id}`}
+                        className="block w-full py-3 px-4 bg-navy/10 text-navy text-center text-sm font-semibold rounded-lg hover:bg-navy/20 transition-colors"
+                      >
+                        Pay Off Loan Early
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
