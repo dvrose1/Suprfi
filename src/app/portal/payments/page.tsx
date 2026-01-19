@@ -1,5 +1,5 @@
 // ABOUTME: Borrower portal payment history page
-// ABOUTME: Shows paid and upcoming payments
+// ABOUTME: Shows paid and upcoming payments with pay-early option
 
 'use client';
 
@@ -8,11 +8,12 @@ import Link from 'next/link';
 import { useBorrowerAuth } from '@/lib/auth/borrower-context';
 
 interface Payment {
+  id: string;
   loanId: string;
   lenderName: string;
   date: string;
   amount: number;
-  status: 'paid' | 'pending' | 'overdue';
+  status: 'paid' | 'pending' | 'overdue' | 'scheduled' | 'processing';
   paymentNumber: number;
   totalPayments: number;
 }
@@ -33,6 +34,9 @@ export default function PortalPaymentsPage() {
   const [data, setData] = useState<PaymentsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'history'>('upcoming');
+  const [payingId, setPayingId] = useState<string | null>(null);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [paySuccess, setPaySuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -50,6 +54,39 @@ export default function PortalPaymentsPage() {
       console.error('Payments error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePayNow = async (paymentId: string) => {
+    if (!confirm('Are you sure you want to pay this payment now? The funds will be debited from your linked bank account.')) {
+      return;
+    }
+
+    setPayingId(paymentId);
+    setPayError(null);
+    setPaySuccess(null);
+
+    try {
+      const res = await fetch('/api/v1/portal/payments/pay-early', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        setPayError(json.error || 'Failed to process payment');
+        return;
+      }
+
+      setPaySuccess('Payment initiated! It may take 1-2 business days to process.');
+      // Refresh payments list
+      fetchPayments();
+    } catch (err) {
+      setPayError('Failed to process payment. Please try again.');
+    } finally {
+      setPayingId(null);
     }
   };
 
@@ -71,6 +108,7 @@ export default function PortalPaymentsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
+      case 'completed':
         return (
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success/10 text-success">
             <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -80,9 +118,16 @@ export default function PortalPaymentsPage() {
           </span>
         );
       case 'pending':
+      case 'scheduled':
         return (
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning">
             Upcoming
+          </span>
+        );
+      case 'processing':
+        return (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+            Processing
           </span>
         );
       case 'overdue':
@@ -155,6 +200,18 @@ export default function PortalPaymentsPage() {
           </div>
         )}
 
+        {/* Success/Error Messages */}
+        {paySuccess && (
+          <div className="mb-4 p-4 bg-success/10 border border-success/20 rounded-xl text-success text-sm">
+            {paySuccess}
+          </div>
+        )}
+        {payError && (
+          <div className="mb-4 p-4 bg-error/10 border border-error/20 rounded-xl text-error text-sm">
+            {payError}
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="flex gap-2 mb-4">
           <button
@@ -195,17 +252,38 @@ export default function PortalPaymentsPage() {
             ) : (
               <div className="divide-y divide-gray-100">
                 {data?.upcomingPayments.map((payment, i) => (
-                  <div key={`${payment.loanId}-${i}`} className="p-4 flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-navy">{formatDate(payment.date)}</p>
-                      <p className="text-sm text-gray-500">
-                        {payment.lenderName} · Payment {payment.paymentNumber} of {payment.totalPayments}
-                      </p>
+                  <div key={payment.id || `${payment.loanId}-${i}`} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-navy">{formatDate(payment.date)}</p>
+                        <p className="text-sm text-gray-500">
+                          {payment.lenderName} · Payment {payment.paymentNumber} of {payment.totalPayments}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-navy">{formatCurrency(payment.amount)}</p>
+                        {getStatusBadge(payment.status)}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-navy">{formatCurrency(payment.amount)}</p>
-                      {getStatusBadge(payment.status)}
-                    </div>
+                    {/* Pay Now button for scheduled/pending payments */}
+                    {(payment.status === 'scheduled' || payment.status === 'pending') && payment.id && (
+                      <div className="mt-3">
+                        <button
+                          onClick={() => handlePayNow(payment.id)}
+                          disabled={payingId === payment.id}
+                          className="w-full py-2 px-4 bg-teal text-white text-sm font-semibold rounded-lg hover:bg-teal-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {payingId === payment.id ? 'Processing...' : 'Pay Now'}
+                        </button>
+                      </div>
+                    )}
+                    {/* Show processing indicator */}
+                    {payment.status === 'processing' && (
+                      <div className="mt-3 flex items-center gap-2 text-blue-600 text-sm">
+                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        Payment processing...
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
