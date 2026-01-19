@@ -148,15 +148,64 @@ model Loan {
   fundedAmount     Decimal       @db.Decimal(10,2)
   fundingDate      DateTime?
   
-  paymentSchedule  Json?         // Array of {date, amount, status}
+  paymentSchedule  Json?         // DEPRECATED: Use payments relation instead
   
   status           String        @default("pending") // pending, funded, repaying, paid_off, defaulted
+  
+  // Default tracking
+  daysOverdue      Int           @default(0)
+  defaultedAt      DateTime?
   
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   
+  payments         Payment[]
+  
   @@index([status])
   @@index([lenderLoanId])
+}
+
+// ============================================
+// PAYMENT TRACKING
+// ============================================
+
+model Payment {
+  id              String    @id @default(cuid())
+  loanId          String
+  loan            Loan      @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  
+  // Payment details
+  paymentNumber   Int       // 1, 2, 3...
+  amount          Decimal   @db.Decimal(10,2)
+  principal       Decimal   @db.Decimal(10,2)
+  interest        Decimal   @db.Decimal(10,2)
+  dueDate         DateTime
+  
+  // Processing status
+  // scheduled = future payment, pending = ready to process, processing = ACH initiated
+  // completed = payment received, failed = ACH failed, overdue = past due, cancelled = loan paid off early
+  status          String    @default("scheduled")
+  
+  // Plaid Transfer tracking
+  plaidTransferId String?   @unique
+  processedAt     DateTime?
+  completedAt     DateTime?
+  
+  // Failure handling
+  failureReason   String?
+  failureCode     String?   // Plaid error code
+  retryCount      Int       @default(0)
+  nextRetryDate   DateTime?
+  requiresAction  Boolean   @default(false)  // Needs manual intervention
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@unique([loanId, paymentNumber])
+  @@index([loanId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([nextRetryDate])
 }
 
 // ============================================
