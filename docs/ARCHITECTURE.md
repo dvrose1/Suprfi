@@ -1,1302 +1,1142 @@
 # SuprFi Architecture Document
 
-**Version:** v1.0  
-**Last Updated:** October 29, 2025  
-**Status:** Approved
+**Version:** v2.0  
+**Last Updated:** February 1, 2026  
+**Status:** Production
 
 ---
 
 ## Table of Contents
 
-1. [System Overview](#system-overview)
-2. [Architecture Principles](#architecture-principles)
-3. [Technology Choices](#technology-choices)
-4. [System Components](#system-components)
-5. [Data Flow](#data-flow)
-6. [Database Design](#database-design)
-7. [Security Architecture](#security-architecture)
-8. [Scalability & Performance](#scalability--performance)
-9. [Monitoring & Observability](#monitoring--observability)
-10. [Deployment Architecture](#deployment-architecture)
+1. [System Overview](#1-system-overview)
+2. [Architecture Principles](#2-architecture-principles)
+3. [Technology Choices](#3-technology-choices)
+4. [System Components](#4-system-components)
+5. [Data Flow](#5-data-flow)
+6. [Database Design](#6-database-design)
+7. [Authentication Architecture](#7-authentication-architecture)
+8. [Security Architecture](#8-security-architecture)
+9. [Integration Architecture](#9-integration-architecture)
+10. [Deployment Architecture](#10-deployment-architecture)
+11. [Monitoring & Observability](#11-monitoring--observability)
 
 ---
 
-## System Overview
+## 1. System Overview
 
-SuprFi is an embedded consumer financing platform designed to seamlessly integrate with home service CRMs. The architecture is built for:
+SuprFi is a consumer financing platform designed to seamlessly integrate with home service CRMs. The system enables contractors to offer financing to their customers with minimal friction.
 
-- **Speed**: Sub-2-minute application flow
-- **Reliability**: 99.9% uptime SLA
+### Design Goals
+
+- **Speed**: Sub-5-minute application flow
 - **Security**: Bank-grade encryption and compliance
-- **Scalability**: Handle 10,000+ applications/month
-- **Extensibility**: Easy to add new CRM integrations and lenders
+- **Simplicity**: Monolithic architecture for fast iteration
+- **Extensibility**: Easy to add new CRM integrations
 
-### High-Level Architecture
+### High-Level Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        PRESENTATION LAYER                        │
-│  ┌──────────────────────┐        ┌──────────────────────┐       │
-│  │  Borrower Portal     │        │  SuprOps Admin       │       │
-│  │  (Next.js/React)     │        │  (Next.js/React)     │       │
-│  │  - Apply for loan    │        │  - Review apps       │       │
-│  │  - Link bank         │        │  - Manage rules      │       │
-│  │  - E-sign            │        │  - Analytics         │       │
-│  └──────────────────────┘        └──────────────────────┘       │
-└────────────────────────┬────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      APPLICATION LAYER                           │
-│  ┌──────────────────────────────────────────────────────┐       │
-│  │           API Gateway (Next.js API Routes)           │       │
-│  │  - Authentication & Authorization                    │       │
-│  │  - Rate Limiting                                     │       │
-│  │  - Request Validation                                │       │
-│  │  - API Versioning                                    │       │
-│  └──────────────────────────────────────────────────────┘       │
-│                                                                   │
-│  ┌────────────┬────────────┬────────────┬────────────┐         │
-│  │  Borrower  │  CRM Sync  │ Decision-  │  Lender    │         │
-│  │  Service   │  Service   │ ing Svc    │  Adapter   │         │
-│  │            │            │            │            │         │
-│  │ - Token    │ - FR OAuth │ - Rules    │ - Loan API │         │
-│  │ - Prefill  │ - Read/    │ - Scoring  │ - Disburse │         │
-│  │ - Submit   │   Write    │ - Offers   │ - Status   │         │
-│  └────────────┴────────────┴────────────┴────────────┘         │
-└────────────────────────┬────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      INTEGRATION LAYER                           │
-│  ┌────────────┬────────────┬────────────┬────────────┐         │
-│  │   Plaid    │  Persona   │  Experian  │ FieldRoutes│         │
-│  │   (Bank)   │   (KYC)    │  (Credit)  │   (CRM)    │         │
-│  └────────────┴────────────┴────────────┴────────────┘         │
-└────────────────────────┬────────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        DATA LAYER                                │
-│  ┌──────────────────────┐        ┌──────────────────────┐       │
-│  │    PostgreSQL        │        │   Redis (BullMQ)     │       │
-│  │    (Supabase)        │        │   - Job Queue        │       │
-│  │  - Customers         │        │   - Cache            │       │
-│  │  - Applications      │        │   - Sessions         │       │
-│  │  - Decisions         │        └──────────────────────┘       │
-│  │  - Loans             │                                        │
-│  └──────────────────────┘        ┌──────────────────────┐       │
-│                                   │  Supabase Storage    │       │
-│                                   │  - KYC Documents     │       │
-│                                   │  - Signed Agreements │       │
-│                                   └──────────────────────┘       │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           PRESENTATION LAYER                                 │
+│                                                                              │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
+│  │  Borrower App   │  │ Borrower Portal │  │   SuprClient    │             │
+│  │  /apply/[token] │  │    /portal      │  │    /client      │             │
+│  │                 │  │                 │  │                 │             │
+│  │ • Multi-step    │  │ • Dashboard     │  │ • Dashboard     │             │
+│  │   application   │  │ • Payments      │  │ • Applications  │             │
+│  │ • Bank linking  │  │ • Payoff        │  │ • Loans         │             │
+│  │ • Offers        │  │ • Magic link    │  │ • Analytics     │             │
+│  │ • E-sign        │  │   auth          │  │ • Team mgmt     │             │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘             │
+│                                                                              │
+│  ┌─────────────────┐  ┌─────────────────┐                                   │
+│  │    SuprOps      │  │   Marketing     │                                   │
+│  │    /admin       │  │    Site         │                                   │
+│  │                 │  │                 │                                   │
+│  │ • Applications  │  │ • Landing pages │                                   │
+│  │ • Manual review │  │ • Waitlist      │                                   │
+│  │ • Collections   │  │ • SEO pages     │                                   │
+│  │ • Payments      │  │                 │                                   │
+│  │ • User mgmt     │  │                 │                                   │
+│  │ • Audit logs    │  │                 │                                   │
+│  └─────────────────┘  └─────────────────┘                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            API LAYER                                         │
+│                     Next.js API Routes (/api/v1/*)                          │
+│                                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                        Route Categories                               │  │
+│  │                                                                       │  │
+│  │  /crm/*           CRM integration (offer-financing, webhook, sync)   │  │
+│  │  /borrower/*      Application flow (submit, decision, offers, sign)  │  │
+│  │  /portal/*        Borrower portal (dashboard, payments, payoff)      │  │
+│  │  /client/*        Contractor portal (apps, loans, team, analytics)   │  │
+│  │  /admin/*         Admin operations (apps, review, payments, users)   │  │
+│  │  /webhooks/*      External webhooks (Plaid, Jobber)                  │  │
+│  │  /cron/*          Scheduled jobs (payments, notifications)           │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          SERVICE LAYER                                       │
+│                                                                              │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
+│  │   Decisioning   │  │   Plaid Service │  │  Persona Service│             │
+│  │                 │  │                 │  │                 │             │
+│  │ • Score calc    │  │ • Link tokens   │  │ • Create inquiry│             │
+│  │ • Rule engine   │  │ • Token exchange│  │ • Get status    │             │
+│  │ • Offer gen     │  │ • Asset reports │  │ • Webhook parse │             │
+│  │ • Manual review │  │ • ACH transfers │  │                 │             │
+│  │   triggers      │  │ • Balances      │  │                 │             │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘             │
+│                                                                              │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
+│  │  SMS Service    │  │  Email Service  │  │  CRM Services   │             │
+│  │   (Twilio)      │  │   (Resend)      │  │                 │             │
+│  │                 │  │                 │  │ • Jobber        │             │
+│  │ • Send SMS      │  │ • Send email    │  │   (OAuth+GQL)   │             │
+│  │ • App links     │  │ • Templates     │  │ • FieldRoutes   │             │
+│  │                 │  │                 │  │   (REST)        │             │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘             │
+│                                                                              │
+│  ┌─────────────────┐  ┌─────────────────┐                                   │
+│  │ Payment Service │  │ Payoff Service  │                                   │
+│  │                 │  │                 │                                   │
+│  │ • Initiate ACH  │  │ • Quote calc    │                                   │
+│  │ • Track status  │  │ • Process payoff│                                   │
+│  │ • Retry logic   │  │                 │                                   │
+│  │ • Sync transfers│  │                 │                                   │
+│  └─────────────────┘  └─────────────────┘                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           DATA LAYER                                         │
+│                                                                              │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │                    PostgreSQL (Supabase)                              │  │
+│  │                                                                       │  │
+│  │  ┌─────────────────────────────────────────────────────────────────┐ │  │
+│  │  │ Core Models                                                      │ │  │
+│  │  │ Customer, Job, Application, Decision, Offer, Loan, Payment      │ │  │
+│  │  └─────────────────────────────────────────────────────────────────┘ │  │
+│  │                                                                       │  │
+│  │  ┌─────────────────────────────────────────────────────────────────┐ │  │
+│  │  │ Auth Models                                                      │ │  │
+│  │  │ AdminUser, AdminSession, ContractorUser, ContractorSession,     │ │  │
+│  │  │ BorrowerSession, BorrowerMagicLink                              │ │  │
+│  │  └─────────────────────────────────────────────────────────────────┘ │  │
+│  │                                                                       │  │
+│  │  ┌─────────────────────────────────────────────────────────────────┐ │  │
+│  │  │ Audit Models                                                     │ │  │
+│  │  │ AuditLog, AdminAuditLog, ContractorAuditLog, CrmSyncLog         │ │  │
+│  │  └─────────────────────────────────────────────────────────────────┘ │  │
+│  │                                                                       │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      EXTERNAL INTEGRATIONS                                   │
+│                                                                              │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐             │
+│  │      Plaid      │  │     Persona     │  │     Twilio      │             │
+│  │                 │  │                 │  │                 │             │
+│  │ • Bank linking  │  │ • ID verify     │  │ • SMS           │             │
+│  │ • ACH payments  │  │ • Document scan │  │ • App links     │             │
+│  │ • Asset reports │  │ • Watchlist     │  │                 │             │
+│  │ • Identity      │  │                 │  │                 │             │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘             │
+│                                                                              │
+│  ┌─────────────────┐  ┌─────────────────┐                                   │
+│  │     Resend      │  │   CRM Systems   │                                   │
+│  │                 │  │                 │                                   │
+│  │ • Transactional │  │ • Jobber        │                                   │
+│  │   emails        │  │ • FieldRoutes   │                                   │
+│  │ • React         │  │ • ServiceTitan  │                                   │
+│  │   templates     │  │   (planned)     │                                   │
+│  └─────────────────┘  └─────────────────┘                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Architecture Principles
+## 2. Architecture Principles
 
-### 1. API-First Design
+### 2.1 Monolithic Simplicity
+- Single Next.js application for all functionality
+- No separate microservices or message queues
+- Easier to develop, debug, and deploy
+
+### 2.2 API-First Design
 - All services expose REST APIs
-- OpenAPI/Swagger documentation
-- Versioned endpoints (`/v1/`, `/v2/`)
-- Consistent error handling
+- Consistent error handling and response formats
+- Versioned endpoints (`/api/v1/`)
+- Zod validation on all endpoints
 
-### 2. Microservices (Light)
-- Monolithic frontend (Next.js)
-- Separate services for:
-  - Decisioning (independent scaling)
-  - CRM Sync (isolated from borrower flow)
-  - Lender Adapter (pluggable architecture)
-- Shared database (Postgres) for simplicity
-- Event-driven via job queue (BullMQ)
+### 2.3 Security by Default
+- HTTPS only (TLS 1.3)
+- HTTP-only secure cookies for sessions
+- Audit logging for all sensitive actions
+- RBAC for admin operations
 
-### 3. Security by Default
-- Zero-trust architecture
-- Encrypt everything (at rest and in transit)
-- Principle of least privilege
-- Audit all PII access
-- Rate limiting on all endpoints
+### 2.4 Database as Source of Truth
+- All state stored in PostgreSQL
+- JSONB for flexible data (Plaid snapshots, rule hits)
+- Audit trail for compliance
 
-### 4. Resilience & Fault Tolerance
-- Retry with exponential backoff
-- Circuit breakers for external APIs
-- Dead letter queues for failed jobs
-- Graceful degradation (show cached data if API down)
-
-### 5. Observable Systems
-- Structured logging (JSON)
-- Distributed tracing (OpenTelemetry)
-- Real-time metrics (Datadog)
-- Health checks (`/health`, `/ready`)
-
-### 6. Cost-Effective Scalability
-- Serverless where possible (Vercel Edge)
-- Horizontal scaling for services
-- Connection pooling for database
-- CDN for static assets
-
----
-
-## Technology Choices
-
-### Frontend
-
-**Next.js 14 (App Router)**
-
-**Why:**
-- React Server Components reduce client-side JS
-- Built-in API routes (no separate Express server)
-- Excellent SEO (server-side rendering)
-- Automatic code splitting
-- Vercel deployment = zero config
-
-**Alternatives Considered:**
-- React + Vite: More control, but requires separate backend
-- Remix: Great SSR, but smaller ecosystem
-
-**UI Stack:**
-- TailwindCSS (utility-first styling)
-- shadcn/ui (accessible component library)
-- Recharts (analytics charts)
-- React Hook Form (form validation)
-- Zod (schema validation)
-
----
-
-### Backend
-
-**Node.js 20+ with TypeScript**
-
-**Why:**
-- Shared language with frontend (full-stack efficiency)
-- Strong async I/O (webhooks, API calls)
-- Rich ecosystem (Prisma, BullMQ, etc.)
-- TypeScript adds type safety
-
-**Framework Choices:**
-- **Next.js API Routes**: For public APIs (borrower, CRM)
-- **Express**: For microservices (decisioning, lender adapter)
-
-**Alternatives Considered:**
-- Python FastAPI: Great for ML, but adds language complexity
-- Go: Extremely fast, but steeper learning curve
-
----
-
-### Database
-
-**PostgreSQL 15 (Supabase)**
-
-**Why:**
-- ACID compliance (critical for financial data)
-- JSONB support (flexible for snapshots)
-- Row-Level Security (multi-tenant isolation)
-- Full-text search (for admin dashboard)
-- Managed backups and replication
-
-**ORM: Prisma**
-
-**Why:**
-- Type-safe queries
-- Automatic migrations
-- Introspection (DB → TypeScript types)
-- Great DX with VS Code
-
-**Alternatives Considered:**
-- MySQL: Less feature-rich than Postgres
-- MongoDB: Not ACID, harder to ensure consistency
-
----
-
-### Authentication
-
-**Clerk**
-
-**Why:**
-- Magic links (passwordless = better UX)
-- Session management out-of-box
-- Webhooks for user lifecycle
-- Multi-org support (for merchant portals)
-- Better pricing than Auth0
-
-**API Authentication:**
-- JWT for session-based (borrower, admin)
-- API keys for machine-to-machine (CRM)
-
-**Alternatives Considered:**
-- Auth0: More enterprise features, higher cost
-- NextAuth.js: Open-source, but more implementation work
-
----
-
-### Job Queue
-
-**BullMQ (Redis-backed)**
-
-**Why:**
-- Job prioritization (critical vs background)
+### 2.5 Graceful Integration
+- Webhooks for real-time updates from external services
 - Retry logic with exponential backoff
-- Rate limiting (max X jobs/minute)
-- Bull Board UI for monitoring
-- Pause/resume queues
-
-**Use Cases:**
-- Lender API calls (can be slow)
-- CRM sync operations
-- Webhook retries
-- Email/SMS notifications
-
-**Alternatives Considered:**
-- AWS SQS: Serverless, but less control over retries
-- RabbitMQ: More complex, overkill for MVP
+- Mock implementations for development
 
 ---
 
-### Object Storage
+## 3. Technology Choices
 
-**Supabase Storage (S3-compatible)**
+### 3.1 Framework & Runtime
 
-**Why:**
-- Unified with database (simpler architecture)
-- Built-in CDN (fast document retrieval)
-- Row-level security policies
-- Automatic image optimization
+| Technology | Choice | Rationale |
+|------------|--------|-----------|
+| Framework | Next.js 15 | SSR, API routes, App Router, Vercel deployment |
+| Runtime | Node.js 20+ | TypeScript support, async/await, Vercel functions |
+| Language | TypeScript 5 | Type safety, better DX, fewer runtime errors |
+| Styling | TailwindCSS 3.4 | Utility-first, responsive, fast iteration |
 
-**Use Cases:**
-- KYC documents (driver's licenses, etc.)
-- Signed loan agreements (PDFs)
-- Payment receipts
+### 3.2 Database & ORM
 
-**Alternatives Considered:**
-- AWS S3: More scalable, but adds vendor complexity
+| Technology | Choice | Rationale |
+|------------|--------|-----------|
+| Database | PostgreSQL 15 | ACID compliance, JSONB, mature ecosystem |
+| Hosting | Supabase | Managed Postgres, auto-backups, connection pooling |
+| ORM | Prisma 6 | Type-safe queries, migrations, great DX |
+| Pooling | Prisma Accelerate | Connection pooling for serverless |
 
----
+### 3.3 Authentication
 
-### Third-Party Services
+| Portal | Technology | Rationale |
+|--------|------------|-----------|
+| Admin | Custom sessions | Full control, RBAC, audit logging |
+| Contractor | Custom sessions | Same as admin, different role hierarchy |
+| Borrower App | JWT tokens | Stateless, URL-embeddable |
+| Borrower Portal | Magic links | Passwordless, better UX |
 
-| Service | Purpose | Why |
-|---------|---------|-----|
-| **Twilio** | SMS | Industry standard, 99.95% uptime |
-| **Plaid** | Bank linking | Trusted by 8,000+ fintechs |
-| **Persona** | KYC/AML | Better UX than Alloy, faster |
-| **Experian** | Credit bureau | Easiest API to integrate |
-| **Sentry** | Error tracking | Best-in-class for JS/Node |
-| **Datadog** | Monitoring | Unified logs, metrics, traces |
+### 3.4 External Services
 
----
-
-## System Components
-
-### 1. API Gateway (Next.js API Routes)
-
-**Responsibilities:**
-- Authenticate requests (JWT, API keys)
-- Rate limiting (100 req/min per IP)
-- Request validation (Zod schemas)
-- Response serialization
-- Error handling (standardized format)
-
-**Routes:**
-```
-/api/v1/crm/*          → CRM Integration
-/api/v1/borrower/*     → Borrower Flow
-/api/v1/decision/*     → Decisioning (internal)
-/api/v1/admin/*        → Admin Dashboard
-/api/v1/webhooks/*     → Webhook Receivers
-```
-
-**Middleware Stack:**
-```typescript
-Request
-  ↓
-1. CORS Check
-  ↓
-2. Rate Limiter
-  ↓
-3. Authentication
-  ↓
-4. Authorization (RBAC)
-  ↓
-5. Request Validation
-  ↓
-6. Route Handler
-  ↓
-7. Response Serialization
-  ↓
-8. Error Handler
-  ↓
-Response
-```
+| Service | Provider | Rationale |
+|---------|----------|-----------|
+| Bank Linking | Plaid | Industry standard, comprehensive API |
+| ACH Payments | Plaid Transfer | Integrated with bank linking |
+| KYC | Persona | Document verification, good UX |
+| SMS | Twilio | Reliable, global coverage |
+| Email | Resend | Modern API, React templates |
+| CRM | Jobber, FieldRoutes | Target market integration |
 
 ---
 
-### 2. Borrower Service
+## 4. System Components
 
-**Responsibilities:**
-- Generate unique tokens for applications
-- Send SMS with Twilio
-- Prefill application data
-- Submit applications
-- Fetch offers
+### 4.1 Frontend Portals
 
-**Key Functions:**
-```typescript
-// Generate token with 24h expiry
-generateToken(applicationId: string): Promise<string>
+#### Borrower Application (`/apply/[token]`)
+- Multi-step form with progress indicator
+- Plaid Link for bank account connection
+- Persona embedded flow for KYC
+- Offer comparison and selection
+- E-signature collection
 
-// Send SMS with unique link
-sendSMS(phone: string, link: string): Promise<boolean>
+#### Borrower Portal (`/portal`)
+- Loan dashboard with balance and next payment
+- Payment history and schedule
+- Early payoff calculator
+- Magic link authentication
 
-// Validate token and return prefilled data
-getApplication(token: string): Promise<Application>
+#### SuprClient (`/client`)
+- Contractor dashboard with stats
+- Application list and details
+- Active loans overview
+- Team management with role-based access
+- Analytics and reporting
+- QR code generation for financing links
 
-// Submit completed application
-submitApplication(token: string, data: ApplicationData): Promise<Decision>
+#### SuprOps (`/admin`)
+- Application management with filters
+- Manual review queue with priority
+- Collections dashboard for delinquent loans
+- Payment monitoring and retry
+- Contractor management
+- Admin user management
+- Audit log viewer
+
+### 4.2 API Layer
+
+#### CRM Integration (`/api/v1/crm/*`)
+```
+POST /offer-financing     Create application, send SMS
+POST /webhook             Receive CRM callbacks
+GET  /sync-status         Check sync status
 ```
 
-**Database Tables:**
-- `applications`
-- `customers`
-- `jobs`
+#### Borrower Flow (`/api/v1/borrower/[token]/*`)
+```
+POST /submit              Submit application for decisioning
+GET  /decision            Fetch decision and offers
+POST /offers/select       Select an offer
+GET  /loan                Get loan details
+GET  /agreement           Fetch loan agreement
+POST /agreement/sign      Sign agreement
+POST /plaid/link-token    Create Plaid Link token
+POST /plaid/exchange      Exchange public token
+POST /plaid/asset-report  Request asset report
+POST /persona/create-inquiry  Start KYC
+POST /persona/complete    Complete KYC
+POST /bank/manual         Manual bank entry
+```
+
+#### Borrower Portal (`/api/v1/portal/*`)
+```
+POST /auth/send-magic-link  Send magic link
+POST /auth/verify-magic-link  Verify and create session
+GET  /auth/me             Get current user
+POST /auth/logout         End session
+GET  /dashboard           Loan summary
+GET  /payments            Payment history
+GET  /loan/payoff-quote   Get payoff amount
+POST /loan/payoff         Process early payoff
+```
+
+#### Contractor Portal (`/api/v1/client/*`)
+```
+POST /auth/login          Login
+POST /auth/signup         Signup
+POST /auth/forgot-password  Reset password
+GET  /auth/me             Get current user
+GET  /dashboard           Stats
+GET  /applications        List applications
+GET  /applications/[id]   Application detail
+POST /send-link           Send financing link
+POST /generate-qr         Generate QR code
+GET  /loans               Active loans
+GET  /team                Team members
+POST /team/invite         Invite team member
+GET  /analytics           Analytics data
+```
+
+#### Admin Operations (`/api/v1/admin/*`)
+```
+POST /auth/login          Login
+POST /auth/logout         Logout
+GET  /auth/me             Get current user
+GET  /dashboard           Dashboard stats
+GET  /applications        List applications
+GET  /applications/[id]   Application detail
+POST /applications/[id]/approve   Approve
+POST /applications/[id]/decline   Decline
+GET  /manual-review       Review queue
+PUT  /manual-review/[id]  Resolve review
+GET  /payments            Payment list
+POST /payments/[id]/retry Retry payment
+POST /payments/[id]/mark-paid  Mark as paid
+GET  /collections         Delinquent loans
+GET  /collections/stats   Collection stats
+POST /collections/[id]/notes  Add note
+GET  /contractors         Contractor list
+GET  /users               Admin user list
+GET  /audit               Audit logs
+GET  /waitlist            Waitlist entries
+```
+
+#### Webhooks (`/api/v1/webhooks/*`)
+```
+POST /plaid               Plaid transfer status updates
+POST /jobber              Jobber quote/job events
+```
+
+#### Cron Jobs (`/api/v1/cron/*`)
+```
+POST /process-payments    Daily ACH processing
+POST /send-notifications  Daily reminders
+```
+
+### 4.3 Service Layer
+
+#### Decisioning Service
+- **Input:** Application with Plaid data
+- **Process:** Score calculation, rule evaluation, manual review triggers
+- **Output:** Decision (approved/declined/manual_review) + offers
+
+#### Plaid Service
+- **Link tokens:** Create for bank linking
+- **Token exchange:** Convert public → access token
+- **Account info:** Balance, transactions
+- **Asset reports:** 90-day bank statements
+- **Identity verification:** KYC via Plaid IDV
+- **ACH transfers:** Debit payments from linked accounts
+
+#### Persona Service
+- **Create inquiry:** Start KYC verification
+- **Get inquiry:** Poll for completion
+- **Webhook parsing:** Handle status updates
+
+#### Payment Service
+- **Authorization:** Pre-check if transfer will succeed
+- **Initiation:** Create ACH debit transfer
+- **Status sync:** Poll pending transfers
+- **Retry logic:** Schedule retries with backoff
+
+#### CRM Services
+- **Jobber:** OAuth flow, GraphQL queries, webhook handling
+- **FieldRoutes:** REST API, status sync
 
 ---
 
-### 3. Decisioning Service
+## 5. Data Flow
 
-**Responsibilities:**
-- Evaluate applications using rules + scoring model
-- Generate 2-3 financing offers
-- Flag applications for manual review
-- Store decision snapshots
-
-**Scoring Algorithm:**
-```typescript
-function calculateScore(data: DecisionInputs): number {
-  const creditScore = data.credit_score || 0;
-  const incomeFactor = Math.min(data.monthly_income / 5000, 1);
-  const bankHealth = calculateBankHealth(data.plaid_data);
-  const kycConfidence = data.persona_data.confidence;
-
-  return Math.round(
-    creditScore * 0.4 +
-    incomeFactor * 300 * 0.3 +
-    bankHealth * 100 * 0.2 +
-    kycConfidence * 100 * 0.1
-  );
-}
-```
-
-**Rule Engine:**
-```typescript
-interface Rule {
-  id: string;
-  name: string;
-  predicate: {
-    field: string;
-    operator: 'eq' | 'gt' | 'lt' | 'includes' | 'not_includes';
-    value: any;
-  };
-  action: 'approve' | 'decline' | 'manual_review';
-  reason?: string;
-}
-
-// Example: Decline if bankruptcy
-{
-  id: 'no_bankruptcy',
-  predicate: {
-    field: 'credit_data.public_records',
-    operator: 'not_includes',
-    value: 'bankruptcy'
-  },
-  action: 'decline',
-  reason: 'Recent bankruptcy filing'
-}
-```
-
-**Offer Generation:**
-```typescript
-function generateOffers(score: number, loanAmount: number): Offer[] {
-  const tier = getTier(score); // A, B, or C
-  const terms = getTierTerms(tier); // [12, 24, 36] or [24, 36, 48, 60]
-  
-  return terms.map(term => ({
-    term_months: term,
-    apr: calculateAPR(tier, term),
-    monthly_payment: calculatePayment(loanAmount, apr, term),
-    origination_fee: loanAmount * getOriginationFeeRate(tier),
-    total_amount: calculateTotalPayment(loanAmount, apr, term)
-  }));
-}
-```
-
-**Database Tables:**
-- `decisions`
-- `offers`
-- `manual_reviews`
-- `pricing_rules`
-
----
-
-### 4. CRM Sync Service
-
-**Responsibilities:**
-- Authenticate with FieldRoutes (OAuth 2.0)
-- Read customer/job data from CRM
-- Write financing status back to CRM
-- Handle CRM webhooks
-- Log all sync operations
-
-**OAuth Flow:**
-```
-1. Admin authorizes SuprFi in FieldRoutes settings
-2. FieldRoutes redirects to: /api/v1/crm/fieldroutes/callback?code=abc123
-3. Exchange code for access_token + refresh_token
-4. Store tokens encrypted in database
-5. Use access_token for API calls
-6. Refresh when expired (7 days)
-```
-
-**Field Mapping:**
-```typescript
-interface FieldMapping {
-  fieldRoutes: {
-    customerId: string;
-    'customer.firstName': string;
-    'customer.email': string;
-    // ...
-  };
-  suprfi: {
-    crmCustomerId: string;
-    firstName: string;
-    email: string;
-    // ...
-  };
-}
-
-// Bidirectional sync
-function mapToSuprFi(frData: any): Customer;
-function mapToFieldRoutes(fpData: Customer): any;
-```
-
-**Retry Logic:**
-```typescript
-async function syncWithRetry(operation: () => Promise<any>, maxRetries = 5) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      return await operation();
-    } catch (error) {
-      if (attempt === maxRetries) throw error;
-      
-      const delay = Math.min(1000 * 2 ** attempt, 30000); // Exponential backoff
-      await sleep(delay);
-    }
-  }
-}
-```
-
-**Database Tables:**
-- `crm_sync_logs`
-
----
-
-### 5. Lender Adapter
-
-**Responsibilities:**
-- Abstract interface for multiple lenders
-- Create loans via lender APIs
-- Request disbursement
-- Handle funding webhooks
-- Retry failed operations
-
-**Adapter Interface:**
-```typescript
-interface LenderAdapter {
-  name: string;
-  
-  // Create loan with lender
-  createLoan(
-    application: Application,
-    offer: Offer
-  ): Promise<{ lender_loan_id: string }>;
-  
-  // Request disbursement to merchant
-  requestDisbursement(
-    loanId: string,
-    amount: number,
-    merchantAccount: string
-  ): Promise<{ disbursement_id: string }>;
-  
-  // Get loan status
-  getLoanStatus(lenderLoanId: string): Promise<LoanStatus>;
-  
-  // Handle webhook
-  handleWebhook(payload: any, signature: string): Promise<WebhookEvent>;
-}
-```
-
-**Mock Lender (for testing):**
-```typescript
-class MockLenderAdapter implements LenderAdapter {
-  async createLoan(app, offer) {
-    // Simulate 2-second delay
-    await sleep(2000);
-    
-    return {
-      lender_loan_id: `MOCK-${randomUUID()}`,
-      status: 'approved'
-    };
-  }
-  
-  async requestDisbursement(loanId, amount) {
-    await sleep(1000);
-    
-    return {
-      disbursement_id: `DISB-${randomUUID()}`,
-      status: 'pending',
-      estimated_arrival: addDays(new Date(), 2)
-    };
-  }
-}
-```
-
-**Database Tables:**
-- `loans`
-- `lender_transactions`
-
----
-
-### 6. Worker Queue (BullMQ)
-
-**Job Types:**
-
-```typescript
-// High priority: User-facing operations
-queue.add('create-loan', { applicationId, offerId }, { priority: 1 });
-
-// Medium priority: Background sync
-queue.add('sync-to-crm', { applicationId, status }, { priority: 2 });
-
-// Low priority: Notifications
-queue.add('send-email', { to, template, data }, { priority: 3 });
-```
-
-**Worker Configuration:**
-```typescript
-const worker = new Worker('financing', async (job) => {
-  switch (job.name) {
-    case 'create-loan':
-      return await lenderAdapter.createLoan(job.data);
-    
-    case 'sync-to-crm':
-      return await crmSyncService.updateStatus(job.data);
-    
-    case 'send-email':
-      return await emailService.send(job.data);
-  }
-}, {
-  concurrency: 10, // Process 10 jobs in parallel
-  limiter: {
-    max: 100, // Max 100 jobs per 1 minute
-    duration: 60000
-  }
-});
-
-// Retry failed jobs
-worker.on('failed', (job, error) => {
-  if (job.attemptsMade < 5) {
-    job.retry();
-  } else {
-    // Move to dead letter queue
-    dlq.add('failed-job', { job, error });
-  }
-});
-```
-
----
-
-## Data Flow
-
-### End-to-End Borrower Flow
+### 5.1 Borrower Application Flow
 
 ```
-1. Technician Triggers Financing (FieldRoutes)
-   ↓
-   POST /api/v1/crm/offer-financing
-   {
-     crm_customer_id: "FR12345",
-     customer: {...},
-     job: {...}
-   }
-   ↓
-2. SuprFi API Gateway
-   - Validates API key
-   - Creates Application record in Postgres
-   - Generates unique token (JWT, 24h expiry)
-   - Queues SMS job in BullMQ
-   ↓
-3. BullMQ Worker sends SMS (Twilio)
-   SMS: "John, apply for financing: https://app.suprfi.com/apply/abc123"
-   ↓
-4. Borrower clicks link → Next.js Frontend
-   GET /api/v1/borrower/abc123
-   - Validates token
-   - Returns prefilled application data
-   ↓
-5. Borrower completes flow:
-   a) Links bank account → Plaid Link
-      POST /api/v1/borrower/abc123/plaid
-      - Exchange public_token for access_token
-      - Fetch account balance, transactions
-   
-   b) Verifies identity → Persona
-      POST /api/v1/borrower/abc123/kyc
-      - Embed Persona Inquiry
-      - Receive verification webhook
-   
-   c) Submits application
-      POST /api/v1/borrower/abc123/submit
-      {
-        plaid_token: "...",
-        persona_inquiry_id: "...",
-        consent: {...}
-      }
-   ↓
-6. Decisioning Service
-   POST /api/v1/decision/evaluate
-   - Fetch Experian credit report (soft pull)
-   - Run scoring algorithm
-   - Evaluate rules (approve/decline/manual)
-   - Generate 2-3 offers
-   - Save Decision record
-   ↓
-7a. If Approved → Show Offers
-    GET /api/v1/borrower/abc123/offers
-    [
-      { term: 24, apr: 9.9, payment: $343 },
-      { term: 48, apr: 12.9, payment: $200 }
-    ]
-    ↓
-    Borrower selects offer + e-signs
-    POST /api/v1/borrower/abc123/accept
-    ↓
-8. Lender Adapter (queued job)
-   - Create loan with lender partner
-   - Request disbursement
-   - Save Loan record (status: pending_funding)
-   ↓
-9. Lender Webhook (1-2 days later)
-   POST /api/v1/webhooks/lender
-   {
-     event: "loan.funded",
-     loan_id: "LOAN-xyz789",
-     funded_amount: 7500.00
-   }
-   - Update Loan status → funded
-   - Queue CRM sync job
-   ↓
-10. CRM Sync Service
-    PATCH /fieldroutes/appointments/JOB-9876
-    {
-      financing_status: "funded",
-      funded_amount: 7500.00,
-      funded_date: "2025-10-30"
-    }
-    ↓
-11. FieldRoutes receives update
-    Technician sees "Funded ✓" in CRM
+1. CRM TRIGGER
+   ┌─────────────────────────────────────────────────────────┐
+   │ Contractor triggers financing in CRM                    │
+   │                    OR                                   │
+   │ Contractor sends link via SuprClient                    │
+   │                    OR                                   │
+   │ Jobber webhook on QUOTE_CREATE                          │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+2. APPLICATION CREATION
+   ┌─────────────────────────────────────────────────────────┐
+   │ POST /api/v1/crm/offer-financing                        │
+   │ • Create Customer record (or update)                    │
+   │ • Create Job record                                     │
+   │ • Create Application with JWT token                     │
+   │ • Send SMS with link via Twilio                         │
+   │ • Create AuditLog entry                                 │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+3. BORROWER OPENS LINK
+   ┌─────────────────────────────────────────────────────────┐
+   │ GET /apply/{token}                                      │
+   │ • Validate JWT token (check expiry)                     │
+   │ • Fetch Application with Customer, Job                  │
+   │ • Render multi-step form with prefilled data            │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+4. BANK LINKING (Plaid)
+   ┌─────────────────────────────────────────────────────────┐
+   │ POST /api/v1/borrower/{token}/plaid/link-token          │
+   │ • Create Plaid Link token                               │
+   │                                                         │
+   │ [Borrower completes Plaid Link UI]                      │
+   │                                                         │
+   │ POST /api/v1/borrower/{token}/plaid/exchange            │
+   │ • Exchange public_token for access_token                │
+   │ • Fetch account info, balances                          │
+   │ • Store in Application.plaidData                        │
+   │                                                         │
+   │ POST /api/v1/borrower/{token}/plaid/asset-report        │
+   │ • Request 90-day asset report (optional)                │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+5. KYC VERIFICATION (Persona)
+   ┌─────────────────────────────────────────────────────────┐
+   │ POST /api/v1/borrower/{token}/persona/create-inquiry    │
+   │ • Create Persona inquiry                                │
+   │ • Return session token for embedded flow                │
+   │                                                         │
+   │ [Borrower completes ID verification in Persona UI]      │
+   │                                                         │
+   │ POST /api/v1/borrower/{token}/persona/complete          │
+   │ • Mark KYC complete                                     │
+   │ • Store result in Application.personaData               │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+6. APPLICATION SUBMISSION
+   ┌─────────────────────────────────────────────────────────┐
+   │ POST /api/v1/borrower/{token}/submit                    │
+   │ • Validate all consents                                 │
+   │ • Update Customer with complete info                    │
+   │ • Run Decisioning Engine:                               │
+   │   - Calculate score from Plaid data                     │
+   │   - Evaluate risk factors                               │
+   │   - Check for manual review triggers                    │
+   │ • Create Decision record                                │
+   │ • Generate Offers (if approved)                         │
+   │ • Create ManualReview (if needed)                       │
+   │ • Create AuditLog entry                                 │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+7. OFFER SELECTION
+   ┌─────────────────────────────────────────────────────────┐
+   │ GET /api/v1/borrower/{token}/decision                   │
+   │ • Fetch Decision with Offers                            │
+   │                                                         │
+   │ [Borrower reviews and selects offer]                    │
+   │                                                         │
+   │ POST /api/v1/borrower/{token}/offers/select             │
+   │ • Mark selected offer                                   │
+   │ • Update Application status                             │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+8. AGREEMENT SIGNING
+   ┌─────────────────────────────────────────────────────────┐
+   │ GET /api/v1/borrower/{token}/agreement                  │
+   │ • Generate loan agreement with terms                    │
+   │                                                         │
+   │ POST /api/v1/borrower/{token}/agreement/sign            │
+   │ • Capture e-signature                                   │
+   │ • Create Loan record                                    │
+   │ • Generate payment schedule                             │
+   │ • Create Payment records                                │
+   │ • Update Application status to 'funded'                 │
+   │ • Update Loan status to 'funded'                        │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+9. POST-FUNDING
+   ┌─────────────────────────────────────────────────────────┐
+   │ • Send confirmation SMS/email                           │
+   │ • Sync status to CRM (if applicable)                    │
+   │ • Borrower can access portal at /portal                 │
+   └─────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Payment Processing Flow
+
+```
+1. DAILY CRON JOB (11:00 UTC)
+   ┌─────────────────────────────────────────────────────────┐
+   │ POST /api/v1/cron/process-payments                      │
+   │ • Verify CRON_SECRET                                    │
+   │ • Sync pending transfers with Plaid                     │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+2. FIND DUE PAYMENTS
+   ┌─────────────────────────────────────────────────────────┐
+   │ Query: Payments due today or overdue                    │
+   │ • status = 'scheduled'                                  │
+   │ • dueDate <= today                                      │
+   │ • loan.status in ['funded', 'repaying']                 │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+3. PROCESS EACH PAYMENT
+   ┌─────────────────────────────────────────────────────────┐
+   │ For each payment:                                       │
+   │ • Get Plaid credentials from loan.application.plaidData │
+   │ • Update status to 'pending'                            │
+   │                                                         │
+   │ Authorize transfer:                                     │
+   │ • Check if transfer will likely succeed                 │
+   │                                                         │
+   │ If authorized:                                          │
+   │ • Create ACH debit transfer                             │
+   │ • Store plaidTransferId                                 │
+   │ • Update status to 'processing'                         │
+   │                                                         │
+   │ If failed:                                              │
+   │ • Update status to 'failed'                             │
+   │ • Store failureReason, failureCode                      │
+   │ • Schedule retry if retryable                           │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+4. WEBHOOK UPDATES
+   ┌─────────────────────────────────────────────────────────┐
+   │ POST /api/v1/webhooks/plaid                             │
+   │ • Receive TRANSFER_EVENTS_UPDATE                        │
+   │ • Find payment by plaidTransferId                       │
+   │                                                         │
+   │ If settled:                                             │
+   │ • Update payment status to 'completed'                  │
+   │ • Update loan status (repaying → paid_off if all done)  │
+   │ • Reset loan.daysOverdue to 0                           │
+   │                                                         │
+   │ If failed/returned:                                     │
+   │ • Update payment status to 'failed'                     │
+   │ • Store failure reason and code                         │
+   │ • Schedule retry or mark requiresAction                 │
+   │ • Update loan.daysOverdue                               │
+   │ • If 60+ days overdue: loan.status = 'defaulted'        │
+   └─────────────────────────────────────────────────────────┘
+```
+
+### 5.3 Manual Review Flow
+
+```
+1. APPLICATION FLAGGED
+   ┌─────────────────────────────────────────────────────────┐
+   │ During decisioning, check triggers:                     │
+   │ • Borderline score (550-620)                            │
+   │ • Manual bank entry with >$3k loan                      │
+   │ • High loan amount (>$15k)                              │
+   │ • Multiple risk factors but approved                    │
+   │ • No balance data                                       │
+   │                                                         │
+   │ Create ManualReview record with:                        │
+   │ • reason (thin_file, borderline_score, etc.)            │
+   │ • priority (1=high, 2=medium, 3=low)                    │
+   │ • status = 'pending'                                    │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+2. ADMIN REVIEWS
+   ┌─────────────────────────────────────────────────────────┐
+   │ GET /api/v1/admin/manual-review                         │
+   │ • Fetch pending reviews sorted by priority              │
+   │                                                         │
+   │ Admin reviews:                                          │
+   │ • Customer information                                  │
+   │ • Plaid data (balances, transactions)                   │
+   │ • Persona KYC results                                   │
+   │ • Risk factors and score breakdown                      │
+   └────────────────────────┬────────────────────────────────┘
+                            ▼
+3. RESOLUTION
+   ┌─────────────────────────────────────────────────────────┐
+   │ PUT /api/v1/admin/manual-review/{id}                    │
+   │                                                         │
+   │ Options:                                                │
+   │ • resolution = 'approved'                               │
+   │   - Generate offers                                     │
+   │   - Update decision status                              │
+   │   - Notify borrower                                     │
+   │                                                         │
+   │ • resolution = 'declined'                               │
+   │   - Update decision status                              │
+   │   - Notify borrower                                     │
+   │                                                         │
+   │ • resolution = 'approved_with_conditions'               │
+   │   - Add conditions (e.g., down payment)                 │
+   │   - Generate modified offers                            │
+   │                                                         │
+   │ Update ManualReview:                                    │
+   │ • status = 'resolved'                                   │
+   │ • resolvedBy, resolvedAt, notes                         │
+   └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### Manual Review Flow
+## 6. Database Design
+
+### 6.1 Entity Relationships
 
 ```
-1. Decisioning flags application
-   - Score < 650
-   - Fraud signals from Persona
-   - Thin credit file
-   ↓
-2. Create ManualReview record
-   {
-     reason: "thin_file",
-     priority: 1 (high),
-     status: "pending"
-   }
-   ↓
-3. Admin opens SuprOps → Review Queue
-   GET /api/v1/admin/manual-review/queue
-   ↓
-4. Underwriter clicks "Assign to Me"
-   PATCH /api/v1/admin/manual-review/MR-001
-   { assigned_to: "user_123" }
-   ↓
-5. Underwriter reviews:
-   - Credit report details
-   - Plaid transaction history
-   - KYC documents
-   - Job details
-   ↓
-6. Underwriter decides:
-   POST /api/v1/admin/manual-review/MR-001/resolve
-   {
-     resolution: "approved",
-     notes: "Verified employment via phone call",
-     selected_offer_id: "OFF-002",
-     conditions: { down_payment_required: 500 }
-   }
-   ↓
-7. Create Loan record → Lender Adapter
-   (Same as auto-approval flow)
-   ↓
-8. Send notification to borrower
-   "Your application has been approved!"
+┌──────────────────────────────────────────────────────────────────────────┐
+│                         CORE FINANCING FLOW                              │
+│                                                                          │
+│  Customer ────┬──── Job ────┬──── Application ──── Decision ────┬── Offer│
+│      │        │             │          │               │         │       │
+│      │        │             │          │               │         │       │
+│      │        └─ Contractor │          └── Loan ───────┤         │       │
+│      │             Job      │               │          │         │       │
+│      │                      │               │          └─ Manual │       │
+│      │                      │               │             Review │       │
+│      │                      │               │                    │       │
+│      │                      │               ├── Payment          │       │
+│      │                      │               │                    │       │
+│      │                      │               └── Collection       │       │
+│      │                      │                    Note            │       │
+│      │                      │                                    │       │
+│      ├── BorrowerSession    │                                    │       │
+│      │                      │                                    │       │
+│      └── BorrowerMagicLink  │                                    │       │
+│                             │                                    │       │
+└─────────────────────────────┴────────────────────────────────────┴───────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                         ADMIN SYSTEM                                     │
+│                                                                          │
+│  AdminUser ────┬──── AdminSession                                        │
+│                │                                                         │
+│                └──── AdminAuditLog                                       │
+│                                                                          │
+│  PasswordReset                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                       CONTRACTOR SYSTEM                                  │
+│                                                                          │
+│  Contractor ────┬──── ContractorUser ────┬──── ContractorSession         │
+│                 │                        │                               │
+│                 │                        └──── ContractorAuditLog        │
+│                 │                                                        │
+│                 └──── ContractorJob                                      │
+│                                                                          │
+│  ContractorPasswordReset                                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│                       INTEGRATION & AUDIT                                │
+│                                                                          │
+│  CrmConnection        CrmSyncLog        AuditLog        PricingRule      │
+│                                                                          │
+│  Waitlist                                                                │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
----
+### 6.2 Key Indexes
 
-## Database Design
-
-### Entity-Relationship Diagram
-
-```
-customers
-┌──────────────┐
-│ id (PK)      │───┐
-│ crm_cust_id  │   │
-│ first_name   │   │
-│ email        │   │
-│ phone        │   │
-└──────────────┘   │
-                   │
-jobs               │ 1:N
-┌──────────────┐   │
-│ id (PK)      │───┤
-│ crm_job_id   │   │
-│ customer_id  │───┘
-│ estimate     │
-└──────────────┘
-       │
-       │ 1:N
-       ↓
-applications
-┌──────────────┐
-│ id (PK)      │───┐
-│ job_id (FK)  │   │
-│ token        │   │
-│ status       │   │
-│ plaid_data   │   │
-│ credit_data  │   │
-└──────────────┘   │
-                   │ 1:1
-decisions          │
-┌──────────────┐   │
-│ id (PK)      │───┤
-│ app_id (FK)  │───┘
-│ score        │
-│ status       │
-│ rule_hits    │
-└──────────────┘
-       │
-       │ 1:N
-       ↓
-offers
-┌──────────────┐
-│ id (PK)      │
-│ decision_id  │
-│ term_months  │
-│ apr          │
-│ monthly_pmt  │
-│ selected     │
-└──────────────┘
-       │
-       │ (if selected)
-       ↓
-loans
-┌──────────────┐
-│ id (PK)      │
-│ app_id (FK)  │
-│ lender_id    │
-│ funded_amt   │
-│ status       │
-│ payment_sched│
-└──────────────┘
-```
-
-### Indexes
-
-**customers:**
 ```sql
+-- Customer lookups
 CREATE INDEX idx_customers_email ON customers(email);
 CREATE INDEX idx_customers_phone ON customers(phone);
 CREATE INDEX idx_customers_crm_id ON customers(crm_customer_id);
-```
 
-**applications:**
-```sql
+-- Application queries
 CREATE INDEX idx_applications_token ON applications(token);
 CREATE INDEX idx_applications_status ON applications(status);
-CREATE INDEX idx_applications_created_at ON applications(created_at DESC);
-CREATE INDEX idx_applications_customer_id ON applications(customer_id);
-```
+CREATE INDEX idx_applications_created_at ON applications(created_at);
 
-**decisions:**
-```sql
+-- Decision queries
 CREATE INDEX idx_decisions_status ON decisions(decision_status);
-CREATE INDEX idx_decisions_score ON decisions(score);
-CREATE INDEX idx_decisions_decided_at ON decisions(decided_at DESC);
-```
+CREATE INDEX idx_decisions_decided_at ON decisions(decided_at);
 
-**audit_logs:**
-```sql
+-- Payment processing
+CREATE INDEX idx_payments_status ON payments(status);
+CREATE INDEX idx_payments_due_date ON payments(due_date);
+CREATE INDEX idx_payments_next_retry ON payments(next_retry_date);
+CREATE INDEX idx_payments_loan_id ON payments(loan_id);
+
+-- Loan queries
+CREATE INDEX idx_loans_status ON loans(status);
+CREATE INDEX idx_loans_days_overdue ON loans(days_overdue);
+
+-- Manual review queue
+CREATE INDEX idx_manual_review_status ON manual_reviews(status);
+CREATE INDEX idx_manual_review_priority ON manual_reviews(priority);
+
+-- Audit trails
 CREATE INDEX idx_audit_entity ON audit_logs(entity_type, entity_id);
-CREATE INDEX idx_audit_actor ON audit_logs(actor);
-CREATE INDEX idx_audit_timestamp ON audit_logs(timestamp DESC);
+CREATE INDEX idx_audit_timestamp ON audit_logs(timestamp);
 ```
 
 ---
 
-## Security Architecture
+## 7. Authentication Architecture
 
-### Defense in Depth
-
-```
-Layer 1: Network
-├─ Cloudflare (DDoS protection, WAF)
-├─ HTTPS only (TLS 1.3)
-└─ CORS (whitelist known domains)
-
-Layer 2: Application
-├─ Rate limiting (100 req/min)
-├─ Input validation (Zod schemas)
-├─ SQL injection protection (Prisma parameterized queries)
-├─ XSS protection (React auto-escaping)
-└─ CSRF tokens
-
-Layer 3: Authentication
-├─ JWT with short TTL (15 min)
-├─ API keys with rotation (90 days)
-├─ MFA for admin accounts
-└─ Session invalidation on logout
-
-Layer 4: Authorization
-├─ Role-Based Access Control (RBAC)
-├─ Row-Level Security (Supabase RLS)
-└─ Principle of least privilege
-
-Layer 5: Data
-├─ Encryption at rest (AES-256)
-├─ Encryption in transit (TLS 1.3)
-├─ Tokenization (SSN → token)
-├─ Data masking (show last 4 digits)
-└─ Automatic PII redaction in logs
-
-Layer 6: Monitoring
-├─ Audit logs (immutable)
-├─ Anomaly detection
-├─ Security alerts (PagerDuty)
-└─ Penetration testing
-```
-
-### Sensitive Data Handling
-
-**PII Encryption (Field-Level):**
-```typescript
-// Prisma middleware for auto-encryption
-prisma.$use(async (params, next) => {
-  if (params.action === 'create' || params.action === 'update') {
-    if (params.model === 'Customer') {
-      // Encrypt SSN
-      if (params.args.data.ssn) {
-        params.args.data.ssn = encrypt(params.args.data.ssn);
-      }
-    }
-  }
-  
-  const result = await next(params);
-  
-  if (params.action === 'findMany' || params.action === 'findUnique') {
-    if (params.model === 'Customer' && result.ssn) {
-      result.ssn = decrypt(result.ssn);
-    }
-  }
-  
-  return result;
-});
-```
-
-**Audit Logging:**
-```typescript
-async function auditLog(
-  entityType: string,
-  entityId: string,
-  actor: string,
-  action: string,
-  payload?: any,
-  req?: Request
-) {
-  await prisma.auditLog.create({
-    data: {
-      entityType,
-      entityId,
-      actor,
-      action,
-      payload: redactPII(payload), // Remove SSN, full bank account, etc.
-      ipAddress: req?.ip,
-      userAgent: req?.headers['user-agent'],
-      timestamp: new Date()
-    }
-  });
-}
-
-// Example usage
-await auditLog('application', 'APP-123', 'user_456', 'viewed_pii', null, req);
-```
-
----
-
-## Scalability & Performance
-
-### Horizontal Scaling
-
-**Frontend (Next.js):**
-- Deployed to Vercel Edge (auto-scales)
-- CDN for static assets (instant global delivery)
-- ISR (Incremental Static Regeneration) for marketing pages
-
-**Backend Services:**
-- Containerized (Docker)
-- Deployed to ECS Fargate or Cloud Run
-- Auto-scaling based on CPU/memory (scale out at 70%)
-
-**Database:**
-- Supabase Pro: 8GB RAM, 50GB storage
-- Read replicas for analytics queries
-- Connection pooling (PgBouncer)
-
-**Job Queue:**
-- BullMQ with Redis Cluster (3 nodes)
-- Separate queues for different priorities
-- Multiple workers (scale to 50+ workers)
-
-### Caching Strategy
+### 7.1 Session-Based Auth (Admin & Contractor)
 
 ```
-Browser Cache
-├─ Static assets (1 year): /static/*
-├─ API responses (5 min): /api/v1/admin/analytics
-└─ No cache: /api/v1/borrower/* (always fresh)
-
-Redis Cache
-├─ Session data (JWT claims) → 15 min TTL
-├─ Application state (prefill data) → 24 hr TTL
-├─ Pricing rules → 1 hr TTL
-└─ CRM customer data → 5 min TTL
-
-Database Query Cache
-├─ Materialized views for analytics
-└─ Refresh every 5 minutes
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        SESSION FLOW                                      │
+│                                                                          │
+│  1. LOGIN                                                                │
+│     ┌─────────────────────────────────────────────────────────────────┐ │
+│     │ POST /api/v1/admin/auth/login                                   │ │
+│     │ • Verify email/password (bcrypt)                                │ │
+│     │ • Generate secure token (nanoid)                                │ │
+│     │ • Create Session record with expiry                             │ │
+│     │ • Set HTTP-only cookie                                          │ │
+│     │ • Log to AdminAuditLog                                          │ │
+│     └─────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│  2. REQUEST VALIDATION                                                   │
+│     ┌─────────────────────────────────────────────────────────────────┐ │
+│     │ Middleware checks:                                              │ │
+│     │ • Cookie present?                                               │ │
+│     │ • Session exists and not expired?                               │ │
+│     │ • User still active?                                            │ │
+│     │ • Inactivity timeout not exceeded? (30 min)                     │ │
+│     │ • Update lastActiveAt                                           │ │
+│     └─────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│  3. LOGOUT                                                               │
+│     ┌─────────────────────────────────────────────────────────────────┐ │
+│     │ POST /api/v1/admin/auth/logout                                  │ │
+│     │ • Delete session from database                                  │ │
+│     │ • Clear cookie                                                  │ │
+│     │ • Log to AdminAuditLog                                          │ │
+│     └─────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Performance Targets
+### 7.2 RBAC (Admin Roles)
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| API Response Time (p95) | < 500ms | Datadog |
-| Page Load Time (LCP) | < 2s | Vercel Analytics |
-| Time to Interactive (TTI) | < 3s | Lighthouse |
-| Borrower Flow Completion | < 5 min | Amplitude |
-| Decision Latency | < 5s | Custom metric |
-
----
-
-## Monitoring & Observability
-
-### Logging Strategy
-
-**Structured JSON Logs:**
-```json
-{
-  "timestamp": "2025-10-29T15:30:00.123Z",
-  "level": "info",
-  "service": "decisioning-service",
-  "trace_id": "abc123def456",
-  "span_id": "span_789",
-  "event": "decision_evaluated",
-  "application_id": "APP-abc123",
-  "decision_status": "approved",
-  "score": 721,
-  "duration_ms": 1234
-}
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        ROLE HIERARCHY                                    │
+│                                                                          │
+│  god (level 4)                                                           │
+│   │                                                                      │
+│   ├── Full access to everything                                          │
+│   ├── Audit log viewer                                                   │
+│   ├── User management (all roles)                                        │
+│   └── Force logout users                                                 │
+│                                                                          │
+│  admin (level 3)                                                         │
+│   │                                                                      │
+│   ├── Manage ops and viewers                                             │
+│   ├── Contractor management                                              │
+│   ├── User creation (ops/viewer only)                                    │
+│   └── All ops permissions                                                │
+│                                                                          │
+│  ops (level 2)                                                           │
+│   │                                                                      │
+│   ├── Approve/decline applications                                       │
+│   ├── Update records                                                     │
+│   ├── Resolve manual reviews                                             │
+│   └── All viewer permissions                                             │
+│                                                                          │
+│  viewer (level 1)                                                        │
+│   │                                                                      │
+│   ├── View applications                                                  │
+│   ├── View manual review queue                                           │
+│   ├── View waitlist                                                      │
+│   └── View contractors                                                   │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Log Levels:**
-- `ERROR`: System failures, exceptions
-- `WARN`: Degraded performance, retry attempts
-- `INFO`: Normal operations (decision made, loan funded)
-- `DEBUG`: Detailed troubleshooting (rule evaluation steps)
+### 7.3 JWT Token Auth (Borrower Application)
 
-**Log Aggregation:**
-- Vercel Logs → Datadog
-- Service logs → CloudWatch → Datadog
-- Single pane of glass for all logs
-
----
-
-### Distributed Tracing
-
-**OpenTelemetry Instrumentation:**
-```typescript
-import { trace } from '@opentelemetry/api';
-
-async function evaluateApplication(applicationId: string) {
-  const tracer = trace.getTracer('decisioning-service');
-  
-  return tracer.startActiveSpan('evaluate_application', async (span) => {
-    span.setAttribute('application_id', applicationId);
-    
-    try {
-      const creditData = await fetchCreditReport(applicationId);
-      span.addEvent('credit_fetched');
-      
-      const score = calculateScore(creditData);
-      span.setAttribute('score', score);
-      
-      const offers = generateOffers(score);
-      span.addEvent('offers_generated', { count: offers.length });
-      
-      return { score, offers };
-    } catch (error) {
-      span.recordException(error);
-      throw error;
-    } finally {
-      span.end();
-    }
-  });
-}
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        JWT FLOW                                          │
+│                                                                          │
+│  1. TOKEN GENERATION                                                     │
+│     ┌─────────────────────────────────────────────────────────────────┐ │
+│     │ When application created:                                       │ │
+│     │ • Generate JWT with claims:                                     │ │
+│     │   - applicationId                                               │ │
+│     │   - customerId                                                  │ │
+│     │   - jobId                                                       │ │
+│     │   - exp (24 hours)                                              │ │
+│     │ • Store token in Application record                             │ │
+│     │ • Send via SMS link                                             │ │
+│     └─────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│  2. TOKEN VALIDATION                                                     │
+│     ┌─────────────────────────────────────────────────────────────────┐ │
+│     │ On each borrower API request:                                   │ │
+│     │ • Extract token from URL param                                  │ │
+│     │ • Verify JWT signature                                          │ │
+│     │ • Check expiration                                              │ │
+│     │ • Fetch application and verify status                           │ │
+│     └─────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Trace Visualization:**
+### 7.4 Magic Link Auth (Borrower Portal)
+
 ```
-evaluate_application (1.2s)
-├─ fetch_credit_report (800ms)
-│  ├─ http_request → experian.com (750ms)
-│  └─ parse_response (50ms)
-├─ calculate_score (100ms)
-│  ├─ apply_rule: no_bankruptcy (10ms)
-│  ├─ apply_rule: income_threshold (10ms)
-│  └─ compute_final_score (80ms)
-└─ generate_offers (300ms)
-   ├─ tier_a_offers (100ms)
-   ├─ tier_b_offers (100ms)
-   └─ tier_c_offers (100ms)
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        MAGIC LINK FLOW                                   │
+│                                                                          │
+│  1. REQUEST MAGIC LINK                                                   │
+│     ┌─────────────────────────────────────────────────────────────────┐ │
+│     │ POST /api/v1/portal/auth/send-magic-link                        │ │
+│     │ • Find customer by email/phone                                  │ │
+│     │ • Generate secure token                                         │ │
+│     │ • Create BorrowerMagicLink (15 min expiry)                      │ │
+│     │ • Send via email/SMS                                            │ │
+│     └─────────────────────────────────────────────────────────────────┘ │
+│                                                                          │
+│  2. VERIFY MAGIC LINK                                                    │
+│     ┌─────────────────────────────────────────────────────────────────┐ │
+│     │ POST /api/v1/portal/auth/verify-magic-link                      │ │
+│     │ • Find magic link by token                                      │ │
+│     │ • Check not expired and not used                                │ │
+│     │ • Mark magic link as used                                       │ │
+│     │ • Create BorrowerSession (7 day expiry)                         │ │
+│     │ • Set HTTP-only cookie                                          │ │
+│     └─────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### Metrics & Dashboards
+## 8. Security Architecture
 
-**Business Metrics:**
-```
-applications_created_total (counter)
-applications_approved_total (counter)
-applications_declined_total (counter)
-approval_rate (gauge) = approved / total
-avg_loan_amount (gauge)
-time_to_decision (histogram)
-```
-
-**System Metrics:**
-```
-http_requests_total (counter) by {method, route, status}
-http_request_duration_seconds (histogram)
-queue_depth (gauge) by {queue_name}
-job_processing_duration_seconds (histogram)
-database_connection_pool_size (gauge)
-cache_hit_ratio (gauge)
-```
-
-**Datadog Dashboard Layout:**
-```
-┌─────────────────────────────────────────┐
-│          SuprFi Overview               │
-├─────────────────────────────────────────┤
-│ Applications Today: 247                  │
-│ Approval Rate: 68% ↑ 2%                 │
-│ Avg Loan Amount: $8,350                 │
-│ API Error Rate: 0.12% ✓                 │
-├─────────────────────────────────────────┤
-│   API Response Time (p95)               │
-│   [Line chart: last 24h]                │
-├─────────────────────────────────────────┤
-│   Queue Depth                           │
-│   [Stacked area: high/medium/low]       │
-├─────────────────────────────────────────┤
-│   Top 5 Errors (last 1h)                │
-│   1. Plaid timeout (12)                 │
-│   2. Experian rate limit (5)            │
-│   3. FieldRoutes 500 (3)                │
-└─────────────────────────────────────────┘
-```
-
----
-
-### Alerting Rules
-
-**Critical (PagerDuty):**
-- API error rate > 5% for 5 min
-- Database down
-- Queue backlog > 1000 jobs for 10 min
-- Any service down
-
-**Warning (Slack):**
-- API p95 latency > 1s for 10 min
-- Third-party API errors (Plaid, Persona) > 10 in 5 min
-- Job retry rate > 20%
-- Disk usage > 80%
-
----
-
-## Deployment Architecture
-
-### Environments
+### 8.1 Defense in Depth
 
 ```
-Development (Local)
-├─ Docker Compose
-│  ├─ Postgres (local)
-│  ├─ Redis (local)
-│  └─ Mock APIs (Plaid, Persona, Experian)
-└─ Next.js dev server (localhost:3000)
-
-Staging (Vercel Preview)
-├─ Vercel (automatic preview per PR)
-├─ Supabase (staging project)
-├─ Railway (Redis staging)
-└─ Third-party sandboxes
-
-Production (Vercel + AWS)
-├─ Vercel (Next.js frontend + API routes)
-├─ AWS ECS Fargate (microservices)
-│  ├─ Decisioning Service
-│  ├─ CRM Sync Service
-│  └─ Lender Adapter
-├─ Supabase (production DB)
-├─ Railway (Redis production)
-└─ Third-party production APIs
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Layer 1: NETWORK                                                         │
+│ • HTTPS only (TLS 1.3)                                                   │
+│ • Vercel Edge Network (DDoS protection)                                  │
+│ • CORS configured for known domains                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Layer 2: APPLICATION                                                     │
+│ • Rate limiting per endpoint                                             │
+│ • Input validation (Zod schemas)                                         │
+│ • SQL injection protection (Prisma parameterized queries)                │
+│ • XSS protection (React auto-escaping)                                   │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Layer 3: AUTHENTICATION                                                  │
+│ • Password hashing (bcrypt)                                              │
+│ • Secure session tokens (nanoid)                                         │
+│ • HTTP-only, Secure, SameSite cookies                                    │
+│ • Session expiration and inactivity timeout                              │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Layer 4: AUTHORIZATION                                                   │
+│ • Role-Based Access Control (RBAC)                                       │
+│ • Principle of least privilege                                           │
+│ • Resource ownership validation                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Layer 5: DATA                                                            │
+│ • Encryption at rest (Supabase)                                          │
+│ • Encryption in transit (TLS)                                            │
+│ • Sensitive data in JSONB (plaidData, creditData)                        │
+│ • PII access audit logging                                               │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Layer 6: MONITORING                                                      │
+│ • Comprehensive audit logs                                               │
+│ • CRM sync logs                                                          │
+│ • Admin action logs                                                      │
+│ • Webhook signature verification                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-### CI/CD Pipeline
+### 8.2 Webhook Security
 
 ```
-1. Developer pushes code → GitHub
-   ↓
-2. GitHub Actions triggered
-   ├─ Run linter (ESLint)
-   ├─ Run type check (TypeScript)
-   ├─ Run unit tests (Jest)
-   └─ Run E2E tests (Playwright)
-   ↓
-3. If PR → Deploy to Vercel Preview
-   - Unique URL: suprfi-pr-123.vercel.app
-   - Comment on PR with link
-   ↓
-4. If merged to main → Deploy to Staging
-   - Run integration tests
-   - Run smoke tests
-   ↓
-5. Manual approval (Slack button)
-   ↓
-6. Deploy to Production
-   ├─ Database migration (Prisma migrate deploy)
-   ├─ Deploy Next.js to Vercel
-   ├─ Deploy services to ECS (rolling update)
-   └─ Run health checks
-   ↓
-7. Post-deploy
-   ├─ Smoke tests (critical paths)
-   ├─ Monitor error rates (5 min)
-   └─ Notify team (Slack)
-```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        PLAID WEBHOOK                                     │
+│                                                                          │
+│  POST /api/v1/webhooks/plaid                                             │
+│  Headers: plaid-verification: {jwt}                                      │
+│                                                                          │
+│  Verification:                                                           │
+│  • Verify JWT signature using Plaid's public key                         │
+│  • Check timestamp to prevent replay attacks                             │
+│  • Validate webhook type and transfer_id                                 │
+└─────────────────────────────────────────────────────────────────────────┘
 
-### Rollback Strategy
-
-**Automated Rollback Triggers:**
-- Error rate > 10% for 5 min
-- API success rate < 90%
-- Failed health checks
-
-**Rollback Steps:**
-1. Revert to previous Vercel deployment (1 click)
-2. Revert ECS task definitions
-3. Rollback database migration if needed (rare)
-4. Notify team + create postmortem issue
-
----
-
-## Disaster Recovery
-
-### Backup Strategy
-
-**Database (Postgres):**
-- Automatic daily backups (Supabase)
-- Point-in-time recovery (7 days)
-- Weekly full backup to S3 (30 day retention)
-
-**Object Storage:**
-- Versioning enabled (restore deleted files)
-- Cross-region replication
-
-**Configuration:**
-- Git repository (version controlled)
-- Secrets in Vercel + AWS Secrets Manager
-
-### RTO & RPO
-
-| Component | RTO (Recovery Time) | RPO (Recovery Point) |
-|-----------|---------------------|----------------------|
-| Database | 1 hour | 5 minutes |
-| Application | 15 minutes | 0 (stateless) |
-| Object Storage | 30 minutes | 1 hour |
-
-### Incident Response
-
-```
-1. Alert triggered (PagerDuty)
-   ↓
-2. On-call engineer investigates
-   - Check Datadog dashboards
-   - Review recent deployments
-   - Check third-party status pages
-   ↓
-3. Mitigate
-   - Rollback deployment
-   - Scale up services
-   - Failover to backup
-   ↓
-4. Communicate
-   - Update status page
-   - Notify affected merchants
-   ↓
-5. Post-Incident
-   - Write postmortem (blameless)
-   - Create follow-up tasks
-   - Update runbooks
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        JOBBER WEBHOOK                                    │
+│                                                                          │
+│  POST /api/v1/webhooks/jobber                                            │
+│  Headers: X-Jobber-Hmac-SHA256: {signature}                              │
+│                                                                          │
+│  Verification:                                                           │
+│  • Compute HMAC-SHA256 of payload with client secret                     │
+│  • Compare with header signature (timing-safe)                           │
+│  • Verify account has active CRM connection                              │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Conclusion
+## 9. Integration Architecture
 
-This architecture is designed for:
-- **Rapid development**: Modern tools, clear boundaries
-- **Reliability**: Retry logic, circuit breakers, monitoring
-- **Security**: Encryption, audit logs, least privilege
-- **Scalability**: Horizontal scaling, caching, CDN
-- **Observability**: Logs, metrics, traces, alerts
+### 9.1 Plaid Integration
 
-As we build and learn, we'll iterate on this architecture. This document is a living blueprint—not set in stone.
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        PLAID PRODUCTS USED                               │
+│                                                                          │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐         │
+│  │      Auth       │  │   Transactions  │  │     Assets      │         │
+│  │                 │  │                 │  │                 │         │
+│  │ • Account/      │  │ • Transaction   │  │ • 90-day bank   │         │
+│  │   routing #s    │  │   history       │  │   statements    │         │
+│  │ • For ACH       │  │ • Income        │  │ • Historical    │         │
+│  │   payments      │  │   detection     │  │   balances      │         │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘         │
+│                                                                          │
+│  ┌─────────────────┐  ┌─────────────────┐                               │
+│  │    Transfer     │  │ Identity Verify │                               │
+│  │                 │  │                 │                               │
+│  │ • ACH debits    │  │ • KYC/AML       │                               │
+│  │ • Payment       │  │ • Document-     │                               │
+│  │   processing    │  │   free verify   │                               │
+│  │ • Status        │  │ • Optional      │                               │
+│  │   webhooks      │  │                 │                               │
+│  └─────────────────┘  └─────────────────┘                               │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 9.2 CRM Integration Pattern
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        CRM INTEGRATION FLOW                              │
+│                                                                          │
+│  INBOUND (CRM → SuprFi)                                                  │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │ 1. Webhook received (e.g., QUOTE_CREATE)                            ││
+│  │ 2. Verify signature                                                 ││
+│  │ 3. Find CRM connection by accountId                                 ││
+│  │ 4. Fetch additional data via API (GraphQL/REST)                     ││
+│  │ 5. Create/update local records (Customer, Job, Application)         ││
+│  │ 6. Log to CrmSyncLog                                                ││
+│  │ 7. Send SMS to customer                                             ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                          │
+│  OUTBOUND (SuprFi → CRM)                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │ 1. Event occurs (application approved, loan funded)                 ││
+│  │ 2. Get CRM connection and valid access token                        ││
+│  │ 3. Refresh token if expired                                         ││
+│  │ 4. Make API call to update CRM                                      ││
+│  │ 5. Retry with exponential backoff on failure                        ││
+│  │ 6. Log to CrmSyncLog                                                ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 10. Deployment Architecture
+
+### 10.1 Infrastructure
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          VERCEL                                          │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                    Edge Network (CDN)                              │  │
+│  │  • Static assets                                                   │  │
+│  │  • Server-rendered pages                                           │  │
+│  │  • Global distribution                                             │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                   Serverless Functions                             │  │
+│  │  • API Routes (/api/v1/*)                                          │  │
+│  │  • Auto-scaling                                                    │  │
+│  │  • Cold start optimization                                         │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                      Cron Jobs                                     │  │
+│  │  • process-payments (11:00 UTC)                                    │  │
+│  │  • send-notifications (14:00 UTC)                                  │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          SUPABASE                                        │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                    PostgreSQL Database                             │  │
+│  │  • 23 tables                                                       │  │
+│  │  • Automatic backups                                               │  │
+│  │  • Encryption at rest                                              │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+│                                                                          │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │                    Prisma Accelerate                               │  │
+│  │  • Connection pooling                                              │  │
+│  │  • Query caching                                                   │  │
+│  │  • Serverless-optimized                                            │  │
+│  └───────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 10.2 CI/CD Pipeline
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        DEPLOYMENT FLOW                                   │
+│                                                                          │
+│  1. Push to Branch                                                       │
+│     └─→ PR created                                                       │
+│                                                                          │
+│  2. Preview Deployment                                                   │
+│     └─→ Vercel builds preview                                            │
+│     └─→ Unique URL for testing                                           │
+│                                                                          │
+│  3. Merge to Main                                                        │
+│     └─→ Production deployment triggered                                  │
+│     └─→ Database migrations run (prisma generate)                        │
+│     └─→ Build and deploy                                                 │
+│                                                                          │
+│  4. Post-Deploy                                                          │
+│     └─→ Automatic health checks                                          │
+│     └─→ Instant rollback if needed                                       │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 11. Monitoring & Observability
+
+### 11.1 Logging Strategy
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        LOG CATEGORIES                                    │
+│                                                                          │
+│  Application Logs                                                        │
+│  • API request/response                                                  │
+│  • Service operations                                                    │
+│  • Error details                                                         │
+│                                                                          │
+│  Audit Logs (Database)                                                   │
+│  • AuditLog: General compliance (applications, decisions)                │
+│  • AdminAuditLog: Admin actions (login, approve, user mgmt)              │
+│  • ContractorAuditLog: Contractor actions (send link, view app)          │
+│  • CrmSyncLog: CRM integration operations                                │
+│                                                                          │
+│  Webhook Logs                                                            │
+│  • Plaid webhook events                                                  │
+│  • Jobber webhook events                                                 │
+│  • Signature verification results                                        │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### 11.2 Key Metrics
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        BUSINESS METRICS                                  │
+│                                                                          │
+│  Applications                                                            │
+│  • Total applications (daily, weekly, monthly)                           │
+│  • Approval rate                                                         │
+│  • Average loan amount                                                   │
+│  • Average time to decision                                              │
+│  • Conversion rate (initiated → funded)                                  │
+│                                                                          │
+│  Loans                                                                   │
+│  • Active loans                                                          │
+│  • Total funded amount                                                   │
+│  • Delinquency rate                                                      │
+│  • Days overdue distribution                                             │
+│                                                                          │
+│  Payments                                                                │
+│  • Success rate                                                          │
+│  • Failure rate by reason                                                │
+│  • Retry success rate                                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        SYSTEM METRICS                                    │
+│                                                                          │
+│  Performance                                                             │
+│  • API response times                                                    │
+│  • Database query times                                                  │
+│  • External API latency (Plaid, Persona)                                 │
+│                                                                          │
+│  Reliability                                                             │
+│  • Error rates by endpoint                                               │
+│  • Webhook delivery success                                              │
+│  • Cron job completion                                                   │
+│                                                                          │
+│  Integration Health                                                      │
+│  • Plaid API availability                                                │
+│  • Persona API availability                                              │
+│  • CRM sync success rate                                                 │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 

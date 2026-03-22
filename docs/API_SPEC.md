@@ -1,138 +1,105 @@
 # SuprFi API Specification
 
-**Version:** v1.0  
-**Base URL:** `https://api.suprfi.com/v1`  
-**Last Updated:** October 29, 2025
+**Version:** v2.0  
+**Base URL:** `https://app.suprfi.com/api/v1`  
+**Last Updated:** February 1, 2026
 
 ---
 
 ## Table of Contents
 
-1. [Authentication](#authentication)
-2. [Rate Limiting](#rate-limiting)
-3. [Error Handling](#error-handling)
-4. [CRM Integration API](#crm-integration-api)
-5. [Borrower API](#borrower-api)
-6. [Decisioning API](#decisioning-api)
-7. [Admin API](#admin-api)
-8. [Webhook Events](#webhook-events)
-9. [Postman Collection](#postman-collection)
+1. [Authentication](#1-authentication)
+2. [Error Handling](#2-error-handling)
+3. [CRM Integration API](#3-crm-integration-api)
+4. [Borrower Application API](#4-borrower-application-api)
+5. [Borrower Portal API](#5-borrower-portal-api)
+6. [Contractor Portal API](#6-contractor-portal-api)
+7. [Admin API](#7-admin-api)
+8. [Webhook Events](#8-webhook-events)
 
 ---
 
-## Authentication
+## 1. Authentication
 
-### API Key Authentication (CRM Partners)
+### 1.1 API Key Authentication (CRM Partners)
+
+Used by CRM integrations to trigger financing offers.
 
 ```http
 POST /api/v1/crm/offer-financing
-x-api-key: sk_live_abc123xyz789
+x-api-key: {contractor_api_key}
 Content-Type: application/json
 ```
 
-**API Key Format:**
-- Development: `sk_dev_...`
-- Production: `sk_live_...`
+### 1.2 JWT Token Authentication (Borrower Application)
 
-**Rotation:** Every 90 days (automatic email notification)
-
-### JWT Authentication (Borrower & Admin)
+Borrowers access their application via JWT token embedded in the URL.
 
 ```http
-GET /api/v1/borrower/abc123
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+GET /api/v1/borrower/{token}/decision
 ```
 
-**Token Lifetime:**
-- Access Token: 15 minutes
-- Refresh Token: 7 days
+The token is validated on each request:
+- Signature verification
+- Expiration check (24 hours)
+- Application status validation
 
-**Claims:**
-```json
-{
-  "sub": "user_123",
-  "role": "borrower",
-  "email": "john@example.com",
-  "exp": 1698765432
-}
+### 1.3 Session Cookie Authentication (Portals)
+
+Admin, Contractor, and Borrower portals use HTTP-only session cookies.
+
+```http
+Cookie: suprfi_admin_session={session_token}
+Cookie: suprfi_contractor_session={session_token}
+Cookie: suprfi_borrower_session={session_token}
 ```
 
 ---
 
-## Rate Limiting
+## 2. Error Handling
 
-| Endpoint Type | Rate Limit | Window |
-|---------------|------------|--------|
-| Public (CRM API) | 100 requests | 1 minute |
-| Borrower API | 60 requests | 1 minute |
-| Admin API | 300 requests | 1 minute |
-| Webhooks | 1000 requests | 1 minute |
-
-**Headers:**
-```http
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1698765432
-```
-
-**429 Response:**
-```json
-{
-  "error": {
-    "code": "rate_limit_exceeded",
-    "message": "Too many requests. Please retry after 60 seconds."
-  }
-}
-```
-
----
-
-## Error Handling
-
-### Standard Error Response
+### 2.1 Standard Error Response
 
 ```json
 {
-  "error": {
-    "code": "invalid_request",
-    "message": "The request body is invalid",
-    "details": {
+  "success": false,
+  "error": "Error message",
+  "details": [
+    {
       "field": "customer.email",
-      "issue": "Invalid email format"
-    },
-    "request_id": "req_abc123"
-  }
+      "message": "Invalid email format"
+    }
+  ]
 }
 ```
 
-### Error Codes
+### 2.2 HTTP Status Codes
 
-| HTTP Status | Error Code | Description |
-|-------------|------------|-------------|
-| 400 | `invalid_request` | Request body validation failed |
-| 401 | `unauthorized` | Missing or invalid authentication |
-| 403 | `forbidden` | Insufficient permissions |
-| 404 | `not_found` | Resource not found |
-| 409 | `conflict` | Resource already exists |
-| 429 | `rate_limit_exceeded` | Too many requests |
-| 500 | `internal_error` | Server error |
-| 503 | `service_unavailable` | Temporary outage |
+| Status | Meaning |
+|--------|---------|
+| 200 | Success |
+| 400 | Invalid request / validation error |
+| 401 | Unauthorized / invalid token |
+| 403 | Forbidden / insufficient permissions |
+| 404 | Resource not found |
+| 500 | Internal server error |
 
 ---
 
-## CRM Integration API
+## 3. CRM Integration API
 
-### Create Financing Offer
+### 3.1 Create Financing Offer
 
 Trigger a financing offer for a customer/job from CRM.
 
 **Endpoint:** `POST /api/v1/crm/offer-financing`
 
-**Authentication:** API Key
+**Authentication:** API Key (`x-api-key` header)
 
-**Request:**
+**Request Body:**
 ```json
 {
+  "crm_type": "fieldroutes",
   "crm_customer_id": "FR12345",
   "customer": {
     "first_name": "John",
@@ -163,188 +130,56 @@ Trigger a financing offer for a customer/job from CRM.
 **Response (200):**
 ```json
 {
-  "application_id": "APP-abc123",
-  "token": "eyJhbGc...",
-  "link": "https://app.suprfi.com/apply/eyJhbGc...",
+  "success": true,
+  "application_id": "clxyz123...",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "link": "https://app.suprfi.com/apply/eyJhbGciOiJIUzI1NiIs...",
   "sms_sent": true,
-  "expires_at": "2025-11-01T18:30:00Z"
+  "expires_at": "2026-02-02T18:30:00.000Z"
 }
 ```
 
-**Response (400) - Invalid Request:**
-```json
-{
-  "error": {
-    "code": "invalid_request",
-    "message": "Phone number is required for SMS delivery",
-    "details": {
-      "field": "customer.phone",
-      "issue": "Field is missing"
-    }
-  }
-}
-```
+**Supported CRM Types:**
+- `fieldroutes`
+- `jobber`
+- `servicetitan`
+- `housecall`
 
 ---
 
-### Get Application Status
+## 4. Borrower Application API
 
-Retrieve the current status of a financing application.
+All borrower endpoints use the JWT token from the application link.
 
-**Endpoint:** `GET /api/v1/crm/applications/:application_id`
+### 4.1 Submit Application
 
-**Authentication:** API Key
+Submit completed application for decisioning.
 
-**Response (200):**
+**Endpoint:** `POST /api/v1/borrower/{token}/submit`
+
+**Request Body:**
 ```json
 {
-  "application_id": "APP-abc123",
-  "crm_customer_id": "FR12345",
-  "crm_job_id": "JOB-9876",
-  "status": "approved",
-  "created_at": "2025-10-29T14:30:00Z",
-  "updated_at": "2025-10-29T15:45:00Z",
-  "decision": {
-    "score": 721,
-    "status": "approved",
-    "decided_at": "2025-10-29T15:30:00Z"
-  },
-  "loan": {
-    "loan_id": "LOAN-xyz789",
-    "funded_amount": 7500.00,
-    "funding_date": "2025-10-30T10:00:00Z",
-    "status": "funded",
-    "term_months": 24,
-    "apr": 9.9,
-    "monthly_payment": 343.21,
-    "next_payment_date": "2025-11-30"
-  }
-}
-```
-
-**Application Status Values:**
-- `initiated` - Application created, SMS sent
-- `in_progress` - Borrower started application
-- `submitted` - Borrower completed all steps
-- `under_review` - Manual review required
-- `approved` - Approved, awaiting borrower acceptance
-- `declined` - Application declined
-- `accepted` - Borrower accepted offer
-- `funded` - Loan funded
-
----
-
-### Update Application Callback
-
-Receive updates when application status changes (via webhook).
-
-**Endpoint:** `POST {your_webhook_url}`
-
-**Payload:**
-```json
-{
-  "event": "application.status_changed",
-  "timestamp": "2025-10-29T15:45:00Z",
-  "data": {
-    "application_id": "APP-abc123",
-    "crm_customer_id": "FR12345",
-    "crm_job_id": "JOB-9876",
-    "status": "funded",
-    "previous_status": "approved",
-    "loan": {
-      "loan_id": "LOAN-xyz789",
-      "funded_amount": 7500.00,
-      "funding_date": "2025-10-30T10:00:00Z"
-    }
-  }
-}
-```
-
-**Webhook Signature Verification:**
-```javascript
-const crypto = require('crypto');
-
-function verifyWebhook(payload, signature, secret) {
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(JSON.stringify(payload))
-    .digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
-}
-```
-
----
-
-## Borrower API
-
-### Get Application
-
-Retrieve prefilled application data using the token from SMS link.
-
-**Endpoint:** `GET /api/v1/borrower/:token`
-
-**Authentication:** JWT (from Clerk session)
-
-**Response (200):**
-```json
-{
-  "application": {
-    "id": "APP-abc123",
-    "status": "initiated",
-    "customer": {
-      "first_name": "John",
-      "last_name": "Doe",
-      "email": "john@example.com",
-      "phone": "+15551234567",
-      "address": {
-        "line1": "123 Main St",
-        "city": "Austin",
-        "state": "TX",
-        "zip": "78701"
-      }
-    },
-    "job": {
-      "estimate_amount": 7500.00,
-      "service_type": "HVAC Installation"
-    }
-  }
-}
-```
-
-**Response (404):**
-```json
-{
-  "error": {
-    "code": "not_found",
-    "message": "Application not found or token expired"
-  }
-}
-```
-
----
-
-### Link Bank Account (Plaid)
-
-Exchange Plaid public token for access token.
-
-**Endpoint:** `POST /api/v1/borrower/:token/plaid`
-
-**Authentication:** JWT
-
-**Request:**
-```json
-{
-  "public_token": "public-sandbox-abc123",
-  "account_id": "acc_xyz789",
-  "metadata": {
-    "institution": {
-      "name": "Chase Bank",
-      "institution_id": "ins_3"
-    }
-  }
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john@example.com",
+  "phone": "+15551234567",
+  "addressLine1": "123 Main St",
+  "addressLine2": "Apt 4B",
+  "city": "Austin",
+  "state": "TX",
+  "postalCode": "78701",
+  "dateOfBirth": "1985-03-15",
+  "ssn": "123-45-6789",
+  "plaidAccessToken": "access-sandbox-abc123",
+  "plaidAccountId": "account-xyz789",
+  "bankName": "Chase",
+  "accountMask": "1234",
+  "personaInquiryId": "inq_abc123",
+  "kycStatus": "completed",
+  "creditCheckConsent": true,
+  "termsAccepted": true,
+  "eSignConsent": true
 }
 ```
 
@@ -352,26 +187,272 @@ Exchange Plaid public token for access token.
 ```json
 {
   "success": true,
-  "account_linked": true,
-  "account_name": "Chase Checking",
-  "account_mask": "1234"
+  "message": "Application submitted successfully",
+  "application_id": "clxyz123...",
+  "decision": {
+    "id": "cldec456...",
+    "status": "approved",
+    "score": 721,
+    "reason": "Approved with standard terms based on account analysis",
+    "positiveFactors": [
+      "Strong cash reserves (50%+ of loan amount)",
+      "Healthy account balance (>$10k)",
+      "Regular income deposits detected"
+    ],
+    "riskFactors": [],
+    "dataUsed": {
+      "hasBalance": true,
+      "hasAssetReport": false,
+      "accountAge": 450,
+      "avgBalance": 12500,
+      "incomeDetected": 6500
+    }
+  },
+  "offers": [
+    {
+      "id": "cloff001...",
+      "termMonths": 24,
+      "apr": 8.9,
+      "monthlyPayment": 340.15,
+      "downPayment": 0,
+      "originationFee": 75,
+      "totalAmount": 8228.60
+    },
+    {
+      "id": "cloff002...",
+      "termMonths": 48,
+      "apr": 11.9,
+      "monthlyPayment": 196.50,
+      "downPayment": 0,
+      "originationFee": 37.50,
+      "totalAmount": 9469.50
+    },
+    {
+      "id": "cloff003...",
+      "termMonths": 60,
+      "apr": 13.9,
+      "monthlyPayment": 173.25,
+      "downPayment": 750,
+      "originationFee": 0,
+      "totalAmount": 11145
+    }
+  ]
 }
 ```
 
----
+### 4.2 Get Decision and Offers
 
-### Submit KYC (Persona)
+Fetch decision and available offers.
 
-Submit Persona inquiry ID after identity verification.
+**Endpoint:** `GET /api/v1/borrower/{token}/decision`
 
-**Endpoint:** `POST /api/v1/borrower/:token/kyc`
-
-**Authentication:** JWT
-
-**Request:**
+**Response (200):**
 ```json
 {
-  "inquiry_id": "inq_abc123xyz",
+  "decision": {
+    "id": "cldec456...",
+    "status": "approved",
+    "score": 721,
+    "reason": "Approved with standard terms based on account analysis"
+  },
+  "offers": [
+    {
+      "id": "cloff001...",
+      "termMonths": 24,
+      "apr": 8.9,
+      "monthlyPayment": 340.15,
+      "downPayment": 0,
+      "originationFee": 75,
+      "totalAmount": 8228.60,
+      "selected": false
+    }
+  ]
+}
+```
+
+### 4.3 Select Offer
+
+Select a financing offer.
+
+**Endpoint:** `POST /api/v1/borrower/{token}/offers/select`
+
+**Request Body:**
+```json
+{
+  "offerId": "cloff001..."
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Offer selected successfully",
+  "selectedOffer": {
+    "id": "cloff001...",
+    "termMonths": 24,
+    "apr": 8.9,
+    "monthlyPayment": 340.15
+  }
+}
+```
+
+### 4.4 Get Loan Details
+
+Fetch loan details after offer selection.
+
+**Endpoint:** `GET /api/v1/borrower/{token}/loan`
+
+**Response (200):**
+```json
+{
+  "loan": {
+    "id": "clloan789...",
+    "fundedAmount": 7500,
+    "status": "funded",
+    "fundingDate": "2026-02-01T10:00:00.000Z",
+    "lenderName": "SuprFi",
+    "selectedOffer": {
+      "termMonths": 24,
+      "apr": 8.9,
+      "monthlyPayment": 340.15,
+      "totalAmount": 8228.60
+    }
+  },
+  "payments": [
+    {
+      "paymentNumber": 1,
+      "amount": 340.15,
+      "principal": 285.40,
+      "interest": 54.75,
+      "dueDate": "2026-03-01",
+      "status": "scheduled"
+    }
+  ]
+}
+```
+
+### 4.5 Get Agreement
+
+Fetch loan agreement for signing.
+
+**Endpoint:** `GET /api/v1/borrower/{token}/agreement`
+
+**Response (200):**
+```json
+{
+  "agreement": {
+    "content": "LOAN AGREEMENT...",
+    "version": "1.0",
+    "generatedAt": "2026-02-01T12:00:00.000Z"
+  },
+  "terms": {
+    "loanAmount": 7500,
+    "termMonths": 24,
+    "apr": 8.9,
+    "monthlyPayment": 340.15,
+    "firstPaymentDate": "2026-03-01",
+    "lastPaymentDate": "2028-02-01"
+  }
+}
+```
+
+### 4.6 Sign Agreement
+
+Sign the loan agreement.
+
+**Endpoint:** `POST /api/v1/borrower/{token}/agreement/sign`
+
+**Request Body:**
+```json
+{
+  "signature": "John Doe",
+  "signedAt": "2026-02-01T12:30:00.000Z",
+  "ipAddress": "192.168.1.1"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Agreement signed successfully",
+  "loan": {
+    "id": "clloan789...",
+    "status": "funded",
+    "fundingDate": "2026-02-01T12:30:00.000Z"
+  }
+}
+```
+
+### 4.7 Plaid Link Token
+
+Create a Plaid Link token for bank connection.
+
+**Endpoint:** `POST /api/v1/borrower/{token}/plaid/link-token`
+
+**Response (200):**
+```json
+{
+  "linkToken": "link-sandbox-abc123...",
+  "expiration": "2026-02-01T13:00:00.000Z"
+}
+```
+
+### 4.8 Plaid Token Exchange
+
+Exchange Plaid public token for access token.
+
+**Endpoint:** `POST /api/v1/borrower/{token}/plaid/exchange`
+
+**Request Body:**
+```json
+{
+  "publicToken": "public-sandbox-abc123...",
+  "accountId": "account-xyz789",
+  "institutionId": "ins_3",
+  "institutionName": "Chase"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "bankLinked": true,
+  "accountName": "Chase Checking ****1234",
+  "balance": {
+    "available": 5420.50,
+    "current": 5520.50
+  }
+}
+```
+
+### 4.9 Persona Create Inquiry
+
+Create a Persona KYC inquiry.
+
+**Endpoint:** `POST /api/v1/borrower/{token}/persona/create-inquiry`
+
+**Response (200):**
+```json
+{
+  "inquiryId": "inq_abc123...",
+  "sessionToken": "session_xyz789...",
+  "status": "created"
+}
+```
+
+### 4.10 Persona Complete
+
+Mark Persona verification as complete.
+
+**Endpoint:** `POST /api/v1/borrower/{token}/persona/complete`
+
+**Request Body:**
+```json
+{
+  "inquiryId": "inq_abc123...",
   "status": "completed"
 }
 ```
@@ -380,443 +461,369 @@ Submit Persona inquiry ID after identity verification.
 ```json
 {
   "success": true,
-  "kyc_status": "verified"
+  "kycStatus": "verified"
+}
+```
+
+### 4.11 Manual Bank Entry
+
+Submit bank details manually (without Plaid).
+
+**Endpoint:** `POST /api/v1/borrower/{token}/bank/manual`
+
+**Request Body:**
+```json
+{
+  "bankName": "Chase",
+  "accountNumber": "123456789",
+  "routingNumber": "021000021",
+  "accountType": "checking"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Bank details saved",
+  "verificationStatus": "pending"
 }
 ```
 
 ---
 
-### Submit Application
+## 5. Borrower Portal API
 
-Complete and submit the application for decisioning.
+### 5.1 Send Magic Link
 
-**Endpoint:** `POST /api/v1/borrower/:token/submit`
+Request a magic link for portal login.
 
-**Authentication:** JWT
+**Endpoint:** `POST /api/v1/portal/auth/send-magic-link`
 
-**Request:**
+**Request Body:**
 ```json
 {
-  "plaid_token": "access-sandbox-abc123",
-  "persona_inquiry_id": "inq_xyz789",
-  "consent": {
-    "credit_check": true,
-    "terms_accepted": true,
-    "e_sign": true,
-    "sms_notifications": true
-  },
-  "additional_info": {
-    "employment_status": "full_time",
-    "monthly_income": 6500.00
+  "email": "john@example.com"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Magic link sent to your email"
+}
+```
+
+### 5.2 Verify Magic Link
+
+Verify magic link and create session.
+
+**Endpoint:** `POST /api/v1/portal/auth/verify-magic-link`
+
+**Request Body:**
+```json
+{
+  "token": "magic-link-token..."
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "customer": {
+    "id": "clcust123...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com"
   }
 }
 ```
 
-**Response (200):**
-```json
-{
-  "application_id": "APP-abc123",
-  "status": "submitted",
-  "decision_id": "DEC-def456",
-  "next_step": "view_offers"
-}
-```
+### 5.3 Get Dashboard
 
-**Response (202) - Manual Review:**
-```json
-{
-  "application_id": "APP-abc123",
-  "status": "under_review",
-  "message": "Your application requires additional review. We'll notify you within 24 hours.",
-  "estimated_decision_time": "2025-10-30T15:00:00Z"
-}
-```
+Get loan dashboard data.
 
----
-
-### Get Offers
-
-Retrieve available financing offers after approval.
-
-**Endpoint:** `GET /api/v1/borrower/:token/offers`
-
-**Authentication:** JWT
+**Endpoint:** `GET /api/v1/portal/dashboard`
 
 **Response (200):**
 ```json
 {
-  "decision_id": "DEC-def456",
-  "status": "approved",
-  "score": 721,
-  "offers": [
+  "hasLoans": true,
+  "summary": {
+    "totalLoans": 1,
+    "totalBalance": 6850.25,
+    "totalOverdue": 0,
+    "nextPaymentDue": {
+      "date": "2026-03-01",
+      "amount": 340.15
+    }
+  },
+  "loans": [
     {
-      "offer_id": "OFF-001",
-      "term_months": 24,
-      "apr": 9.9,
-      "monthly_payment": 343.21,
-      "down_payment": 0,
-      "origination_fee": 37.50,
-      "total_amount": 8237.50,
-      "recommended": true
-    },
-    {
-      "offer_id": "OFF-002",
-      "term_months": 48,
-      "apr": 12.9,
-      "monthly_payment": 200.15,
-      "down_payment": 0,
-      "origination_fee": 37.50,
-      "total_amount": 9644.70,
-      "recommended": false
-    },
-    {
-      "offer_id": "OFF-003",
-      "term_months": 60,
-      "apr": 14.9,
-      "monthly_payment": 176.82,
-      "down_payment": 750.00,
-      "origination_fee": 0,
-      "total_amount": 11359.20,
-      "recommended": false
+      "id": "clloan789...",
+      "lenderName": "SuprFi",
+      "fundedAmount": 7500,
+      "fundingDate": "2026-02-01",
+      "status": "repaying",
+      "apr": 8.9,
+      "termMonths": 24,
+      "monthlyPayment": 340.15,
+      "remainingBalance": 6850.25,
+      "paymentsMade": 2,
+      "paymentsRemaining": 22,
+      "overduePayments": 0,
+      "nextPayment": {
+        "date": "2026-04-01",
+        "amount": 340.15
+      },
+      "progress": 8
     }
   ]
 }
 ```
 
----
+### 5.4 Get Payments
 
-### Accept Offer
+Get payment history.
 
-Accept a financing offer and provide e-signature.
+**Endpoint:** `GET /api/v1/portal/payments`
 
-**Endpoint:** `POST /api/v1/borrower/:token/accept`
-
-**Authentication:** JWT
-
-**Request:**
+**Response (200):**
 ```json
 {
-  "offer_id": "OFF-001",
-  "signature": {
-    "data_url": "data:image/png;base64,iVBORw0KGgoAAAANS...",
-    "signed_at": "2025-10-29T16:00:00Z"
-  },
-  "payment_method": {
-    "type": "ach",
-    "account_id": "acc_xyz789"
+  "payments": [
+    {
+      "id": "clpay001...",
+      "loanId": "clloan789...",
+      "paymentNumber": 1,
+      "amount": 340.15,
+      "principal": 285.40,
+      "interest": 54.75,
+      "dueDate": "2026-03-01",
+      "status": "completed",
+      "completedAt": "2026-03-01T11:00:00.000Z"
+    },
+    {
+      "id": "clpay002...",
+      "loanId": "clloan789...",
+      "paymentNumber": 2,
+      "amount": 340.15,
+      "principal": 287.50,
+      "interest": 52.65,
+      "dueDate": "2026-04-01",
+      "status": "scheduled",
+      "completedAt": null
+    }
+  ]
+}
+```
+
+### 5.5 Get Payoff Quote
+
+Get early payoff amount.
+
+**Endpoint:** `GET /api/v1/portal/loan/payoff-quote?loanId={loanId}`
+
+**Response (200):**
+```json
+{
+  "loanId": "clloan789...",
+  "remainingPrincipal": 6250.00,
+  "accruedInterest": 45.50,
+  "fees": 0,
+  "totalPayoff": 6295.50,
+  "validUntil": "2026-02-11T00:00:00.000Z",
+  "breakdown": {
+    "originalPrincipal": 7500,
+    "principalPaid": 1250,
+    "interestPaid": 430.30,
+    "paymentsCompleted": 4,
+    "paymentsRemaining": 20
   }
+}
+```
+
+### 5.6 Process Payoff
+
+Process early loan payoff.
+
+**Endpoint:** `POST /api/v1/portal/loan/payoff`
+
+**Request Body:**
+```json
+{
+  "loanId": "clloan789...",
+  "payoffAmount": 6295.50
 }
 ```
 
 **Response (200):**
 ```json
 {
-  "loan_id": "LOAN-ghi789",
-  "status": "pending_funding",
-  "message": "Congratulations! Your loan has been approved.",
-  "funding_timeline": "1-2 business days",
-  "next_steps": [
-    "You'll receive a confirmation email shortly",
-    "Funds will be disbursed to the merchant",
-    "Your first payment is due on 2025-11-30"
-  ],
-  "loan_details": {
-    "funded_amount": 7500.00,
-    "term_months": 24,
-    "monthly_payment": 343.21,
-    "first_payment_date": "2025-11-30",
-    "last_payment_date": "2027-10-30"
+  "success": true,
+  "message": "Payoff initiated",
+  "paymentId": "clpay999...",
+  "status": "processing"
+}
+```
+
+---
+
+## 6. Contractor Portal API
+
+### 6.1 Login
+
+Contractor login.
+
+**Endpoint:** `POST /api/v1/client/auth/login`
+
+**Request Body:**
+```json
+{
+  "email": "contractor@example.com",
+  "password": "secure_password",
+  "rememberMe": true
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "user": {
+    "id": "cluser123...",
+    "email": "contractor@example.com",
+    "name": "John Smith",
+    "role": "owner",
+    "contractor": {
+      "id": "clcont123...",
+      "businessName": "Smith HVAC",
+      "tier": "standard"
+    }
   }
 }
 ```
 
----
+### 6.2 Get Dashboard
 
-## Decisioning API
+Get contractor dashboard stats.
 
-### Evaluate Application
+**Endpoint:** `GET /api/v1/client/dashboard`
 
-Run decisioning on a submitted application.
-
-**Endpoint:** `POST /api/v1/decision/evaluate`
-
-**Authentication:** Internal service token
-
-**Request:**
+**Response (200):**
 ```json
 {
-  "application_id": "APP-abc123"
-}
-```
-
-**Response (200) - Approved:**
-```json
-{
-  "decision_id": "DEC-def456",
-  "application_id": "APP-abc123",
-  "status": "approved",
-  "score": 721,
-  "tier": "B",
-  "offers": [
-    {
-      "offer_id": "OFF-001",
-      "term_months": 24,
-      "apr": 9.9,
-      "monthly_payment": 343.21,
-      "down_payment": 0,
-      "origination_fee": 37.50,
-      "total_amount": 8237.50
-    }
-  ],
-  "metadata": {
-    "rule_hits": [
-      "no_bankruptcy",
-      "income_threshold_pass",
-      "bank_health_good"
-    ],
-    "evaluator_version": "v1.0",
-    "credit_snapshot": {
-      "score": 721,
-      "derogatory_marks": 0,
-      "inquiries_last_6_months": 1
-    },
-    "plaid_snapshot": {
-      "monthly_income": 6500,
-      "account_balance": 4200,
-      "overdrafts_last_12_months": 0
-    }
+  "stats": {
+    "totalApplications": 45,
+    "pendingApplications": 3,
+    "approvedApplications": 38,
+    "fundedAmount": 285000,
+    "approvalRate": 84.4
   },
-  "decided_at": "2025-10-29T15:30:00Z"
+  "recentApplications": [
+    {
+      "id": "clapp123...",
+      "customerName": "Jane Doe",
+      "amount": 7500,
+      "status": "approved",
+      "createdAt": "2026-02-01T10:00:00.000Z"
+    }
+  ]
 }
 ```
 
-**Response (200) - Manual Review:**
-```json
-{
-  "decision_id": "DEC-def456",
-  "application_id": "APP-abc123",
-  "status": "manual_review",
-  "reason": "thin_file",
-  "priority": 1,
-  "manual_review_id": "MR-001",
-  "estimated_resolution": "2025-10-30T15:00:00Z"
-}
-```
+### 6.3 List Applications
 
-**Response (200) - Declined:**
-```json
-{
-  "decision_id": "DEC-def456",
-  "application_id": "APP-abc123",
-  "status": "declined",
-  "reason": "insufficient_income",
-  "decided_at": "2025-10-29T15:30:00Z"
-}
-```
+Get list of applications.
 
----
-
-### Get Decision
-
-Retrieve decision details.
-
-**Endpoint:** `GET /api/v1/decision/:decision_id`
-
-**Authentication:** Internal service token or Admin JWT
-
-**Response:** Same as Evaluate response
-
----
-
-## Admin API
-
-### Get Applications
-
-List all applications with filtering.
-
-**Endpoint:** `GET /api/v1/admin/applications`
-
-**Authentication:** Admin JWT
-
-**Query Parameters:**
-- `status` (string): Filter by status (approved, declined, etc.)
-- `merchant_id` (string): Filter by merchant
-- `date_from` (ISO 8601): Start date
-- `date_to` (ISO 8601): End date
-- `limit` (number): Results per page (default: 20, max: 100)
-- `offset` (number): Pagination offset
-
-**Example:**
-```http
-GET /api/v1/admin/applications?status=approved&limit=50&offset=0
-```
+**Endpoint:** `GET /api/v1/client/applications?status={status}&page={page}&limit={limit}`
 
 **Response (200):**
 ```json
 {
   "applications": [
     {
-      "id": "APP-abc123",
-      "customer_name": "John Doe",
-      "email": "john@example.com",
+      "id": "clapp123...",
+      "customer": {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "email": "jane@example.com"
+      },
+      "job": {
+        "estimateAmount": 7500,
+        "serviceType": "HVAC Installation"
+      },
       "status": "approved",
-      "loan_amount": 7500.00,
-      "created_at": "2025-10-29T14:30:00Z",
-      "updated_at": "2025-10-29T15:45:00Z"
+      "decision": {
+        "score": 735,
+        "status": "approved"
+      },
+      "createdAt": "2026-02-01T10:00:00.000Z"
     }
   ],
   "pagination": {
-    "total": 1247,
-    "limit": 50,
-    "offset": 0,
-    "has_more": true
+    "total": 45,
+    "page": 1,
+    "limit": 20,
+    "pages": 3
   }
 }
 ```
 
----
+### 6.4 Send Financing Link
 
-### Get Application Detail
+Send financing link to customer.
 
-**Endpoint:** `GET /api/v1/admin/applications/:application_id`
+**Endpoint:** `POST /api/v1/client/send-link`
 
-**Authentication:** Admin JWT
+**Request Body:**
+```json
+{
+  "customer": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane@example.com",
+    "phone": "+15551234567"
+  },
+  "job": {
+    "estimateAmount": 7500,
+    "serviceType": "HVAC Installation"
+  },
+  "sendMethod": "sms"
+}
+```
 
 **Response (200):**
 ```json
 {
-  "application": {
-    "id": "APP-abc123",
-    "status": "approved",
-    "customer": {
-      "id": "CUST-001",
-      "first_name": "John",
-      "last_name": "Doe",
-      "email": "john@example.com",
-      "phone": "+15551234567",
-      "address": {
-        "line1": "123 Main St",
-        "city": "Austin",
-        "state": "TX",
-        "zip": "78701"
-      }
-    },
-    "job": {
-      "id": "JOB-001",
-      "crm_job_id": "JOB-9876",
-      "estimate_amount": 7500.00,
-      "service_type": "HVAC Installation"
-    },
-    "decision": {
-      "id": "DEC-def456",
-      "score": 721,
-      "status": "approved",
-      "rule_hits": ["no_bankruptcy", "income_threshold_pass"],
-      "decided_at": "2025-10-29T15:30:00Z"
-    },
-    "loan": {
-      "id": "LOAN-xyz789",
-      "funded_amount": 7500.00,
-      "funding_date": "2025-10-30T10:00:00Z",
-      "status": "funded"
-    },
-    "timeline": [
-      {
-        "event": "application_created",
-        "timestamp": "2025-10-29T14:30:00Z"
-      },
-      {
-        "event": "sms_sent",
-        "timestamp": "2025-10-29T14:30:05Z"
-      },
-      {
-        "event": "application_opened",
-        "timestamp": "2025-10-29T14:35:00Z"
-      },
-      {
-        "event": "bank_linked",
-        "timestamp": "2025-10-29T14:40:00Z"
-      },
-      {
-        "event": "kyc_verified",
-        "timestamp": "2025-10-29T14:45:00Z"
-      },
-      {
-        "event": "application_submitted",
-        "timestamp": "2025-10-29T15:00:00Z"
-      },
-      {
-        "event": "decision_approved",
-        "timestamp": "2025-10-29T15:30:00Z"
-      },
-      {
-        "event": "offer_accepted",
-        "timestamp": "2025-10-29T16:00:00Z"
-      },
-      {
-        "event": "loan_funded",
-        "timestamp": "2025-10-30T10:00:00Z"
-      }
-    ]
-  }
+  "success": true,
+  "applicationId": "clapp456...",
+  "link": "https://app.suprfi.com/apply/...",
+  "smsSent": true,
+  "expiresAt": "2026-02-02T18:00:00.000Z"
 }
 ```
 
----
+### 6.5 Generate QR Code
 
-### Manual Review Queue
+Generate QR code for financing link.
 
-**Endpoint:** `GET /api/v1/admin/manual-review/queue`
+**Endpoint:** `POST /api/v1/client/generate-qr`
 
-**Authentication:** Admin JWT
-
-**Query Parameters:**
-- `status` (string): pending, in_review, resolved
-- `priority` (number): 1, 2, 3
-- `assigned_to` (string): user_id
-
-**Response (200):**
+**Request Body:**
 ```json
 {
-  "queue": [
-    {
-      "id": "MR-001",
-      "application_id": "APP-xyz",
-      "customer_name": "Jane Smith",
-      "loan_amount": 12000.00,
-      "reason": "thin_file",
-      "priority": 1,
-      "assigned_to": null,
-      "status": "pending",
-      "created_at": "2025-10-29T14:30:00Z"
-    }
-  ],
-  "summary": {
-    "total_pending": 12,
-    "high_priority": 3,
-    "medium_priority": 6,
-    "low_priority": 3
-  }
-}
-```
-
----
-
-### Resolve Manual Review
-
-**Endpoint:** `POST /api/v1/admin/manual-review/:id/resolve`
-
-**Authentication:** Admin JWT (role: underwriter or admin)
-
-**Request:**
-```json
-{
-  "resolution": "approved",
-  "notes": "Verified employment via phone call. Stable income.",
-  "selected_offer_id": "OFF-002",
-  "conditions": {
-    "down_payment_required": 500,
-    "proof_of_income_required": true
+  "customer": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane@example.com",
+    "phone": "+15551234567"
+  },
+  "job": {
+    "estimateAmount": 7500,
+    "serviceType": "HVAC Installation"
   }
 }
 ```
@@ -825,224 +832,594 @@ GET /api/v1/admin/applications?status=approved&limit=50&offset=0
 ```json
 {
   "success": true,
-  "manual_review_id": "MR-001",
-  "application_id": "APP-xyz",
-  "decision_id": "DEC-ghi789",
-  "loan_id": "LOAN-jkl012",
-  "resolved_at": "2025-10-29T17:00:00Z"
+  "applicationId": "clapp789...",
+  "qrCode": "data:image/png;base64,iVBORw0KGgo...",
+  "link": "https://app.suprfi.com/apply/...",
+  "expiresAt": "2026-02-02T18:00:00.000Z"
 }
 ```
 
----
+### 6.6 Get Team
 
-### Get Analytics Summary
+Get team members.
 
-**Endpoint:** `GET /api/v1/admin/analytics/summary`
-
-**Authentication:** Admin JWT
-
-**Query Parameters:**
-- `date_from` (ISO 8601)
-- `date_to` (ISO 8601)
-- `merchant_id` (string, optional)
+**Endpoint:** `GET /api/v1/client/team`
 
 **Response (200):**
 ```json
 {
-  "period": {
-    "from": "2025-10-01T00:00:00Z",
-    "to": "2025-10-31T23:59:59Z"
-  },
-  "metrics": {
-    "total_applications": 1247,
-    "approval_rate": 0.68,
-    "decline_rate": 0.22,
-    "manual_review_rate": 0.10,
-    "avg_loan_amount": 8350.00,
-    "total_funded": 6420000.00,
-    "avg_time_to_decision_minutes": 12,
-    "conversion_rate": 0.72
-  },
-  "funnel": {
-    "initiated": 1247,
-    "opened": 1098,
-    "bank_linked": 987,
-    "kyc_completed": 945,
-    "submitted": 920,
-    "approved": 625,
-    "accepted": 580,
-    "funded": 548
-  },
-  "by_merchant": [
+  "members": [
     {
-      "merchant_id": "MERCH-001",
-      "merchant_name": "ProForce Pest Control",
-      "applications": 623,
-      "approval_rate": 0.71,
-      "avg_loan_amount": 7800.00
+      "id": "cluser123...",
+      "email": "john@example.com",
+      "name": "John Smith",
+      "role": "owner",
+      "isActive": true,
+      "lastLoginAt": "2026-02-01T10:00:00.000Z"
     },
     {
-      "merchant_id": "MERCH-002",
-      "merchant_name": "Rack Electric",
-      "applications": 624,
-      "approval_rate": 0.65,
-      "avg_loan_amount": 8900.00
+      "id": "cluser456...",
+      "email": "jane@example.com",
+      "name": "Jane Doe",
+      "role": "tech",
+      "isActive": true,
+      "lastLoginAt": "2026-01-31T15:00:00.000Z"
     }
-  ]
-}
-```
-
----
-
-### Pricing Rules
-
-**List Rules:**
-```http
-GET /api/v1/admin/pricing-rules
-```
-
-**Response:**
-```json
-{
-  "rules": [
+  ],
+  "pendingInvites": [
     {
-      "id": "RULE-001",
-      "name": "Tier A Pricing (750+)",
-      "predicate": {
-        "field": "credit_score",
-        "operator": ">=",
-        "value": 750
-      },
-      "pricing_adjustments": {
-        "apr_base": 6.9,
-        "max_term": 36,
-        "origination_fee": 0.5
-      },
-      "active": true,
-      "priority": 1
+      "id": "clinv001...",
+      "email": "bob@example.com",
+      "role": "tech",
+      "invitedAt": "2026-02-01T09:00:00.000Z"
     }
   ]
 }
 ```
 
-**Create Rule:**
-```http
-POST /api/v1/admin/pricing-rules
-```
+### 6.7 Invite Team Member
 
-**Request:**
+Invite new team member.
+
+**Endpoint:** `POST /api/v1/client/team/invite`
+
+**Request Body:**
 ```json
 {
-  "name": "Tier B Pricing (700-749)",
-  "predicate": {
-    "field": "credit_score",
-    "operator": "between",
-    "value": [700, 749]
+  "email": "newtech@example.com",
+  "name": "Bob Johnson",
+  "role": "tech"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Invitation sent",
+  "inviteId": "clinv002..."
+}
+```
+
+**Roles:**
+- `owner` - Full access, billing, team management
+- `manager` - Applications, loans, team view
+- `tech` - Send links, view own applications
+- `viewer` - View only
+
+---
+
+## 7. Admin API
+
+### 7.1 Login
+
+Admin login.
+
+**Endpoint:** `POST /api/v1/admin/auth/login`
+
+**Request Body:**
+```json
+{
+  "email": "admin@suprfi.com",
+  "password": "secure_password",
+  "rememberMe": false
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "user": {
+    "id": "cladmin123...",
+    "email": "admin@suprfi.com",
+    "name": "Admin User",
+    "role": "admin"
+  }
+}
+```
+
+### 7.2 Get Dashboard
+
+Get admin dashboard stats.
+
+**Endpoint:** `GET /api/v1/admin/dashboard`
+
+**Response (200):**
+```json
+{
+  "totalApps": 1247,
+  "submittedApps": 85,
+  "approvedApps": 982,
+  "approvalRate": "78.7",
+  "totalFunded": 7350000,
+  "manualReviews": 12,
+  "recentApps": [
+    {
+      "id": "clapp123...",
+      "customer": {
+        "firstName": "John",
+        "lastName": "Doe"
+      },
+      "job": {
+        "estimateAmount": 7500
+      },
+      "status": "approved",
+      "createdAt": "2026-02-01T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+### 7.3 List Applications
+
+Get applications with filtering.
+
+**Endpoint:** `GET /api/v1/admin/applications`
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status (initiated, submitted, approved, declined, funded) |
+| `search` | string | Search by customer name, email, or ID |
+| `page` | number | Page number (default: 1) |
+| `limit` | number | Items per page (default: 20) |
+
+**Response (200):**
+```json
+{
+  "applications": [
+    {
+      "id": "clapp123...",
+      "customer": {
+        "id": "clcust123...",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john@example.com"
+      },
+      "job": {
+        "estimateAmount": 7500,
+        "serviceType": "HVAC Installation"
+      },
+      "status": "approved",
+      "decision": {
+        "score": 721,
+        "status": "approved"
+      },
+      "createdAt": "2026-02-01T10:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "total": 1247,
+    "page": 1,
+    "limit": 20,
+    "pages": 63
   },
-  "pricing_adjustments": {
-    "apr_base": 9.9,
-    "max_term": 48,
-    "origination_fee": 0.5
+  "stats": {
+    "initiated": 150,
+    "submitted": 85,
+    "approved": 982,
+    "declined": 30
+  }
+}
+```
+
+### 7.4 Get Application Detail
+
+Get full application details.
+
+**Endpoint:** `GET /api/v1/admin/applications/{id}`
+
+**Response (200):**
+```json
+{
+  "application": {
+    "id": "clapp123...",
+    "status": "approved",
+    "token": "eyJ...",
+    "tokenExpiresAt": "2026-02-02T10:00:00.000Z",
+    "createdAt": "2026-02-01T10:00:00.000Z",
+    "updatedAt": "2026-02-01T12:00:00.000Z"
   },
-  "priority": 2
+  "customer": {
+    "id": "clcust123...",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com",
+    "phone": "+15551234567",
+    "addressLine1": "123 Main St",
+    "city": "Austin",
+    "state": "TX",
+    "postalCode": "78701"
+  },
+  "job": {
+    "id": "cljob123...",
+    "estimateAmount": 7500,
+    "serviceType": "HVAC Installation",
+    "status": "pending"
+  },
+  "decision": {
+    "id": "cldec123...",
+    "score": 721,
+    "decisionStatus": "approved",
+    "decisionReason": "Approved with standard terms",
+    "ruleHits": ["income_verified", "balance_adequate"],
+    "decidedAt": "2026-02-01T11:00:00.000Z"
+  },
+  "offers": [
+    {
+      "id": "cloff001...",
+      "termMonths": 24,
+      "apr": 8.9,
+      "monthlyPayment": 340.15,
+      "selected": true
+    }
+  ],
+  "loan": {
+    "id": "clloan123...",
+    "fundedAmount": 7500,
+    "status": "funded",
+    "fundingDate": "2026-02-01T12:00:00.000Z"
+  },
+  "plaidData": {
+    "institutionName": "Chase",
+    "accountMask": "1234",
+    "balance": {
+      "current": 15000,
+      "available": 14500
+    }
+  },
+  "personaData": {
+    "status": "completed",
+    "inquiryId": "inq_abc123"
+  }
+}
+```
+
+### 7.5 Approve Application
+
+Manually approve an application.
+
+**Endpoint:** `POST /api/v1/admin/applications/{id}/approve`
+
+**Request Body:**
+```json
+{
+  "notes": "Manual approval - verified employment"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Application approved"
+}
+```
+
+### 7.6 Decline Application
+
+Manually decline an application.
+
+**Endpoint:** `POST /api/v1/admin/applications/{id}/decline`
+
+**Request Body:**
+```json
+{
+  "reason": "Insufficient income verification"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Application declined"
+}
+```
+
+### 7.7 Get Manual Review Queue
+
+Get pending manual reviews.
+
+**Endpoint:** `GET /api/v1/admin/manual-review`
+
+**Response (200):**
+```json
+{
+  "reviews": [
+    {
+      "id": "clmr001...",
+      "decision": {
+        "id": "cldec456...",
+        "score": 595,
+        "application": {
+          "id": "clapp456...",
+          "customer": {
+            "firstName": "Jane",
+            "lastName": "Doe"
+          },
+          "job": {
+            "estimateAmount": 12000
+          }
+        }
+      },
+      "reason": "borderline_score",
+      "priority": 1,
+      "status": "pending",
+      "assignedTo": null,
+      "createdAt": "2026-02-01T14:00:00.000Z"
+    }
+  ],
+  "stats": {
+    "pending": 12,
+    "inReview": 3,
+    "resolvedToday": 8
+  }
+}
+```
+
+### 7.8 Resolve Manual Review
+
+Resolve a manual review.
+
+**Endpoint:** `PUT /api/v1/admin/manual-review/{id}`
+
+**Request Body:**
+```json
+{
+  "resolution": "approved",
+  "notes": "Verified employment via phone call"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Review resolved"
+}
+```
+
+### 7.9 Get Payments
+
+Get payment list.
+
+**Endpoint:** `GET /api/v1/admin/payments`
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `status` | string | Filter by status |
+| `page` | number | Page number |
+| `limit` | number | Items per page |
+
+**Response (200):**
+```json
+{
+  "payments": [
+    {
+      "id": "clpay001...",
+      "loan": {
+        "id": "clloan123...",
+        "customer": {
+          "firstName": "John",
+          "lastName": "Doe"
+        }
+      },
+      "paymentNumber": 3,
+      "amount": 340.15,
+      "dueDate": "2026-04-01",
+      "status": "failed",
+      "failureReason": "Insufficient funds",
+      "retryCount": 1,
+      "requiresAction": false
+    }
+  ],
+  "stats": {
+    "dueToday": 45,
+    "processing": 12,
+    "overdue": 8,
+    "failedNeedingAction": 3
+  }
+}
+```
+
+### 7.10 Retry Payment
+
+Retry a failed payment.
+
+**Endpoint:** `POST /api/v1/admin/payments/{id}/retry`
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Payment retry initiated",
+  "newStatus": "pending"
+}
+```
+
+### 7.11 Get Collections
+
+Get delinquent loans.
+
+**Endpoint:** `GET /api/v1/admin/collections`
+
+**Response (200):**
+```json
+{
+  "loans": [
+    {
+      "id": "clloan999...",
+      "customer": {
+        "firstName": "Bob",
+        "lastName": "Smith",
+        "email": "bob@example.com",
+        "phone": "+15559876543"
+      },
+      "fundedAmount": 5000,
+      "daysOverdue": 45,
+      "status": "repaying",
+      "overdueAmount": 680.30,
+      "lastPaymentDate": "2026-01-15",
+      "collectionNotes": [
+        {
+          "id": "clnote001...",
+          "note": "Called customer, no answer",
+          "noteType": "contact_attempt",
+          "createdAt": "2026-02-01T10:00:00.000Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 7.12 Add Collection Note
+
+Add a note to a delinquent loan.
+
+**Endpoint:** `POST /api/v1/admin/collections/{id}/notes`
+
+**Request Body:**
+```json
+{
+  "note": "Customer agreed to payment plan",
+  "noteType": "payment_plan"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "noteId": "clnote002..."
+}
+```
+
+### 7.13 Get Audit Logs
+
+Get audit logs (god role only).
+
+**Endpoint:** `GET /api/v1/admin/audit`
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `entityType` | string | Filter by entity type |
+| `actor` | string | Filter by actor |
+| `page` | number | Page number |
+| `limit` | number | Items per page |
+
+**Response (200):**
+```json
+{
+  "logs": [
+    {
+      "id": "claudit001...",
+      "entityType": "application",
+      "entityId": "clapp123...",
+      "actor": "cladmin123...",
+      "action": "approved",
+      "payload": {
+        "notes": "Manual approval"
+      },
+      "ipAddress": "192.168.1.1",
+      "timestamp": "2026-02-01T12:00:00.000Z"
+    }
+  ],
+  "pagination": {
+    "total": 5000,
+    "page": 1,
+    "limit": 50
+  }
 }
 ```
 
 ---
 
-## Webhook Events
+## 8. Webhook Events
 
-SuprFi sends webhooks for key events. Configure webhook URLs in admin settings.
+### 8.1 Plaid Webhooks
 
-### Event Types
+**Endpoint:** `POST /api/v1/webhooks/plaid`
 
-**Application Events:**
-- `application.created`
-- `application.submitted`
-- `application.approved`
-- `application.declined`
+**Headers:**
+```
+plaid-verification: {jwt_signature}
+```
 
-**Loan Events:**
-- `loan.created`
-- `loan.funded`
-- `loan.repaying`
-- `loan.paid_off`
-
-**Payment Events:**
-- `payment.received`
-- `payment.failed`
-- `payment.late`
-
-### Webhook Payload Structure
-
+**Payload (Transfer Event):**
 ```json
 {
-  "id": "evt_abc123",
-  "event": "loan.funded",
-  "timestamp": "2025-10-30T10:00:00Z",
-  "api_version": "v1",
-  "data": {
-    "application_id": "APP-abc123",
-    "crm_customer_id": "FR12345",
-    "crm_job_id": "JOB-9876",
-    "loan_id": "LOAN-xyz789",
-    "funded_amount": 7500.00,
-    "funding_date": "2025-10-30T10:00:00Z"
-  }
+  "webhook_type": "TRANSFER_EVENTS_UPDATE",
+  "webhook_code": "TRANSFER_EVENTS_UPDATE",
+  "transfer_id": "transfer_abc123",
+  "transfer_events": [
+    {
+      "event_id": "evt_001",
+      "transfer_id": "transfer_abc123",
+      "event_type": "settled",
+      "timestamp": "2026-02-01T12:00:00.000Z"
+    }
+  ]
 }
 ```
 
-### Webhook Security
+**Event Types:**
+- `pending` - Transfer initiated
+- `posted` - Transfer posted to bank
+- `settled` - Transfer complete
+- `failed` - Transfer failed
+- `returned` - ACH return received
+- `cancelled` - Transfer cancelled
 
-**Signature Header:**
-```http
-X-SuprFi-Signature: t=1698765432,v1=abc123def456...
+### 8.2 Jobber Webhooks
+
+**Endpoint:** `POST /api/v1/webhooks/jobber`
+
+**Headers:**
+```
+X-Jobber-Hmac-SHA256: {hmac_signature}
 ```
 
-**Verification (Node.js):**
-```javascript
-const crypto = require('crypto');
-
-function verifyWebhook(payload, header, secret) {
-  const [timestamp, signature] = header.split(',').map(part => part.split('=')[1]);
-  
-  const signedPayload = `${timestamp}.${JSON.stringify(payload)}`;
-  const expectedSignature = crypto
-    .createHmac('sha256', secret)
-    .update(signedPayload)
-    .digest('hex');
-  
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
-    throw new Error('Invalid signature');
-  }
-  
-  // Check timestamp to prevent replay attacks (within 5 minutes)
-  const age = Math.abs(Date.now() / 1000 - parseInt(timestamp));
-  if (age > 300) {
-    throw new Error('Timestamp too old');
-  }
-  
-  return true;
-}
-```
-
----
-
-## Postman Collection
-
-Download the complete Postman collection: [SuprFi API v1.postman_collection.json](./postman/suprfi_api_v1.json)
-
-**Environment Variables:**
+**Payload (Quote Create):**
 ```json
 {
-  "base_url": "https://api.suprfi.com/v1",
-  "api_key": "sk_dev_...",
-  "jwt_token": "eyJhbGc...",
-  "application_id": "APP-abc123",
-  "decision_id": "DEC-def456",
-  "loan_id": "LOAN-xyz789"
+  "topic": "QUOTE_CREATE",
+  "appId": "app_abc123",
+  "accountId": 12345,
+  "itemId": "quote_xyz789",
+  "occurredAt": "2026-02-01T10:00:00.000Z"
 }
 ```
+
+**Supported Topics:**
+- `QUOTE_CREATE` - New quote created (triggers auto-offer)
+- `QUOTE_UPDATE` - Quote updated
+- `JOB_CREATE` - New job created
+- `CLIENT_CREATE` - New client created
 
 ---
 

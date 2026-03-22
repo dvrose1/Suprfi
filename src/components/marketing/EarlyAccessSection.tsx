@@ -86,7 +86,7 @@ const EarlyAccessSection: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-8 py-4 rounded-xl bg-teal text-white font-semibold text-lg transition-all hover:bg-teal/90 disabled:opacity-50"
+              className="w-full px-8 py-4 min-h-[48px] rounded-xl bg-teal text-white font-semibold text-lg transition-all hover:bg-teal/90 active:scale-[0.98] disabled:opacity-50"
             >
               {loading ? 'Submitting...' : 'Get Early Access'}
             </button>

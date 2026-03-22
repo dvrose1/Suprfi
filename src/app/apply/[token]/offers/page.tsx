@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils/format'
+
+type RecommendationBasis = 'lowest-monthly' | 'lowest-total'
 
 interface Offer {
   id: string
@@ -110,6 +112,24 @@ export default function OffersPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectingOffer, setSelectingOffer] = useState<string | null>(null)
   const [offers, setOffers] = useState<Offer[]>([])
+  const [recommendationBasis, setRecommendationBasis] = useState<RecommendationBasis>('lowest-total')
+
+  const sortedOffers = useMemo(() => {
+    if (offers.length === 0) return []
+    
+    return [...offers].sort((a, b) => {
+      if (recommendationBasis === 'lowest-monthly') {
+        return a.installmentAmount - b.installmentAmount
+      } else {
+        return a.totalAmount - b.totalAmount
+      }
+    })
+  }, [offers, recommendationBasis])
+
+  const recommendedOfferId = useMemo(() => {
+    if (sortedOffers.length === 0) return null
+    return sortedOffers[0].id
+  }, [sortedOffers])
 
   useEffect(() => {
     async function fetchDecision() {
@@ -271,10 +291,42 @@ export default function OffersPage() {
           </p>
         </div>
 
+        {/* Recommendation Toggle */}
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-navy">What's most important to you?</h3>
+              <p className="text-sm text-gray-500">We'll highlight the best option for your priority</p>
+            </div>
+            <div className="flex bg-gray-100 rounded-xl p-1">
+              <button
+                onClick={() => setRecommendationBasis('lowest-total')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  recommendationBasis === 'lowest-total'
+                    ? 'bg-teal text-white shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+              >
+                Lowest Cost
+              </button>
+              <button
+                onClick={() => setRecommendationBasis('lowest-monthly')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  recommendationBasis === 'lowest-monthly'
+                    ? 'bg-teal text-white shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+              >
+                Lowest Monthly
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Financing Options */}
         <div className="space-y-4 sm:space-y-6 mb-8">
-          {offers.map((offer, index) => {
-            const isRecommended = index === 0
+          {sortedOffers.map((offer) => {
+            const isRecommended = offer.id === recommendedOfferId
             const isBNPL = offer.type === 'bnpl'
             
             return (
@@ -290,7 +342,7 @@ export default function OffersPage() {
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
-                    RECOMMENDED - Most Popular Choice
+                    RECOMMENDED - {recommendationBasis === 'lowest-total' ? 'Lowest Total Cost' : 'Lowest Monthly Payment'}
                   </div>
                 )}
 

@@ -37,7 +37,7 @@ const InvestorHeader: React.FC = () => {
           {/* CTA */}
           <a
             href="#early-access"
-            className="px-5 py-2.5 rounded-lg bg-white text-navy text-sm font-semibold transition-all hover:bg-white/90"
+            className="px-5 py-2.5 min-h-[44px] flex items-center rounded-lg bg-white text-navy text-sm font-semibold transition-all hover:bg-white/90"
           >
             Get Early Access
           </a>

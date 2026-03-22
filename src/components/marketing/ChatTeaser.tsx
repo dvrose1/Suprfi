@@ -37,7 +37,7 @@ const ChatTeaser: React.FC<ChatTeaserProps> = ({ onOpenChat }) => {
               </p>
               <button
                 onClick={onOpenChat}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal text-white font-medium rounded-lg hover:bg-teal/90 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 min-h-[44px] bg-teal text-white font-medium rounded-lg hover:bg-teal/90 active:scale-[0.98] transition-colors"
               >
                 Start a conversation
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,7 +54,7 @@ const ChatTeaser: React.FC<ChatTeaserProps> = ({ onOpenChat }) => {
                   <button
                     key={index}
                     onClick={onOpenChat}
-                    className="block w-full text-left text-sm text-navy hover:text-teal transition-colors py-1.5 px-3 rounded-lg hover:bg-teal/5"
+                    className="block w-full text-left text-sm text-navy hover:text-teal transition-colors py-2.5 px-3 min-h-[44px] rounded-lg hover:bg-teal/5 active:bg-teal/10"
                   >
                     "{question}"
                   </button>
