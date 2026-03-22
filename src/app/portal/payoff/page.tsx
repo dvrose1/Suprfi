@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useBorrowerAuth } from '@/lib/auth/borrower-context';
@@ -24,7 +24,7 @@ interface PayoffQuote {
   };
 }
 
-export default function PayoffPage() {
+function PayoffPageContent() {
   const { user, loading: authLoading, logout } = useBorrowerAuth();
   const searchParams = useSearchParams();
   const loanId = searchParams.get('loanId');
@@ -287,5 +287,20 @@ export default function PayoffPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function PayoffPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-warm-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-teal border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <PayoffPageContent />
+    </Suspense>
   );
 }

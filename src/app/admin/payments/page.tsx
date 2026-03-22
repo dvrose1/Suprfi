@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/context';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -50,7 +50,7 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'bg-gray-100 text-gray-500',
 };
 
-export default function AdminPaymentsPage() {
+function AdminPaymentsPageContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -436,5 +436,17 @@ function StatCard({
         {isAmount ? value : value}
       </p>
     </div>
+  );
+}
+
+export default function AdminPaymentsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    }>
+      <AdminPaymentsPageContent />
+    </Suspense>
   );
 }
