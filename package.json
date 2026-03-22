@@ -20,6 +20,7 @@
     "seed:demo-data": "node prisma/seed-demo-data.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@prisma/client": "^6.18.0",
     "@types/qrcode": "^1.5.6",
     "bcryptjs": "^3.0.3",

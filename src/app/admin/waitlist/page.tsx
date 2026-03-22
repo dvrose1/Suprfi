@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 interface WaitlistEntry {
   id: string;
-  type: 'homeowner' | 'contractor';
+  type: 'homeowner' | 'contractor' | 'investor';
   email: string;
   name: string | null;
   phone: string | null;
@@ -257,6 +257,7 @@ export default function AdminWaitlistPage() {
               <option value="all">All Types</option>
               <option value="homeowner">Homeowners</option>
               <option value="contractor">Contractors</option>
+              <option value="investor">Investors</option>
             </select>
             <select
               value={statusFilter}
@@ -359,6 +360,8 @@ export default function AdminWaitlistPage() {
                           className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                             entry.type === 'homeowner'
                               ? 'bg-blue-100 text-blue-700'
+                              : entry.type === 'investor'
+                              ? 'bg-amber-100 text-amber-700'
                               : 'bg-purple-100 text-purple-700'
                           }`}
                         >

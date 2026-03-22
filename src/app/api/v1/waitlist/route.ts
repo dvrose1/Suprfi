@@ -28,17 +28,18 @@ export async function POST(request: NextRequest) {
       utmParams,
     } = body;
 
-    // Validation
-    if (!type || !email || !name) {
+    // Validation - name is optional for investor signups
+    if (!type || !email) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    if (type !== 'homeowner' && type !== 'contractor') {
+    const validTypes = ['homeowner', 'contractor', 'investor'];
+    if (!validTypes.includes(type)) {
       return NextResponse.json(
-        { error: 'Invalid type. Must be homeowner or contractor' },
+        { error: 'Invalid type. Must be homeowner, contractor, or investor' },
         { status: 400 }
       );
     }
