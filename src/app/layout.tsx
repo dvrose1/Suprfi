@@ -18,17 +18,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://suprfi.com'),
   title: "SuprFi - The Home Repair Financing Specialists",
   description: "Fast, fair financing for home repairs from $2,500 to $25,000. Instant approval, flexible terms, trusted by contractors.",
   keywords: "home repair financing, HVAC financing, plumbing loans, emergency repair financing, contractor financing",
   authors: [{ name: "SuprFi" }],
-  icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon.png", type: "image/png" },
-    ],
-    apple: "/favicon.png",
-  },
+
   openGraph: {
     title: "SuprFi - The Home Repair Financing Specialists",
     description: "Instant approval for home repairs. Flexible terms. Trusted by contractors.",
