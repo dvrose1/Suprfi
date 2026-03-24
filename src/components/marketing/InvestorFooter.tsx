@@ -15,7 +15,7 @@ const InvestorFooter: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <img
-              src="/logos/suprfi-logo-white.svg"
+              src="/logos/wordmark white and mint.svg"
               alt="SuprFi"
               className="h-6 w-auto"
             />

@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   keywords: "home repair financing, HVAC financing, plumbing loans, emergency repair financing, contractor financing",
   authors: [{ name: "SuprFi" }],
   icons: {
-    icon: "/logos/Frame 10.png",
-    apple: "/logos/Frame 10.png",
+    icon: "/logos/suprfi-s-icon.svg",
+    apple: "/logos/suprfi-s-icon.svg",
   },
   openGraph: {
     title: "SuprFi - The Home Repair Financing Specialists",

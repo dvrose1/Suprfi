@@ -30,7 +30,7 @@ const InvestorHeader: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
             <img
-              src="/logos/suprfi-logo-white.svg"
+              src="/logos/wordmark white and mint.svg"
               alt="SuprFi"
               className="h-8 w-auto"
             />
