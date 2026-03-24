@@ -48,7 +48,7 @@ const AgenticSection: React.FC = () => {
   return (
     <>
       {/* Main Technology Section - Navy background */}
-      <section className="py-24 bg-navy relative overflow-hidden">
+      <section className="py-16 sm:py-24 bg-navy relative overflow-hidden">
         <div 
           className="absolute inset-0 opacity-5"
           style={{ 
@@ -58,17 +58,17 @@ const AgenticSection: React.FC = () => {
         
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Eyebrow */}
-          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-4">
+          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
             The Technology
           </div>
           
           {/* Headline */}
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display mb-4 sm:mb-6">
             Why AI agents, not portals.
           </h2>
           
           {/* Body */}
-          <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-12">
+          <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed mb-8 sm:mb-12">
             Existing solutions rely on portal-based workflows that don&apos;t match how technicians operate. 
             Technicians aren&apos;t behind desks, they&apos;re in the field, which is why adoption remains low. 
             SuprFi augments these systems with autonomous AI agents that orchestrate the financing 
@@ -76,15 +76,15 @@ const AgenticSection: React.FC = () => {
           </p>
           
           {/* Comparison Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-12">
             {/* Portal Side */}
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-8">
-              <h3 className="text-xl font-semibold text-white/60 font-display mb-6">
+            <div className="bg-white/10 backdrop-blur rounded-2xl p-5 sm:p-8">
+              <h3 className="text-lg sm:text-xl font-semibold text-white/60 font-display mb-4 sm:mb-6">
                 Portal-Based Lenders
               </h3>
-              <ul className="space-y-4">
+              <ul className="space-y-3 sm:space-y-4">
                 {portalFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3 text-white/60">
+                  <li key={index} className="flex items-start gap-3 text-white/60 text-sm sm:text-base">
                     <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
@@ -95,13 +95,13 @@ const AgenticSection: React.FC = () => {
             </div>
             
             {/* Agent Side */}
-            <div className="bg-teal/20 rounded-2xl p-8 border-2 border-teal/30">
-              <h3 className="text-xl font-semibold text-white font-display mb-6 flex items-center gap-2">
+            <div className="bg-teal/20 rounded-2xl p-5 sm:p-8 border-2 border-teal/30">
+              <h3 className="text-lg sm:text-xl font-semibold text-white font-display mb-4 sm:mb-6 flex items-center gap-2">
                 <span className="text-teal">SuprFi:</span> Agent-Powered
               </h3>
-              <ul className="space-y-4">
+              <ul className="space-y-3 sm:space-y-4">
                 {agentFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3 text-white">
+                  <li key={index} className="flex items-start gap-3 text-white text-sm sm:text-base">
                     <svg className="w-5 h-5 mt-0.5 flex-shrink-0 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -113,8 +113,8 @@ const AgenticSection: React.FC = () => {
           </div>
           
           {/* Callout Box */}
-          <div className="bg-white rounded-2xl p-8 text-navy">
-            <p className="text-lg md:text-xl leading-relaxed">
+          <div className="bg-white rounded-2xl p-5 sm:p-8 text-navy">
+            <p className="text-base sm:text-lg md:text-xl leading-relaxed">
               <span className="font-semibold">Technicians focus on the job, not financing.</span>{' '}
               SuprFi&apos;s agents handle the rest: borrower communication, underwriting, and CRM sync. 
               When it&apos;s effortless, financing gets offered every time.
@@ -124,32 +124,32 @@ const AgenticSection: React.FC = () => {
       </section>
 
       {/* Under the Hood - Agent Architecture - White background */}
-      <section className="py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Eyebrow */}
-          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-4">
+          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
             Under The Hood
           </div>
           
           {/* Headline */}
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
             An agent for every step.
           </h2>
           
           {/* Body */}
-          <p className="text-lg md:text-xl text-dark-gray leading-relaxed mb-12">
+          <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-8 sm:mb-12">
             SuprFi&apos;s agent architecture is purpose-built for consumer lending in the field. Each agent 
             has a defined role and operates within SuprFi&apos;s credit policies and compliance requirements.
           </p>
           
           {/* Agent Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {agents.map((agent, index) => (
               <div 
                 key={index}
-                className="bg-light-gray rounded-2xl p-6 border border-gray-200"
+                className="bg-light-gray rounded-2xl p-5 sm:p-6 border border-gray-200"
               >
-                <h3 className="text-lg font-semibold text-navy font-display mb-3">
+                <h3 className="text-base sm:text-lg font-semibold text-navy font-display mb-2 sm:mb-3">
                   {agent.title}
                 </h3>
                 <p className="text-medium-gray text-sm leading-relaxed">

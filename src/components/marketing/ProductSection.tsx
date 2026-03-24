@@ -13,14 +13,14 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ title, body, icon }) => {
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
-      <div className="w-12 h-12 rounded-xl bg-teal/10 flex items-center justify-center text-teal mb-5">
+    <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-lg border border-gray-100">
+      <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-teal/10 flex items-center justify-center text-teal mb-4 sm:mb-5">
         {icon}
       </div>
-      <h3 className="text-xl font-semibold text-navy font-display mb-3">
+      <h3 className="text-lg sm:text-xl font-semibold text-navy font-display mb-2 sm:mb-3">
         {title}
       </h3>
-      <p className="text-medium-gray leading-relaxed">
+      <p className="text-medium-gray leading-relaxed text-sm sm:text-base">
         {body}
       </p>
     </div>
@@ -61,42 +61,42 @@ const ProductSection: React.FC = () => {
   return (
     <>
       {/* The Opportunity Section */}
-      <section id="product-section" className="py-24 bg-warm-white">
+      <section id="product-section" className="py-16 sm:py-24 bg-warm-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Eyebrow */}
-          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-4">
+          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
             The Opportunity
           </div>
           
           {/* Headline */}
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
             Financing helps contractors close more jobs.
           </h2>
           
           {/* Body */}
-          <p className="text-lg md:text-xl text-dark-gray leading-relaxed mb-8">
+          <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-6 sm:mb-8">
             Home services is one of the largest consumer spend categories in the U.S., yet most jobs 
             are unplanned, urgent, and expensive. Financing helps contractors close more jobs, but 
             most don&apos;t offer it consistently because existing tools don&apos;t fit how they work.
           </p>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="text-3xl md:text-4xl font-bold text-teal font-mono">$800B+</div>
-              <div className="text-sm text-medium-gray mt-1">US home services market*</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">$800B+</div>
+              <div className="text-xs sm:text-sm text-medium-gray mt-1">US home services market*</div>
             </div>
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="text-3xl md:text-4xl font-bold text-teal font-mono">38%</div>
-              <div className="text-sm text-medium-gray mt-1">Close rate without financing**</div>
+            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">38%</div>
+              <div className="text-xs sm:text-sm text-medium-gray mt-1">Close rate without financing**</div>
             </div>
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="text-3xl md:text-4xl font-bold text-teal font-mono">49%</div>
-              <div className="text-sm text-medium-gray mt-1">Close rate with financing**</div>
+            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">49%</div>
+              <div className="text-xs sm:text-sm text-medium-gray mt-1">Close rate with financing**</div>
             </div>
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <div className="text-3xl md:text-4xl font-bold text-teal font-mono">63%</div>
-              <div className="text-sm text-medium-gray mt-1">Don&apos;t consistently offer it**</div>
+            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">63%</div>
+              <div className="text-xs sm:text-sm text-medium-gray mt-1">Don&apos;t consistently offer it**</div>
             </div>
           </div>
 
@@ -109,37 +109,37 @@ const ProductSection: React.FC = () => {
       </section>
 
       {/* What We're Building Section */}
-      <section className="py-24 bg-light-gray">
+      <section className="py-16 sm:py-24 bg-light-gray">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Eyebrow */}
-        <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-4">
+        <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
           What We&apos;re Building
         </div>
         
         {/* Headline */}
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-6">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
           The lending infrastructure for home services.
         </h2>
         
         {/* Body */}
-        <p className="text-lg md:text-xl text-dark-gray leading-relaxed mb-12">
+        <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-8 sm:mb-12">
           SuprFi powers financing for everyday home repairs and services, integrated directly into 
           the tools contractors already use, from CRM to on-site sales. Financing is available 
           before the visit, during the quote, or after the job.
         </p>
         
         {/* Workflow Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-16">
           {workflowFeatures.map((feature, index) => (
             <FeatureCard key={index} {...feature} />
           ))}
         </div>
 
         {/* Merchant Portal + Integrations row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Merchant Portal */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-200 flex flex-col">
-            <h3 className="text-lg font-semibold text-navy font-display mb-3">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col">
+            <h3 className="text-base sm:text-lg font-semibold text-navy font-display mb-2 sm:mb-3">
               Full visibility for your office team.
             </h3>
             <p className="text-medium-gray text-sm leading-relaxed flex-grow">
@@ -148,16 +148,16 @@ const ProductSection: React.FC = () => {
               analytics to understand your conversion rates, average loan size, approval rates by 
               service type, and trends over time.
             </p>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <span className="px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Pipeline</span>
-              <span className="px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Analytics</span>
-              <span className="px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Team Access</span>
+            <div className="flex flex-wrap gap-2 mt-3 sm:mt-4">
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Pipeline</span>
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Analytics</span>
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Team Access</span>
             </div>
           </div>
 
           {/* Integrations */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-200 flex flex-col">
-            <h3 className="text-lg font-semibold text-navy font-display mb-3">
+          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col">
+            <h3 className="text-base sm:text-lg font-semibold text-navy font-display mb-2 sm:mb-3">
               Deep integration with the tools contractors already use.
             </h3>
             <p className="text-medium-gray text-sm leading-relaxed flex-grow">
@@ -165,12 +165,12 @@ const ProductSection: React.FC = () => {
               automatically. Status and funding confirmations flow back to the job record. 
               The office manager sees the financing pipeline alongside every job, without a separate login.
             </p>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">ServiceTitan</span>
-              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Housecall Pro</span>
-              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Jobber</span>
-              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">FieldEdge</span>
-              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Custom API</span>
+            <div className="flex flex-wrap gap-2 mt-3 sm:mt-4">
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">ServiceTitan</span>
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Housecall Pro</span>
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Jobber</span>
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">FieldEdge</span>
+              <span className="px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Custom API</span>
             </div>
           </div>
         </div>

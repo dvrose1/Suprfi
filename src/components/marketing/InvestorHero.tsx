@@ -24,7 +24,7 @@ const InvestorHero: React.FC = () => {
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
         <div className="max-w-4xl">
           {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 font-display">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 font-display" style={{ fontVariantLigatures: 'none' }}>
             AI-powered financing for essential home repairs.
           </h1>
           
