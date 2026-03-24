@@ -23,7 +23,10 @@ export const metadata: Metadata = {
   description: "Fast, fair financing for home repairs from $2,500 to $25,000. Instant approval, flexible terms, trusted by contractors.",
   keywords: "home repair financing, HVAC financing, plumbing loans, emergency repair financing, contractor financing",
   authors: [{ name: "SuprFi" }],
-
+  icons: {
+    icon: "/logos/suprfi-s-icon.svg",
+    apple: "/logos/suprfi-s-icon.svg",
+  },
   openGraph: {
     title: "SuprFi - The Home Repair Financing Specialists",
     description: "Instant approval for home repairs. Flexible terms. Trusted by contractors.",
