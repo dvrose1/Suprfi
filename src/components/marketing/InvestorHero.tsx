@@ -25,15 +25,16 @@ const InvestorHero: React.FC = () => {
         <div className="max-w-4xl">
           {/* Headline */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 font-display" style={{ fontVariantLigatures: 'none' }}>
-            AI-powered financing for essential home repairs.
+            Home repairs don&apos;t wait. Financing shouldn&apos;t either.
           </h1>
           
           {/* Subheadline */}
           <p className="text-lg sm:text-xl md:text-2xl text-white/80 leading-relaxed mb-10 max-w-4xl">
-            SuprFi delivers real-time financing at the point of need, helping service providers 
-            increase close rates and boost ticket sizes. Powered by agentic workflows, SuprFi 
-            automates the financing process on both sides of the transaction, allowing technicians 
-            to focus on quoting while homeowners get approved in seconds.
+            SuprFi delivers real-time financing at the point of need, embedded into the tools your 
+            team already uses. Powered by agentic workflows, SuprFi automates the financing process 
+            on both sides of the transaction so technicians can focus on the job while homeowners 
+            get approved in seconds. For contractors, that means more closed jobs. For investors, 
+            it&apos;s the embedded financing layer for a fragmented $800B+ market.
           </p>
           
           {/* CTAs */}

@@ -28,12 +28,12 @@ const AgenticSection: React.FC = () => {
 
   const agents = [
     {
-      title: 'Technician Assistant',
-      body: 'Lives in SMS. Receives job details from the tech, generates financing offers, and syncs data back to the CRM.',
+      title: 'Technician Agent',
+      body: 'Receives job details from the technician via SMS or CRM, generates personalized financing offers in seconds, and syncs application status back to the job record automatically.',
     },
     {
       title: 'Borrower Agent',
-      body: 'Guides homeowners through the application via text or chat. Collects documents and answers questions 24/7.',
+      body: 'Guides homeowners through the application via text or chat. Collects documents and answers questions 24/7 without escalating to your team.',
     },
     {
       title: 'Underwriting Agent',
@@ -41,7 +41,7 @@ const AgenticSection: React.FC = () => {
     },
     {
       title: 'Operations Agent',
-      body: 'Monitors the pipeline, flags stalled applications, triggers follow-ups, and generates reporting.',
+      body: 'Monitors the full financing pipeline in real time, flags stalled applications, triggers automatic follow-ups, and surfaces reporting for office managers and owners keeping the process moving without manual oversight.',
     },
   ];
 
@@ -59,7 +59,7 @@ const AgenticSection: React.FC = () => {
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Eyebrow */}
           <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
-            The Technology
+            A Different Approach
           </div>
           
           {/* Headline */}
@@ -71,8 +71,8 @@ const AgenticSection: React.FC = () => {
           <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed mb-8 sm:mb-12">
             Existing solutions rely on portal-based workflows that don&apos;t match how technicians operate. 
             Technicians aren&apos;t behind desks, they&apos;re in the field, which is why adoption remains low. 
-            SuprFi augments these systems with autonomous AI agents that orchestrate the financing 
-            experience, engaging homeowners from first interaction through post-job support.
+            SuprFi replaces these workflows with autonomous AI agents that handle borrower communication, 
+            underwriting, and follow-up automatically, without requiring anything from the technician in the field.
           </p>
           
           {/* Comparison Grid */}
@@ -133,13 +133,14 @@ const AgenticSection: React.FC = () => {
           
           {/* Headline */}
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
-            An agent for every step.
+            Purpose-built agents for every stage of the financing lifecycle.
           </h2>
           
           {/* Body */}
           <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-8 sm:mb-12">
             SuprFi&apos;s agent architecture is purpose-built for consumer lending in the field. Each agent 
-            has a defined role and operates within SuprFi&apos;s credit policies and compliance requirements.
+            has a defined role, operates within SuprFi&apos;s credit policies and compliance requirements, 
+            and works autonomously so no single step in the financing process depends on a human to move it forward.
           </p>
           
           {/* Agent Cards Grid */}

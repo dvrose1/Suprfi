@@ -70,14 +70,14 @@ const ProductSection: React.FC = () => {
           
           {/* Headline */}
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
-            Financing helps contractors close more jobs.
+            Contractors want to offer financing. Existing tools make it too hard.
           </h2>
           
           {/* Body */}
           <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-6 sm:mb-8">
-            Home services is one of the largest consumer spend categories in the U.S., yet most jobs 
-            are unplanned, urgent, and expensive. Financing helps contractors close more jobs, but 
-            most don&apos;t offer it consistently because existing tools don&apos;t fit how they work.
+            Home services is one of the largest consumer spend categories in the US, yet most jobs 
+            are unplanned, urgent, and expensive. Financing consistently helps contractors close more 
+            jobs, but most never offer it because existing tools weren&apos;t built for how they work.
           </p>
 
           {/* Stats */}
@@ -108,24 +108,25 @@ const ProductSection: React.FC = () => {
         </div>
       </section>
 
-      {/* What We're Building Section */}
+      {/* The Platform Section */}
       <section className="py-16 sm:py-24 bg-light-gray">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Eyebrow */}
         <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
-          What We&apos;re Building
+          The Platform
         </div>
         
         {/* Headline */}
         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
-          The lending infrastructure for home services.
+          End-to-end financing infrastructure, built for the field.
         </h2>
         
         {/* Body */}
         <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-8 sm:mb-12">
-          SuprFi powers financing for everyday home repairs and services, integrated directly into 
-          the tools contractors already use, from CRM to on-site sales. Financing is available 
-          before the visit, during the quote, or after the job.
+          SuprFi integrates directly into the tools contractors already use, making financing 
+          available at every stage of the job without adding steps, logins, or manual entry. 
+          From first homeowner touchpoint to funding confirmation, SuprFi handles the full 
+          financing lifecycle.
         </p>
         
         {/* Workflow Feature Cards */}
