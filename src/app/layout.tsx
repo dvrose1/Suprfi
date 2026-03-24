@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://suprfi.com'),
-  title: "SuprFi - The Home Repair Financing Specialists",
-  description: "Fast, fair financing for home repairs from $2,500 to $25,000. Instant approval, flexible terms, trusted by contractors.",
+  title: "SuprFi - End-to-end financing infrastructure, built for the field",
+  description: "AI-powered financing for home services. Embedded into the tools contractors already use.",
   keywords: "home repair financing, HVAC financing, plumbing loans, emergency repair financing, contractor financing",
   authors: [{ name: "SuprFi" }],
   icons: {
@@ -28,15 +28,15 @@ export const metadata: Metadata = {
     apple: "/logos/suprfi-s-icon.svg",
   },
   openGraph: {
-    title: "SuprFi - The Home Repair Financing Specialists",
-    description: "Instant approval for home repairs. Flexible terms. Trusted by contractors.",
+    title: "SuprFi - End-to-end financing infrastructure, built for the field",
+    description: "AI-powered financing for home services. Embedded into the tools contractors already use.",
     type: "website",
     siteName: "SuprFi",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SuprFi - Fast Home Repair Financing",
-    description: "Get approved in minutes for repairs from $2,500-$25,000",
+    title: "SuprFi - End-to-end financing infrastructure, built for the field",
+    description: "AI-powered financing for home services. Embedded into the tools contractors already use.",
   },
 };
 
