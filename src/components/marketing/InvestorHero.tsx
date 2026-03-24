@@ -7,7 +7,7 @@ import React from 'react';
 
 const InvestorHero: React.FC = () => {
   const scrollToLearnMore = () => {
-    const element = document.getElementById('market-section');
+    const element = document.getElementById('product-section');
     element?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -25,14 +25,13 @@ const InvestorHero: React.FC = () => {
         <div className="max-w-4xl">
           {/* Headline */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 font-display">
-            The lending infrastructure for home services.
+            AI-powered financing for essential home repairs.
           </h1>
           
           {/* Subheadline */}
-          <p className="text-lg sm:text-xl md:text-2xl text-white/80 leading-relaxed mb-10 max-w-3xl">
-            SuprFi is building agent-powered consumer lending for the $650 billion home services market. 
-            We originate unsecured loans at the point of need, when a homeowner needs HVAC, plumbing, 
-            roofing, or electrical work and can&apos;t pay upfront.
+          <p className="text-lg sm:text-xl md:text-2xl text-white/80 leading-relaxed mb-10 max-w-4xl">
+            SuprFi delivers real-time financing to homeowners at the point of need, helping service 
+            providers increase close rates, boost ticket sizes, and convert more jobs.
           </p>
           
           {/* CTAs */}

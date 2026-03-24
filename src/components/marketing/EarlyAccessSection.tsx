@@ -50,9 +50,9 @@ const EarlyAccessSection: React.FC = () => {
         </h2>
         
         {/* Subheadline */}
-        <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-10">
-          SuprFi is currently in pilot with select contractors. If you&apos;re an investor, partner, or 
-          contractor interested in early access, we&apos;d love to hear from you.
+        <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-10 max-w-2xl mx-auto">
+          If you&apos;re a contractor, investor, or partner interested in early access to SuprFi, 
+          we&apos;d love to connect.
         </p>
         
         {submitted ? (

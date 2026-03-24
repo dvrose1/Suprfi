@@ -1,5 +1,5 @@
 // ABOUTME: Product overview section showing the lending workflow
-// ABOUTME: Three columns for before/during/after visit touchpoints
+// ABOUTME: Includes before/during/after cards plus merchant portal and integrations
 
 'use client';
 
@@ -28,7 +28,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, body, icon }) => {
 };
 
 const ProductSection: React.FC = () => {
-  const features = [
+  const workflowFeatures = [
     {
       title: 'Before the visit',
       body: 'The homeowner books a service call. SuprFi can pre-qualify them before the technician arrives, so they know their budget before they see the quote.',
@@ -59,7 +59,57 @@ const ProductSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-light-gray">
+    <>
+      {/* The Opportunity Section */}
+      <section id="product-section" className="py-24 bg-warm-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Eyebrow */}
+          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-4">
+            The Opportunity
+          </div>
+          
+          {/* Headline */}
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-6">
+            Financing helps contractors close more jobs.
+          </h2>
+          
+          {/* Body */}
+          <p className="text-lg md:text-xl text-dark-gray leading-relaxed mb-8">
+            Home services is one of the largest consumer spend categories in the U.S., yet most jobs 
+            are unplanned, urgent, and expensive. Financing helps contractors close more jobs, but 
+            most don&apos;t offer it consistently because existing tools don&apos;t fit how they work.
+          </p>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="text-3xl md:text-4xl font-bold text-teal font-mono">$800B+</div>
+              <div className="text-sm text-medium-gray mt-1">US home services market*</div>
+            </div>
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="text-3xl md:text-4xl font-bold text-teal font-mono">38%</div>
+              <div className="text-sm text-medium-gray mt-1">Close rate without financing**</div>
+            </div>
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="text-3xl md:text-4xl font-bold text-teal font-mono">49%</div>
+              <div className="text-sm text-medium-gray mt-1">Close rate with financing**</div>
+            </div>
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+              <div className="text-3xl md:text-4xl font-bold text-teal font-mono">63%</div>
+              <div className="text-sm text-medium-gray mt-1">Don&apos;t consistently offer it**</div>
+            </div>
+          </div>
+
+          {/* Sources */}
+          <div className="text-xs text-medium-gray space-y-1">
+            <p>* Mordor Intelligence, US Home Service Market (2026)</p>
+            <p>** ACCA & Farmington Consulting Group, Contractor of the Future Survey (2026)</p>
+          </div>
+        </div>
+      </section>
+
+      {/* What We're Building Section */}
+      <section className="py-24 bg-light-gray">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Eyebrow */}
         <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-4">
@@ -67,26 +117,66 @@ const ProductSection: React.FC = () => {
         </div>
         
         {/* Headline */}
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-6 max-w-4xl">
-          Unsecured consumer lending that lives inside the contractor&apos;s workflow.
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-6">
+          The lending infrastructure for home services.
         </h2>
         
         {/* Body */}
-        <p className="text-lg md:text-xl text-dark-gray leading-relaxed mb-12 max-w-3xl">
-          SuprFi originates loans for home services jobs under $25K. We&apos;re building the lending layer 
-          that embeds directly into how contractors already operate: their CRM, their messaging, their 
-          on-site sales process. Financing is available before the technician arrives, on-site during 
-          the quote, or as a follow-up after the visit.
+        <p className="text-lg md:text-xl text-dark-gray leading-relaxed mb-12">
+          SuprFi powers financing for everyday home repairs and services, integrated directly into 
+          the tools contractors already use, from CRM to on-site sales. Financing is available 
+          before the visit, during the quote, or after the job.
         </p>
         
-        {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
+        {/* Workflow Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+          {workflowFeatures.map((feature, index) => (
             <FeatureCard key={index} {...feature} />
           ))}
         </div>
+
+        {/* Merchant Portal + Integrations row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Merchant Portal */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 flex flex-col">
+            <h3 className="text-lg font-semibold text-navy font-display mb-3">
+              Full visibility for your office team.
+            </h3>
+            <p className="text-medium-gray text-sm leading-relaxed flex-grow">
+              While agents handle the heavy lifting, your team keeps full control. The SuprFi merchant 
+              portal gives office managers and owners complete visibility into the pipeline and deep 
+              analytics to understand your conversion rates, average loan size, approval rates by 
+              service type, and trends over time.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <span className="px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Pipeline</span>
+              <span className="px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Analytics</span>
+              <span className="px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Team Access</span>
+            </div>
+          </div>
+
+          {/* Integrations */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-200 flex flex-col">
+            <h3 className="text-lg font-semibold text-navy font-display mb-3">
+              Deep integration with the tools contractors already use.
+            </h3>
+            <p className="text-medium-gray text-sm leading-relaxed flex-grow">
+              SuprFi connects bidirectionally with the contractor&apos;s CRM. Job details flow in 
+              automatically. Status and funding confirmations flow back to the job record. 
+              The office manager sees the financing pipeline alongside every job, without a separate login.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">ServiceTitan</span>
+              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Housecall Pro</span>
+              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Jobber</span>
+              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">FieldEdge</span>
+              <span className="px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Custom API</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
+    </>
   );
 };
 

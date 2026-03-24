@@ -5,9 +5,11 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useChat } from './ChatProvider';
 
 const InvestorHeader: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
+  const { openChat } = useChat();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,13 +36,21 @@ const InvestorHeader: React.FC = () => {
             />
           </Link>
 
-          {/* CTA */}
-          <a
-            href="#early-access"
-            className="px-5 py-2.5 min-h-[44px] flex items-center rounded-lg bg-white text-navy text-sm font-semibold transition-all hover:bg-white/90"
-          >
-            Get Early Access
-          </a>
+          {/* CTAs */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={openChat}
+              className="px-4 py-2.5 min-h-[44px] flex items-center rounded-lg border border-white/30 text-white text-sm font-medium transition-all hover:bg-white/10"
+            >
+              Have questions?
+            </button>
+            <a
+              href="#early-access"
+              className="px-5 py-2.5 min-h-[44px] flex items-center rounded-lg bg-white text-navy text-sm font-semibold transition-all hover:bg-white/90"
+            >
+              Get Early Access
+            </a>
+          </div>
         </div>
       </nav>
     </header>

@@ -39,7 +39,7 @@ const InvestorFooter: React.FC = () => {
           
           {/* Legal disclaimer */}
           <p className="text-white/30 text-xs leading-relaxed max-w-4xl">
-            SuprFi is a DBA of Home Services Financing Solutions Corporation. Loans subject to credit approval. Terms, rates, and 
+            Home Services Financing Solutions, Inc. DBA SuprFi. Loans subject to credit approval. Terms, rates, and 
             availability vary by state and are not guaranteed. This website is for informational 
             purposes only and does not constitute an offer or solicitation to lend. SuprFi is 
             not currently originating loans in all states.
