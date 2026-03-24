@@ -95,28 +95,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Send confirmation email
-    const emailResult = await sendEmail({
-      to: email.toLowerCase(),
-      subject: type === 'contractor' 
-        ? "Welcome to SuprFi Partners!" 
-        : "You're on the SuprFi Waitlist!",
-      react: WaitlistConfirmation({ name, type }),
-      replyTo: 'support@suprfi.com',
-      tags: [
-        { name: 'category', value: 'waitlist' },
-        { name: 'type', value: type },
-      ],
-    });
-
-    if (!emailResult.success) {
-      console.error('[Waitlist] Email send failed:', emailResult.error);
-      // Don't fail the signup if email fails - just log it
-    }
-
     return NextResponse.json({
       success: true,
-      message: 'Successfully joined waitlist',
+      message: 'Thanks, we will be in touch soon!',
       id: waitlist.id,
     });
   } catch (error) {
