@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
         ? "Welcome to SuprFi Partners!" 
         : "You're on the SuprFi Waitlist!",
       react: WaitlistConfirmation({ name, type }),
-      replyTo: 'hello@suprfi.com',
+      replyTo: 'support@suprfi.com',
       tags: [
         { name: 'category', value: 'waitlist' },
         { name: 'type', value: type },

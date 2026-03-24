@@ -15,7 +15,7 @@ export default function ContactPage() {
   const contactMethods = [
     {
       title: 'General Inquiries',
-      email: 'hello@suprfi.com',
+      email: 'support@suprfi.com',
       description: 'Questions about SuprFi or our services',
       icon: (
         <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -23,10 +23,10 @@ const InvestorFooter: React.FC = () => {
           
           {/* Contact */}
           <a 
-            href="mailto:hello@suprfi.com"
+            href="mailto:support@suprfi.com"
             className="text-white/60 hover:text-white transition-colors"
           >
-            hello@suprfi.com
+            support@suprfi.com
           </a>
         </div>
         

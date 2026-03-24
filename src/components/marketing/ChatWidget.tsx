@@ -100,7 +100,7 @@ const ChatWidget: React.FC = () => {
         ...prev,
         {
           role: 'assistant',
-          content: "I'm having trouble connecting right now. Please try again or email us at hello@suprfi.com.",
+          content: "I'm having trouble connecting right now. Please try again or email us at support@suprfi.com.",
         },
       ]);
     } finally {
