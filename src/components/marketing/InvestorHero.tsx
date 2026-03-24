@@ -30,8 +30,10 @@ const InvestorHero: React.FC = () => {
           
           {/* Subheadline */}
           <p className="text-lg sm:text-xl md:text-2xl text-white/80 leading-relaxed mb-10 max-w-4xl">
-            SuprFi delivers real-time financing to homeowners at the point of need, helping service 
-            providers increase close rates, boost ticket sizes, and convert more jobs.
+            SuprFi delivers real-time financing at the point of need, helping service providers 
+            increase close rates and boost ticket sizes. Powered by agentic workflows, SuprFi 
+            automates the financing process on both sides of the transaction, allowing technicians 
+            to focus on quoting while homeowners get approved in seconds.
           </p>
           
           {/* CTAs */}
