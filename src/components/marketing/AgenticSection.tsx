@@ -4,6 +4,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 
 const AgenticSection: React.FC = () => {
   const portalFeatures = [
@@ -58,27 +59,51 @@ const AgenticSection: React.FC = () => {
         
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Eyebrow */}
-          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
+          <motion.div 
+            className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5 }}
+          >
             A Different Approach
-          </div>
+          </motion.div>
           
           {/* Headline */}
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display mb-4 sm:mb-6">
+          <motion.h2 
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display mb-4 sm:mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             Why AI agents, not portals.
-          </h2>
+          </motion.h2>
           
           {/* Body */}
-          <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed mb-8 sm:mb-12">
+          <motion.p 
+            className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed mb-8 sm:mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             Existing solutions rely on portal-based workflows that don&apos;t match how technicians operate. 
             Technicians aren&apos;t behind desks, they&apos;re in the field, which is why adoption remains low. 
             SuprFi replaces these workflows with autonomous AI agents that handle borrower communication, 
             underwriting, and follow-up automatically, without requiring anything from the technician in the field.
-          </p>
+          </motion.p>
           
           {/* Comparison Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-12">
             {/* Portal Side */}
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-5 sm:p-8">
+            <motion.div 
+              className="bg-white/10 backdrop-blur rounded-2xl p-5 sm:p-8"
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
               <h3 className="text-lg sm:text-xl font-semibold text-white/60 font-display mb-4 sm:mb-6">
                 Portal-Based Lenders
               </h3>
@@ -92,10 +117,16 @@ const AgenticSection: React.FC = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
             
             {/* Agent Side */}
-            <div className="bg-teal/20 rounded-2xl p-5 sm:p-8 border-2 border-teal/30">
+            <motion.div 
+              className="bg-teal/20 rounded-2xl p-5 sm:p-8 border-2 border-teal/30"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
               <h3 className="text-lg sm:text-xl font-semibold text-white font-display mb-4 sm:mb-6 flex items-center gap-2">
                 <span className="text-teal">SuprFi:</span> Agent-Powered
               </h3>
@@ -109,17 +140,23 @@ const AgenticSection: React.FC = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           </div>
           
           {/* Callout Box */}
-          <div className="bg-white rounded-2xl p-5 sm:p-8 text-navy">
+          <motion.div 
+            className="bg-white rounded-2xl p-5 sm:p-8 text-navy"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
             <p className="text-base sm:text-lg md:text-xl leading-relaxed">
               <span className="font-semibold">Technicians focus on the job, not financing.</span>{' '}
               SuprFi&apos;s agents handle the rest: borrower communication, underwriting, and CRM sync. 
               When it&apos;s effortless, financing gets offered every time.
             </p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -127,28 +164,50 @@ const AgenticSection: React.FC = () => {
       <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Eyebrow */}
-          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
+          <motion.div 
+            className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5 }}
+          >
             Under The Hood
-          </div>
+          </motion.div>
           
           {/* Headline */}
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
+          <motion.h2 
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             Purpose-built agents for every stage of the financing lifecycle.
-          </h2>
+          </motion.h2>
           
           {/* Body */}
-          <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-8 sm:mb-12">
+          <motion.p 
+            className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-8 sm:mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             SuprFi&apos;s agent architecture is purpose-built for consumer lending in the field. Each agent 
             has a defined role, operates within SuprFi&apos;s credit policies and compliance requirements, 
             and works autonomously so no single step in the financing process depends on a human to move it forward.
-          </p>
+          </motion.p>
           
           {/* Agent Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {agents.map((agent, index) => (
-              <div 
+              <motion.div 
                 key={index}
                 className="bg-light-gray rounded-2xl p-5 sm:p-6 border border-gray-200"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
               >
                 <h3 className="text-base sm:text-lg font-semibold text-navy font-display mb-2 sm:mb-3">
                   {agent.title}
@@ -156,7 +215,7 @@ const AgenticSection: React.FC = () => {
                 <p className="text-medium-gray text-sm leading-relaxed">
                   {agent.body}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

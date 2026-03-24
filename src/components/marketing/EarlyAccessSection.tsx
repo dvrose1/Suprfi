@@ -4,6 +4,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 
 const EarlyAccessSection: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -45,26 +46,50 @@ const EarlyAccessSection: React.FC = () => {
     <section id="early-access" className="py-16 sm:py-24 bg-navy">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Headline */}
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display mb-4 sm:mb-6">
+        <motion.h2 
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display mb-4 sm:mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5 }}
+        >
           We&apos;re building the future of home services lending.
-        </h2>
+        </motion.h2>
         
         {/* Subheadline */}
-        <p className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed mb-8 sm:mb-10 max-w-2xl mx-auto">
+        <motion.p 
+          className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed mb-8 sm:mb-10 max-w-2xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
           If you&apos;re a contractor, investor, or partner interested in early access to SuprFi, 
           we&apos;d love to connect.
-        </p>
+        </motion.p>
         
         {submitted ? (
-          <div className="bg-teal/20 rounded-2xl p-6 sm:p-8 border border-teal/30">
+          <motion.div 
+            className="bg-teal/20 rounded-2xl p-6 sm:p-8 border border-teal/30"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+          >
             <svg className="w-10 sm:w-12 h-10 sm:h-12 text-teal mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-white text-base sm:text-lg font-medium">Thanks for your interest!</p>
             <p className="text-white/70 mt-2 text-sm sm:text-base">We&apos;ll be in touch soon.</p>
-          </div>
+          </motion.div>
         ) : (
-          <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3 sm:space-y-4">
+          <motion.form 
+            onSubmit={handleSubmit} 
+            className="max-w-md mx-auto space-y-3 sm:space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <input
               type="email"
               value={email}
@@ -94,7 +119,7 @@ const EarlyAccessSection: React.FC = () => {
             {error && (
               <p className="text-red-300 text-sm mt-2">{error}</p>
             )}
-          </form>
+          </motion.form>
         )}
       </div>
     </section>

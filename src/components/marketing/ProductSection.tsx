@@ -4,16 +4,24 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 
 interface FeatureCardProps {
   title: string;
   body: string;
   icon: React.ReactNode;
+  index: number;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ title, body, icon }) => {
+const FeatureCard: React.FC<FeatureCardProps> = ({ title, body, icon, index }) => {
   return (
-    <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-lg border border-gray-100">
+    <motion.div 
+      className="bg-white rounded-2xl p-5 sm:p-8 shadow-lg border border-gray-100"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
+    >
       <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-teal/10 flex items-center justify-center text-teal mb-4 sm:mb-5">
         {icon}
       </div>
@@ -23,7 +31,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, body, icon }) => {
       <p className="text-medium-gray leading-relaxed text-sm sm:text-base">
         {body}
       </p>
-    </div>
+    </motion.div>
   );
 };
 
@@ -64,47 +72,73 @@ const ProductSection: React.FC = () => {
       <section id="product-section" className="py-16 sm:py-24 bg-warm-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Eyebrow */}
-          <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
+          <motion.div 
+            className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5 }}
+          >
             The Opportunity
-          </div>
+          </motion.div>
           
           {/* Headline */}
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
+          <motion.h2 
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             Contractors want to offer financing. Existing tools make it too hard.
-          </h2>
+          </motion.h2>
           
           {/* Body */}
-          <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-6 sm:mb-8">
+          <motion.p 
+            className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-6 sm:mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             Home services is one of the largest consumer spend categories in the US, yet most jobs 
             are unplanned, urgent, and expensive. Financing consistently helps contractors close more 
             jobs, but most never offer it because existing tools weren&apos;t built for how they work.
-          </p>
+          </motion.p>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
-            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">$800B+</div>
-              <div className="text-xs sm:text-sm text-medium-gray mt-1">US home services market*</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">38%</div>
-              <div className="text-xs sm:text-sm text-medium-gray mt-1">Close rate without financing**</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">49%</div>
-              <div className="text-xs sm:text-sm text-medium-gray mt-1">Close rate with financing**</div>
-            </div>
-            <div className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100">
-              <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">63%</div>
-              <div className="text-xs sm:text-sm text-medium-gray mt-1">Don&apos;t consistently offer it**</div>
-            </div>
+            {[
+              { value: '$800B+', label: 'US home services market*' },
+              { value: '38%', label: 'Close rate without financing**' },
+              { value: '49%', label: 'Close rate with financing**' },
+              { value: '63%', label: "Don't consistently offer it**" },
+            ].map((stat, index) => (
+              <motion.div 
+                key={index}
+                className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100"
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+              >
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-medium-gray mt-1">{stat.label}</div>
+              </motion.div>
+            ))}
           </div>
 
           {/* Sources */}
-          <div className="text-xs text-medium-gray space-y-1">
+          <motion.div 
+            className="text-xs text-medium-gray space-y-1"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
             <p>* Mordor Intelligence, US Home Service Market (2026)</p>
             <p>** ACCA & Farmington Consulting Group, Contractor of the Future Survey (2026)</p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -112,34 +146,58 @@ const ProductSection: React.FC = () => {
       <section className="py-16 sm:py-24 bg-light-gray">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Eyebrow */}
-        <div className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4">
+        <motion.div 
+          className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5 }}
+        >
           The Platform
-        </div>
+        </motion.div>
         
         {/* Headline */}
-        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6">
+        <motion.h2 
+          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-navy font-display mb-4 sm:mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
           End-to-end financing infrastructure, built for the field.
-        </h2>
+        </motion.h2>
         
         {/* Body */}
-        <p className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-8 sm:mb-12">
+        <motion.p 
+          className="text-base sm:text-lg md:text-xl text-dark-gray leading-relaxed mb-8 sm:mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
           SuprFi integrates directly into the tools contractors already use, making financing 
           available at every stage of the job without adding steps, logins, or manual entry. 
           From first homeowner touchpoint to funding confirmation, SuprFi handles the full 
           financing lifecycle.
-        </p>
+        </motion.p>
         
         {/* Workflow Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-16">
           {workflowFeatures.map((feature, index) => (
-            <FeatureCard key={index} {...feature} />
+            <FeatureCard key={index} index={index} {...feature} />
           ))}
         </div>
 
         {/* Merchant Portal + Integrations row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Merchant Portal */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col">
+          <motion.div 
+            className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5 }}
+          >
             <h3 className="text-base sm:text-lg font-semibold text-navy font-display mb-2 sm:mb-3">
               Full visibility for your office team.
             </h3>
@@ -154,10 +212,16 @@ const ProductSection: React.FC = () => {
               <span className="px-2 sm:px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Analytics</span>
               <span className="px-2 sm:px-3 py-1 rounded-full bg-teal/10 text-teal text-xs font-medium">Team Access</span>
             </div>
-          </div>
+          </motion.div>
 
           {/* Integrations */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col">
+          <motion.div 
+            className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
             <h3 className="text-base sm:text-lg font-semibold text-navy font-display mb-2 sm:mb-3">
               Deep integration with the tools contractors already use.
             </h3>
@@ -173,7 +237,7 @@ const ProductSection: React.FC = () => {
               <span className="px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">FieldEdge</span>
               <span className="px-2 sm:px-3 py-1 rounded-full bg-gray-100 text-navy text-xs font-medium">Custom API</span>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
