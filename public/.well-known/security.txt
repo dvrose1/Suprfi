@@ -1,0 +1,11 @@
+# SuprFi Security Contact Information
+# https://securitytxt.org/
+
+Contact: mailto:security@suprfi.com
+Expires: 2027-12-31T23:59:00.000Z
+Preferred-Languages: en
+Canonical: https://suprfi.com/.well-known/security.txt
+Policy: https://suprfi.com/security-policy
+
+# SuprFi is a legitimate fintech company providing home services financing.
+# If you believe our domain has been incorrectly flagged, please contact us.
