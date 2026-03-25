@@ -40,6 +40,7 @@ const InvestorHeader: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={openChat}
+              aria-label="Open chat to ask questions"
               className="hidden sm:flex px-4 py-2.5 min-h-[44px] items-center rounded-lg border border-white/30 text-white text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
             >
               Have questions?

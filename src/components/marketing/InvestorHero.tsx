@@ -4,18 +4,20 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 
 const InvestorHero: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end start'],
   });
 
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.3]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
+  const backgroundY = useTransform(scrollYProgress, [0, 1], prefersReducedMotion ? ['0%', '0%'] : ['0%', '30%']);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.5], prefersReducedMotion ? [1, 1] : [1, 0.3]);
+  const contentY = useTransform(scrollYProgress, [0, 1], prefersReducedMotion ? ['0%', '0%'] : ['0%', '20%']);
 
   const scrollToLearnMore = () => {
     const element = document.getElementById('product-section');
@@ -43,9 +45,9 @@ const InvestorHero: React.FC = () => {
           <motion.h1 
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 font-display" 
             style={{ fontVariantLigatures: 'none' }}
-            initial={{ opacity: 0, y: 30 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: 'easeOut' }}
           >
             Home repairs don&apos;t wait. Financing shouldn&apos;t either.
           </motion.h1>
@@ -53,9 +55,9 @@ const InvestorHero: React.FC = () => {
           {/* Subheadline */}
           <motion.p 
             className="text-lg sm:text-xl md:text-2xl text-white/80 leading-relaxed mb-10 max-w-3xl"
-            initial={{ opacity: 0, y: 30 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.15 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.15 }}
           >
             SuprFi delivers real-time financing at the point of need, embedded into the tools your 
             team already uses. Powered by agentic workflows, SuprFi automates the financing process 
@@ -67,16 +69,16 @@ const InvestorHero: React.FC = () => {
           {/* CTAs */}
           <motion.div 
             className="flex flex-col sm:flex-row gap-3 sm:gap-4"
-            initial={{ opacity: 0, y: 30 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut', delay: 0.3 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.3 }}
           >
             <a 
               href="#early-access"
               className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 min-h-[48px] rounded-xl bg-teal text-white font-semibold text-base sm:text-lg transition-all duration-200 hover:bg-teal/90 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:shadow-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-navy"
             >
               Get Early Access
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
             </a>
@@ -85,7 +87,7 @@ const InvestorHero: React.FC = () => {
               className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 min-h-[48px] rounded-xl border-2 border-white/30 text-white font-semibold text-base sm:text-lg transition-all duration-200 hover:bg-white/10 hover:border-white/50 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50"
             >
               Learn More
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
             </button>

@@ -4,7 +4,7 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface WorkflowStepProps {
   step: number;
@@ -15,14 +15,15 @@ interface WorkflowStepProps {
 
 const WorkflowStep: React.FC<WorkflowStepProps> = ({ step, title, body, index }) => {
   const isLast = step === 3;
+  const prefersReducedMotion = useReducedMotion();
   
   return (
     <motion.div 
       className="relative flex gap-4 sm:gap-6"
-      initial={{ opacity: 0, y: 30 }}
+      initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.5, ease: 'easeOut', delay: prefersReducedMotion ? 0 : index * 0.1 }}
     >
       {/* Number and line column */}
       <div className="flex flex-col items-center">

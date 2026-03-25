@@ -4,27 +4,28 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const AgenticSection: React.FC = () => {
+  const prefersReducedMotion = useReducedMotion();
   const portalFeatures = [
-    'Technician logs into a separate portal',
-    'Manually enters job details and customer info',
-    'Homeowner is handed a tablet or URL',
-    'Application only works at the point of sale',
-    'No support after hours',
-    'Office manager checks a separate dashboard',
-    'If the homeowner doesn\'t finish, nobody follows up',
+    'Technician logs into a separate portal before offering financing',
+    'Manually enters job details and customer information',
+    'Homeowner is handed a tablet or directed to a URL on-site',
+    'Financing is only available while the homeowner is present',
+    'Homeowner questions go unanswered after hours',
+    'Office manager checks a separate dashboard for status updates',
+    'Stalled applications get no follow-up',
   ];
 
   const agentFeatures = [
-    'Technician texts job details or it flows from the CRM',
-    'Agent generates payment options in seconds',
-    'Homeowner gets a personalized link on their phone',
+    'Job details flow automatically from the CRM or a quick technician text',
+    'Agent generates personalized payment options in seconds, no technician input required',
+    'Homeowner receives a personalized link directly on their phone',
     'Works before, during, or after the service call',
-    'Agent answers borrower questions 24/7',
-    'Status syncs directly to the contractor\'s CRM',
-    'Agent follows up automatically with the specific quote and terms',
+    'Agent answers borrower questions 24/7, without escalating to your team',
+    'Application status and funding confirmations sync directly to the job record',
+    'Agent follows up automatically with the exact quote and financing terms',
   ];
 
   const agents = [
@@ -63,10 +64,10 @@ const AgenticSection: React.FC = () => {
           {/* Eyebrow */}
           <motion.div 
             className="text-sm font-semibold uppercase tracking-wider text-teal mb-3 sm:mb-4"
-            initial={{ opacity: 0, y: 20 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.5 }}
           >
             A Different Approach
           </motion.div>
@@ -74,10 +75,10 @@ const AgenticSection: React.FC = () => {
           {/* Headline */}
           <motion.h2 
             className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-display mb-4 sm:mb-6"
-            initial={{ opacity: 0, y: 20 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.5, delay: prefersReducedMotion ? 0 : 0.1 }}
           >
             Why AI agents, not portals.
           </motion.h2>
@@ -85,10 +86,10 @@ const AgenticSection: React.FC = () => {
           {/* Body */}
           <motion.p 
             className="text-base sm:text-lg md:text-xl text-white/80 leading-relaxed mb-8 sm:mb-12"
-            initial={{ opacity: 0, y: 20 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.5, delay: prefersReducedMotion ? 0 : 0.2 }}
           >
             Existing solutions rely on portal-based workflows that don&apos;t match how technicians operate. 
             Technicians aren&apos;t behind desks, they&apos;re in the field, which is why adoption remains low. 
@@ -101,10 +102,10 @@ const AgenticSection: React.FC = () => {
             {/* Portal Side - Smaller, faded */}
             <motion.div 
               className="lg:col-span-2 bg-white/5 rounded-2xl p-5 sm:p-6"
-              initial={{ opacity: 0, x: -30 }}
+              initial={prefersReducedMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5, delay: 0.3 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.5, delay: prefersReducedMotion ? 0 : 0.3 }}
             >
               <h3 className="text-base sm:text-lg font-semibold text-white/40 font-display mb-4 sm:mb-5">
                 Portal-Based Lenders
@@ -112,7 +113,7 @@ const AgenticSection: React.FC = () => {
               <ul className="space-y-2.5 sm:space-y-3">
                 {portalFeatures.map((feature, index) => (
                   <li key={index} className="flex items-start gap-2.5 text-white/40 text-sm">
-                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
                     <span>{feature}</span>
@@ -124,10 +125,10 @@ const AgenticSection: React.FC = () => {
             {/* Agent Side - Larger, prominent */}
             <motion.div 
               className="lg:col-span-3 bg-teal/20 rounded-2xl p-5 sm:p-8 border-2 border-teal/40"
-              initial={{ opacity: 0, x: 30 }}
+              initial={prefersReducedMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.5, delay: prefersReducedMotion ? 0 : 0.4 }}
             >
               <h3 className="text-lg sm:text-xl font-semibold text-white font-display mb-4 sm:mb-6 flex items-center gap-2">
                 <span className="text-teal">SuprFi:</span> Agent-Powered
@@ -135,7 +136,7 @@ const AgenticSection: React.FC = () => {
               <ul className="space-y-3 sm:space-y-4">
                 {agentFeatures.map((feature, index) => (
                   <li key={index} className="flex items-start gap-3 text-white text-sm sm:text-base">
-                    <svg className="w-5 h-5 mt-0.5 flex-shrink-0 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 mt-0.5 flex-shrink-0 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <span>{feature}</span>
@@ -148,10 +149,10 @@ const AgenticSection: React.FC = () => {
           {/* Callout Box */}
           <motion.div 
             className="bg-white rounded-2xl p-5 sm:p-8 text-navy transition-all duration-300 hover:shadow-lg"
-            initial={{ opacity: 0, y: 30 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.5, delay: prefersReducedMotion ? 0 : 0.5 }}
           >
             <p className="text-base sm:text-lg md:text-xl leading-relaxed">
               <span className="font-semibold">Technicians focus on the job, not financing.</span>{' '}
