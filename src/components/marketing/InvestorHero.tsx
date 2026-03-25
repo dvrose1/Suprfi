@@ -1,5 +1,5 @@
 // ABOUTME: Hero section for investor-focused pre-launch homepage
-// ABOUTME: Dark gradient background with headline about lending infrastructure
+// ABOUTME: Navy background with dot pattern and parallax scrolling
 
 'use client';
 
@@ -23,12 +23,13 @@ const InvestorHero: React.FC = () => {
   };
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen flex items-center bg-gradient-primary overflow-hidden">
-      {/* Subtle background pattern with parallax */}
+    <section ref={sectionRef} className="relative min-h-screen flex items-center bg-navy overflow-hidden">
+      {/* Subtle dot pattern - feels intentional, not decorative gradient */}
       <motion.div 
-        className="absolute inset-0 opacity-10"
+        className="absolute inset-0 opacity-[0.03]"
         style={{ 
-          backgroundImage: 'radial-gradient(circle at 25% 25%, #2A9D8F 0%, transparent 50%), radial-gradient(circle at 75% 75%, #6EC6A7 0%, transparent 50%)',
+          backgroundImage: 'radial-gradient(circle at center, #fff 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
           y: backgroundY,
         }}
       />
@@ -51,7 +52,7 @@ const InvestorHero: React.FC = () => {
           
           {/* Subheadline */}
           <motion.p 
-            className="text-lg sm:text-xl md:text-2xl text-white/80 leading-relaxed mb-10 max-w-4xl"
+            className="text-lg sm:text-xl md:text-2xl text-white/80 leading-relaxed mb-10 max-w-3xl"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.15 }}
@@ -65,26 +66,26 @@ const InvestorHero: React.FC = () => {
           
           {/* CTAs */}
           <motion.div 
-            className="flex flex-col sm:flex-row gap-4"
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.3 }}
           >
             <a 
               href="#early-access"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white text-navy font-semibold text-lg transition-all hover:bg-white/90 hover:scale-[1.02] shadow-lg"
+              className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 min-h-[48px] rounded-xl bg-teal text-white font-semibold text-base sm:text-lg transition-all duration-200 hover:bg-teal/90 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:shadow-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-navy"
             >
               Get Early Access
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
             </a>
             <button 
               onClick={scrollToLearnMore}
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-white/30 text-white font-semibold text-lg transition-all hover:bg-white/10"
+              className="group inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 min-h-[48px] rounded-xl border-2 border-white/30 text-white font-semibold text-base sm:text-lg transition-all duration-200 hover:bg-white/10 hover:border-white/50 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-white/50"
             >
               Learn More
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
             </button>

@@ -13,7 +13,7 @@ const InvestorFooter: React.FC = () => {
         {/* Top row */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
+          <Link href="/" className="flex items-center p-1 -m-1 rounded-lg hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-white/30">
             <img
               src="/logos/wordmark white and mint.svg"
               alt="SuprFi"
@@ -24,7 +24,7 @@ const InvestorFooter: React.FC = () => {
           {/* Contact */}
           <a 
             href="mailto:support@suprfi.com"
-            className="text-white/60 hover:text-white transition-colors"
+            className="text-white/60 hover:text-white transition-colors py-2 underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-white/30 rounded"
           >
             support@suprfi.com
           </a>

@@ -6,63 +6,60 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-interface FeatureCardProps {
+interface WorkflowStepProps {
+  step: number;
   title: string;
   body: string;
-  icon: React.ReactNode;
   index: number;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ title, body, icon, index }) => {
+const WorkflowStep: React.FC<WorkflowStepProps> = ({ step, title, body, index }) => {
+  const isLast = step === 3;
+  
   return (
     <motion.div 
-      className="bg-white rounded-2xl p-5 sm:p-8 shadow-lg border border-gray-100"
+      className="relative flex gap-4 sm:gap-6"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5, ease: 'easeOut', delay: index * 0.1 }}
     >
-      <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl bg-teal/10 flex items-center justify-center text-teal mb-4 sm:mb-5">
-        {icon}
+      {/* Number and line column */}
+      <div className="flex flex-col items-center">
+        <span className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-navy text-white flex items-center justify-center font-bold text-sm sm:text-base font-display">
+          {step}
+        </span>
+        {!isLast && (
+          <div className="w-0.5 flex-1 bg-gray-200 mt-3" />
+        )}
       </div>
-      <h3 className="text-lg sm:text-xl font-semibold text-navy font-display mb-2 sm:mb-3">
-        {title}
-      </h3>
-      <p className="text-medium-gray leading-relaxed text-sm sm:text-base">
-        {body}
-      </p>
+      
+      {/* Content */}
+      <div className={`flex-1 ${!isLast ? 'pb-8 sm:pb-10' : ''}`}>
+        <h3 className="text-lg sm:text-xl font-semibold text-navy font-display mb-1.5 sm:mb-2">
+          {title}
+        </h3>
+        <p className="text-medium-gray leading-relaxed text-sm sm:text-base">
+          {body}
+        </p>
+      </div>
     </motion.div>
   );
 };
 
 const ProductSection: React.FC = () => {
-  const workflowFeatures = [
+  const workflowSteps = [
     {
       title: 'Before the visit',
       body: 'The homeowner books a service call. SuprFi can pre-qualify them before the technician arrives, so they know their budget before they see the quote.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      ),
     },
     {
       title: 'During the visit',
       body: 'The technician quotes the job. SuprFi generates personalized monthly payment options the homeowner can review on their phone, right there on-site.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-        </svg>
-      ),
     },
     {
       title: 'After the visit',
       body: 'The homeowner needs to think about it. SuprFi follows up with financing options specific to the job that was quoted, closing the loop that usually stays open.',
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-      ),
     },
   ];
 
@@ -106,8 +103,8 @@ const ProductSection: React.FC = () => {
             jobs, but most never offer it because existing tools weren&apos;t built for how they work.
           </motion.p>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+          {/* Stats - Horizontal on larger screens */}
+          <div className="flex flex-wrap gap-x-8 sm:gap-x-12 gap-y-4 mb-8">
             {[
               { value: '$800B+', label: 'US home services market*' },
               { value: '38%', label: 'Close rate without financing**' },
@@ -116,13 +113,13 @@ const ProductSection: React.FC = () => {
             ].map((stat, index) => (
               <motion.div 
                 key={index}
-                className="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100"
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                className="min-w-[140px]"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                transition={{ duration: 0.4, delay: 0.3 + index * 0.08 }}
               >
-                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal font-mono">{stat.value}</div>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-navy font-mono">{stat.value}</div>
                 <div className="text-xs sm:text-sm text-medium-gray mt-1">{stat.label}</div>
               </motion.div>
             ))}
@@ -181,10 +178,16 @@ const ProductSection: React.FC = () => {
           financing lifecycle.
         </motion.p>
         
-        {/* Workflow Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-16">
-          {workflowFeatures.map((feature, index) => (
-            <FeatureCard key={index} index={index} {...feature} />
+        {/* Workflow Steps - Timeline layout */}
+        <div className="max-w-2xl mb-10 sm:mb-16">
+          {workflowSteps.map((step, index) => (
+            <WorkflowStep 
+              key={index} 
+              step={index + 1}
+              index={index} 
+              title={step.title}
+              body={step.body}
+            />
           ))}
         </div>
 
@@ -192,7 +195,7 @@ const ProductSection: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Merchant Portal */}
           <motion.div 
-            className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col"
+            className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
@@ -216,7 +219,7 @@ const ProductSection: React.FC = () => {
 
           {/* Integrations */}
           <motion.div 
-            className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col"
+            className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-200 flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}

@@ -28,7 +28,7 @@ const InvestorHeader: React.FC = () => {
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg">
             <img
               src="/logos/wordmark white and mint.svg"
               alt="SuprFi"
@@ -40,13 +40,13 @@ const InvestorHeader: React.FC = () => {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={openChat}
-              className="hidden sm:flex px-4 py-2.5 min-h-[44px] items-center rounded-lg border border-white/30 text-white text-sm font-medium transition-all hover:bg-white/10"
+              className="hidden sm:flex px-4 py-2.5 min-h-[44px] items-center rounded-lg border border-white/30 text-white text-sm font-medium transition-all duration-200 hover:bg-white/10 hover:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
             >
               Have questions?
             </button>
             <a
               href="#early-access"
-              className="px-4 sm:px-5 py-2.5 min-h-[44px] flex items-center rounded-lg bg-white text-navy text-sm font-semibold transition-all hover:bg-white/90 whitespace-nowrap"
+              className="px-4 sm:px-5 py-2.5 min-h-[44px] flex items-center rounded-lg bg-teal text-white text-sm font-semibold transition-all duration-200 hover:bg-teal/90 hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-teal/50 focus:ring-offset-2 focus:ring-offset-navy whitespace-nowrap"
             >
               Get Early Access
             </a>

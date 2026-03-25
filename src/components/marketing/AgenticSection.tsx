@@ -50,10 +50,12 @@ const AgenticSection: React.FC = () => {
     <>
       {/* Main Technology Section - Navy background */}
       <section className="py-16 sm:py-24 bg-navy relative overflow-hidden">
+        {/* Subtle dot pattern - matches hero */}
         <div 
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 opacity-[0.03]"
           style={{ 
-            backgroundImage: 'radial-gradient(circle at 25% 25%, #2A9D8F 0%, transparent 50%), radial-gradient(circle at 75% 75%, #6EC6A7 0%, transparent 50%)'
+            backgroundImage: 'radial-gradient(circle at center, #fff 1px, transparent 1px)',
+            backgroundSize: '32px 32px'
           }}
         />
         
@@ -94,23 +96,23 @@ const AgenticSection: React.FC = () => {
             underwriting, and follow-up automatically, without requiring anything from the technician in the field.
           </motion.p>
           
-          {/* Comparison Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-12">
-            {/* Portal Side */}
+          {/* Comparison Grid - Asymmetric layout favoring SuprFi */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 mb-12">
+            {/* Portal Side - Smaller, faded */}
             <motion.div 
-              className="bg-white/10 backdrop-blur rounded-2xl p-5 sm:p-8"
+              className="lg:col-span-2 bg-white/5 rounded-2xl p-5 sm:p-6"
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-50px' }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <h3 className="text-lg sm:text-xl font-semibold text-white/60 font-display mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-white/40 font-display mb-4 sm:mb-5">
                 Portal-Based Lenders
               </h3>
-              <ul className="space-y-3 sm:space-y-4">
+              <ul className="space-y-2.5 sm:space-y-3">
                 {portalFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3 text-white/60 text-sm sm:text-base">
-                    <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <li key={index} className="flex items-start gap-2.5 text-white/40 text-sm">
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
                     <span>{feature}</span>
@@ -119,9 +121,9 @@ const AgenticSection: React.FC = () => {
               </ul>
             </motion.div>
             
-            {/* Agent Side */}
+            {/* Agent Side - Larger, prominent */}
             <motion.div 
-              className="bg-teal/20 rounded-2xl p-5 sm:p-8 border-2 border-teal/30"
+              className="lg:col-span-3 bg-teal/20 rounded-2xl p-5 sm:p-8 border-2 border-teal/40"
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-50px' }}
@@ -145,7 +147,7 @@ const AgenticSection: React.FC = () => {
           
           {/* Callout Box */}
           <motion.div 
-            className="bg-white rounded-2xl p-5 sm:p-8 text-navy"
+            className="bg-white rounded-2xl p-5 sm:p-8 text-navy transition-all duration-300 hover:shadow-lg"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
@@ -198,25 +200,59 @@ const AgenticSection: React.FC = () => {
             and works autonomously so no single step in the financing process depends on a human to move it forward.
           </motion.p>
           
-          {/* Agent Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {agents.map((agent, index) => (
-              <motion.div 
-                key={index}
-                className="bg-light-gray rounded-2xl p-5 sm:p-6 border border-gray-200"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-              >
-                <h3 className="text-base sm:text-lg font-semibold text-navy font-display mb-2 sm:mb-3">
-                  {agent.title}
-                </h3>
-                <p className="text-medium-gray text-sm leading-relaxed">
-                  {agent.body}
-                </p>
-              </motion.div>
-            ))}
+          {/* Agent Cards - Varied layout: 2 larger on top, 2 smaller below */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Primary agents - larger */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              {agents.slice(0, 2).map((agent, index) => (
+                <motion.div 
+                  key={index}
+                  className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+                >
+                  <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                    <span className="w-8 h-8 rounded-lg bg-teal/10 flex items-center justify-center text-teal font-bold text-sm">
+                      {index + 1}
+                    </span>
+                    <h3 className="text-lg sm:text-xl font-semibold text-navy font-display">
+                      {agent.title}
+                    </h3>
+                  </div>
+                  <p className="text-medium-gray text-sm sm:text-base leading-relaxed">
+                    {agent.body}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Supporting agents - smaller, in a row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              {agents.slice(2).map((agent, index) => (
+                <motion.div 
+                  key={index + 2}
+                  className="bg-light-gray rounded-xl p-5 sm:p-6 border border-gray-100 transition-all duration-300 hover:bg-white hover:shadow-md hover:-translate-y-0.5"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
+                >
+                  <div className="flex items-center gap-2.5 mb-2 sm:mb-3">
+                    <span className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center text-medium-gray font-semibold text-xs">
+                      {index + 3}
+                    </span>
+                    <h3 className="text-base sm:text-lg font-semibold text-navy font-display">
+                      {agent.title}
+                    </h3>
+                  </div>
+                  <p className="text-medium-gray text-sm leading-relaxed">
+                    {agent.body}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
