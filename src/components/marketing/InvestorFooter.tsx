@@ -32,6 +32,12 @@ const InvestorFooter: React.FC = () => {
         
         {/* Divider */}
         <div className="border-t border-white/10 pt-8">
+          {/* Legal links */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+            <Link href="/privacy" className="text-white/60 hover:text-white text-sm transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="text-white/60 hover:text-white text-sm transition-colors">SMS Terms</Link>
+          </div>
+          
           {/* Copyright */}
           <p className="text-white/40 text-sm mb-4">
             © {new Date().getFullYear()} SuprFi. All rights reserved.
