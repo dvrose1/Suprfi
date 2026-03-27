@@ -63,7 +63,7 @@ const InvestorHero: React.FC = () => {
             team already uses. Powered by agentic workflows, SuprFi automates the financing process 
             on both sides of the transaction so technicians can focus on the job while homeowners 
             get approved in seconds. For contractors, that means more closed jobs. For investors, 
-            it&apos;s the embedded financing layer for a fragmented $800B+ market.
+            it&apos;s the embedded financing layer for a fragmented $700B market.
           </motion.p>
           
           {/* CTAs */}

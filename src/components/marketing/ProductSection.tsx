@@ -107,7 +107,7 @@ const ProductSection: React.FC = () => {
           {/* Stats - Horizontal on larger screens */}
           <div className="flex flex-wrap gap-x-8 sm:gap-x-12 gap-y-4 mb-8">
             {[
-              { value: '$800B+', label: 'US home services market*' },
+              { value: '$700B', label: 'US home services TAM*' },
               { value: '38%', label: 'Close rate without financing**' },
               { value: '49%', label: 'Close rate with financing**' },
               { value: '63%', label: "Don't consistently offer it**" },
@@ -134,7 +134,7 @@ const ProductSection: React.FC = () => {
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.5, delay: 0.7 }}
           >
-            <p>* Mordor Intelligence, US Home Service Market (2026)</p>
+            <p>* <a href="https://www.mckinsey.com/industries/private-capital/our-insights/value-plays-in-us-home-services-where-opportunity-meets-reliability" target="_blank" rel="noopener noreferrer" className="hover:text-white/80 underline">McKinsey, The investment opportunity in the home services market</a></p>
             <p>** ACCA & Farmington Consulting Group, Contractor of the Future Survey (2026)</p>
           </motion.div>
         </div>
