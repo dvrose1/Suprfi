@@ -134,7 +134,7 @@ const ProductSection: React.FC = () => {
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.5, delay: 0.7 }}
           >
-            <p>* <a href="https://www.mckinsey.com/industries/private-capital/our-insights/value-plays-in-us-home-services-where-opportunity-meets-reliability" target="_blank" rel="noopener noreferrer" className="hover:text-white/80 underline">McKinsey, The investment opportunity in the home services market</a></p>
+            <p>* McKinsey, The investment opportunity in the home services market</p>
             <p>** ACCA & Farmington Consulting Group, Contractor of the Future Survey (2026)</p>
           </motion.div>
         </div>
