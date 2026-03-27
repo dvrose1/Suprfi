@@ -97,7 +97,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">Your Rights</h2>
             <p className="text-white/80 mb-6">
               You may request access to, correction of, or deletion of your personal information by contacting us at{' '}
-              <a href="mailto:privacy@suprfi.com" className="text-teal hover:underline">privacy@suprfi.com</a>.
+              <a href="mailto:support@suprfi.com" className="text-teal hover:underline">support@suprfi.com</a>.
             </p>
 
             <h2 className="text-xl font-semibold text-white mt-8 mb-4">Contact Us</h2>
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
             </p>
             <p className="text-white/80 mt-2">
               <strong className="text-white">SuprFi</strong><br />
-              Email: <a href="mailto:privacy@suprfi.com" className="text-teal hover:underline">privacy@suprfi.com</a>
+              Email: <a href="mailto:support@suprfi.com" className="text-teal hover:underline">support@suprfi.com</a>
             </p>
           </div>
         </div>
