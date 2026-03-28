@@ -1,9 +1,15 @@
+// ABOUTME: Loan success page with delightful celebration animations
+// ABOUTME: Shows loan summary after agreement signed with confetti burst
+
 'use client'
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { motion, useReducedMotion } from 'framer-motion'
 import { formatCurrency } from '@/lib/utils/format'
+import { SuccessCircle, ConfettiBurst } from '@/components/shared'
+import { staggerContainer, fadeInUp, springs } from '@/lib/animations'
 
 interface LoanDetails {
   loanNumber: string
@@ -31,9 +37,11 @@ interface LoanDetails {
 export default function SuccessPage() {
   const params = useParams()
   const token = params.token as string
+  const prefersReducedMotion = useReducedMotion()
 
   const [loanDetails, setLoanDetails] = useState<LoanDetails | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showConfetti, setShowConfetti] = useState(false)
 
   useEffect(() => {
     async function fetchLoanDetails() {
@@ -48,11 +56,15 @@ export default function SuccessPage() {
         console.error('Error fetching loan details:', err)
       } finally {
         setLoading(false)
+        // Trigger confetti after a brief delay
+        if (!prefersReducedMotion) {
+          setTimeout(() => setShowConfetti(true), 600)
+        }
       }
     }
 
     fetchLoanDetails()
-  }, [token])
+  }, [token, prefersReducedMotion])
 
   // Calculate first payment date (30 days from now)
   const firstPaymentDate = new Date()
@@ -60,24 +72,40 @@ export default function SuccessPage() {
 
   return (
     <div className="min-h-screen bg-warm-white py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Success Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-teal rounded-full mb-6">
-            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
+      <motion.div 
+        className="max-w-2xl mx-auto"
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+      >
+        {/* Success Header with animated celebration */}
+        <motion.div className="text-center mb-8 relative" variants={fadeInUp}>
+          <div className="relative inline-block">
+            <SuccessCircle size="xl" showConfetti={showConfetti} delay={0.2} />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+          <motion.h1 
+            className="text-4xl font-bold text-navy font-display mt-6 mb-3"
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
             You're All Set!
-          </h1>
-          <p className="text-xl text-gray-600">
+          </motion.h1>
+          <motion.p 
+            className="text-xl text-medium-gray"
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
             Your financing has been approved and your loan is now active.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {/* Loan Summary Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+        <motion.div 
+          className="bg-white rounded-2xl shadow-xl p-8 mb-8"
+          variants={fadeInUp}
+        >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900">Loan Summary</h2>
             {loanDetails && (
@@ -148,95 +176,82 @@ export default function SuccessPage() {
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
 
-        {/* What's Next */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">What Happens Next?</h2>
+        {/* What's Next - Animated steps */}
+        <motion.div 
+          className="bg-white rounded-2xl shadow-xl p-8 mb-8"
+          variants={fadeInUp}
+        >
+          <h2 className="text-lg font-semibold text-navy mb-4">What Happens Next?</h2>
           
           <div className="space-y-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-teal font-bold text-sm">1</span>
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">Confirmation Email</div>
-                <div className="text-sm text-gray-600">
-                  You'll receive an email confirmation with your loan details and agreement copy.
+            {[
+              { title: 'Confirmation Email', desc: "You'll receive an email confirmation with your loan details and agreement copy." },
+              { title: 'Service Scheduling', desc: 'Your service provider will contact you to schedule the work.' },
+              { title: 'Funds Disbursed', desc: 'Once the work is complete, funds are sent directly to the service provider.' },
+              { title: 'Start Payments', desc: `Your first payment will be automatically debited on ${firstPaymentDate.toLocaleDateString()}.` },
+            ].map((step, index) => (
+              <motion.div 
+                key={step.title}
+                className="flex items-start"
+                initial={prefersReducedMotion ? {} : { opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+              >
+                <div className="flex-shrink-0 w-8 h-8 bg-teal/10 rounded-full flex items-center justify-center mr-4">
+                  <span className="text-teal font-bold text-sm">{index + 1}</span>
                 </div>
-              </div>
-            </div>
-
-            <div className="flex items-start">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-teal font-bold text-sm">2</span>
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">Service Scheduling</div>
-                <div className="text-sm text-gray-600">
-                  Your service provider will contact you to schedule the work.
+                <div>
+                  <div className="font-medium text-navy">{step.title}</div>
+                  <div className="text-sm text-medium-gray">{step.desc}</div>
                 </div>
-              </div>
-            </div>
-
-            <div className="flex items-start">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-teal font-bold text-sm">3</span>
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">Funds Disbursed</div>
-                <div className="text-sm text-gray-600">
-                  Once the work is complete, funds are sent directly to the service provider.
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-start">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                <span className="text-teal font-bold text-sm">4</span>
-              </div>
-              <div>
-                <div className="font-medium text-gray-900">Start Payments</div>
-                <div className="text-sm text-gray-600">
-                  Your first payment will be automatically debited on {firstPaymentDate.toLocaleDateString()}.
-                </div>
-              </div>
-            </div>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Contact & Support */}
-        <div className="bg-teal/10 rounded-xl p-6 mb-8">
-          <h3 className="font-semibold text-gray-900 mb-2">Need Help?</h3>
-          <p className="text-sm text-gray-700 mb-4">
+        <motion.div 
+          className="bg-teal/10 rounded-xl p-6 mb-8"
+          variants={fadeInUp}
+        >
+          <h3 className="font-semibold text-navy mb-2">Need Help?</h3>
+          <p className="text-sm text-navy/70 mb-4">
             Our support team is here to help with any questions about your loan.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <a
               href="mailto:support@suprfi.com"
-              className="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-navy hover:bg-gray-50 transition-colors"
             >
-              📧 support@suprfi.com
+              <svg className="w-4 h-4 mr-2 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              support@suprfi.com
             </a>
             <a
               href="tel:1-800-SUPRFI"
-              className="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-navy hover:bg-gray-50 transition-colors"
             >
-              📞 1-800-SUPRFI
+              <svg className="w-4 h-4 mr-2 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              1-800-SUPRFI
             </a>
           </div>
-        </div>
+        </motion.div>
 
         {/* Back to Home */}
-        <div className="text-center">
+        <motion.div className="text-center" variants={fadeInUp}>
           <Link
             href="/"
-            className="text-teal hover:text-blue-700 font-medium"
+            className="text-teal hover:text-teal/80 font-medium transition-colors"
           >
             ← Return to SuprFi Home
           </Link>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }
