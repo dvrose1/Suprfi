@@ -1,14 +1,15 @@
 // ABOUTME: SuprClient applications list page
-// ABOUTME: Card-based grid view of customer financing applications
+// ABOUTME: Card-based grid view with view transitions to detail pages
 
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
 import { EmptyState, LoadingSpinner, DocumentIcon } from '@/components/shared';
 import { formatServiceType, formatCurrency } from '@/lib/utils/format';
+import { navigateWithTransition, viewTransitionStyle } from '@/lib/view-transitions';
 
 interface Application {
   id: string;
@@ -42,6 +43,7 @@ type SortDirection = 'asc' | 'desc';
 
 export default function ApplicationsPage() {
   const { user, loading: authLoading, canAccess } = useContractorAuth();
+  const router = useRouter();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -214,10 +216,14 @@ export default function ApplicationsPage() {
                 return sortDirection === 'asc' ? -comparison : comparison;
               })
               .map((app) => (
-              <Link
+              <div
                 key={app.id}
-                href={`/client/applications/${app.id}`}
-                className="block bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow"
+                style={viewTransitionStyle(`app-${app.id}`)}
+                className="block bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow cursor-pointer"
+                onClick={() => navigateWithTransition(router, `/client/applications/${app.id}`)}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && navigateWithTransition(router, `/client/applications/${app.id}`)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-6 flex-1 min-w-0">
@@ -265,7 +271,7 @@ export default function ApplicationsPage() {
                   </div>
                   <div className="text-sm text-gray-500">{new Date(app.createdAt).toLocaleDateString()}</div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

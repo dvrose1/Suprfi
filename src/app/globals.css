@@ -298,3 +298,43 @@
     line-height: var(--leading-relaxed);
   }
 }
+
+/* ============================================
+   VIEW TRANSITIONS - Cinematic page navigation
+   Only applies in supported browsers
+   ============================================ */
+
+@supports (view-transition-name: none) {
+  /* Default crossfade for page content */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.25s;
+    animation-timing-function: ease-out;
+  }
+
+  /* Stat cards morph between pages */
+  ::view-transition-old(stat-card),
+  ::view-transition-new(stat-card) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Application cards expand into detail views */
+  ::view-transition-old(app-card),
+  ::view-transition-new(app-card) {
+    animation-duration: 0.35s;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root),
+    ::view-transition-old(stat-card),
+    ::view-transition-new(stat-card),
+    ::view-transition-old(app-card),
+    ::view-transition-new(app-card) {
+      animation-duration: 0.01s;
+    }
+  }
+}

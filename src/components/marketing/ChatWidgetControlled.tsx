@@ -1,9 +1,11 @@
 // ABOUTME: Controlled AI chat widget that accepts external open/close state
-// ABOUTME: Used by ChatProvider to allow other components to open the chat
+// ABOUTME: Uses spring physics for natural open/close animations
 
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { springPopup, springFloat } from '@/lib/animations';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,6 +23,7 @@ const ChatWidgetControlled: React.FC<ChatWidgetControlledProps> = ({ isOpen, set
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -120,26 +123,58 @@ const ChatWidgetControlled: React.FC<ChatWidgetControlledProps> = ({ isOpen, set
 
   return (
     <>
-      {/* Floating Chat Button */}
-      <button
+      {/* Floating Chat Button with spring hover */}
+      <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-center ${
-          isOpen ? 'bg-gray-600' : 'bg-navy hover:bg-navy/90'
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center ${
+          isOpen ? 'bg-gray-600' : 'bg-navy'
         }`}
         aria-label={isOpen ? 'Close chat' : 'Open chat'}
+        variants={prefersReducedMotion ? undefined : springFloat}
+        initial="rest"
+        whileHover="hover"
+        whileTap="tap"
       >
-        {isOpen ? (
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <img src="/logos/suprfi-s-icon.svg" alt="Chat" className="w-8 h-8" />
-        )}
-      </button>
+        <AnimatePresence mode="wait">
+          {isOpen ? (
+            <motion.svg 
+              key="close"
+              className="w-6 h-6 text-white" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </motion.svg>
+          ) : (
+            <motion.img 
+              key="icon"
+              src="/logos/suprfi-s-icon.svg" 
+              alt="Chat" 
+              className="w-8 h-8"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            />
+          )}
+        </AnimatePresence>
+      </motion.button>
 
-      {/* Chat Window */}
-      {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
+      {/* Chat Window with spring popup */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            className="fixed bottom-24 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
+            variants={prefersReducedMotion ? undefined : springPopup}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
           {/* Header */}
           <div className="bg-navy px-4 py-3 flex items-center gap-3">
             <div className="w-8 h-8 flex items-center justify-center">
@@ -214,8 +249,9 @@ const ChatWidgetControlled: React.FC<ChatWidgetControlledProps> = ({ isOpen, set
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

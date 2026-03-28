@@ -251,3 +251,108 @@ export const progressFill: Variants = {
     transition: { duration: 0.8, ease: easing.easeOutExpo },
   }),
 };
+
+// ============================================
+// SPRING PHYSICS - Natural motion with overshoot
+// ============================================
+
+// Spring configurations by feel
+export const springs = {
+  // Snappy - quick response, slight overshoot (buttons, toggles)
+  snappy: { type: 'spring', stiffness: 400, damping: 30 } as const,
+  // Bouncy - noticeable overshoot, playful (modals, chat widgets)
+  bouncy: { type: 'spring', stiffness: 300, damping: 20 } as const,
+  // Gentle - slow settle, elegant (page transitions, large elements)
+  gentle: { type: 'spring', stiffness: 200, damping: 25 } as const,
+  // Stiff - minimal overshoot, responsive (nav, dropdowns)
+  stiff: { type: 'spring', stiffness: 500, damping: 35 } as const,
+};
+
+// Chat widget / modal spring animation
+export const springPopup: Variants = {
+  hidden: { 
+    opacity: 0, 
+    scale: 0.9,
+    y: 20,
+  },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    y: 0,
+    transition: springs.bouncy,
+  },
+  exit: { 
+    opacity: 0, 
+    scale: 0.95,
+    y: 10,
+    transition: { duration: 0.15 },
+  },
+};
+
+// Mobile nav / drawer spring slide
+export const springSlideUp: Variants = {
+  hidden: { 
+    y: '100%',
+    opacity: 0.8,
+  },
+  visible: { 
+    y: 0,
+    opacity: 1,
+    transition: springs.bouncy,
+  },
+  exit: { 
+    y: '100%',
+    opacity: 0,
+    transition: { duration: 0.2, ease: easing.easeOutQuart },
+  },
+};
+
+// Slide from right with spring (side panels)
+export const springSlideRight: Variants = {
+  hidden: { 
+    x: '100%',
+    opacity: 0.8,
+  },
+  visible: { 
+    x: 0,
+    opacity: 1,
+    transition: springs.gentle,
+  },
+  exit: { 
+    x: '100%',
+    opacity: 0,
+    transition: { duration: 0.2, ease: easing.easeOutQuart },
+  },
+};
+
+// Scale from origin point (button → modal morph)
+export const springScale: Variants = {
+  hidden: { 
+    opacity: 0, 
+    scale: 0.8,
+  },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    transition: springs.snappy,
+  },
+  exit: { 
+    opacity: 0, 
+    scale: 0.9,
+    transition: { duration: 0.1 },
+  },
+};
+
+// Floating button bounce on hover
+export const springFloat: Variants = {
+  rest: { y: 0 },
+  hover: { 
+    y: -4,
+    transition: springs.snappy,
+  },
+  tap: { 
+    y: 0,
+    scale: 0.95,
+    transition: { duration: 0.1 },
+  },
+};

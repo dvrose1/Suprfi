@@ -9,8 +9,10 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
 import { formatCurrency } from '@/lib/utils/format';
+import { useRouter } from 'next/navigation';
 import { transitions, staggerContainer, fadeInUp, layoutClasses } from '@/lib/animations';
 import { EmptyState, DocumentIcon, DollarIcon, CheckIcon, RocketIcon, ErrorIcon } from '@/components/shared';
+import { navigateWithTransition, viewTransitionStyle } from '@/lib/view-transitions';
 
 interface DashboardStats {
   totalApplications: number;
@@ -47,6 +49,7 @@ type SortDirection = 'asc' | 'desc';
 
 export default function ClientDashboardPage() {
   const { user, loading, canAccess } = useContractorAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -130,11 +133,16 @@ export default function ClientDashboardPage() {
           animate="visible"
           variants={staggerContainer}
         >
-          {/* Hero Stat - Sold */}
+          {/* Hero Stat - Sold (clickable with view transition) */}
           <motion.div 
-            className={`${layoutClasses.cardHero} hover:shadow-lg transition-all`}
+            className={`${layoutClasses.cardHero} hover:shadow-lg transition-all cursor-pointer`}
+            style={viewTransitionStyle('stat-sold')}
             variants={fadeInUp}
             whileHover={prefersReducedMotion ? {} : { y: -4, transition: transitions.fast }}
+            onClick={() => navigateWithTransition(router, '/client/loans')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && navigateWithTransition(router, '/client/loans')}
           >
             <div className={layoutClasses.statLabel}>Sold</div>
             <div className={`${layoutClasses.statHero} text-navy`}>
@@ -145,17 +153,22 @@ export default function ClientDashboardPage() {
             </div>
           </motion.div>
 
-          {/* Secondary Stats */}
+          {/* Secondary Stats (clickable with view transitions) */}
           {[
-            { label: 'Funded', value: stats?.fundedThisMonth || 0, subtext: `${stats?.fundedCount || 0} loans this month`, subtextColor: 'text-mint', prefix: '$' },
-            { label: 'Avg. Loan Size', value: stats?.avgLoanSize || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', prefix: '$' },
-            { label: 'Approval Rate', value: stats?.approvalRate || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', suffix: '%', valueColor: 'text-teal' },
+            { label: 'Funded', value: stats?.fundedThisMonth || 0, subtext: `${stats?.fundedCount || 0} loans this month`, subtextColor: 'text-mint', prefix: '$', href: '/client/loans', id: 'stat-funded' },
+            { label: 'Avg. Loan Size', value: stats?.avgLoanSize || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', prefix: '$', href: '/client/analytics', id: 'stat-avg' },
+            { label: 'Approval Rate', value: stats?.approvalRate || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', suffix: '%', valueColor: 'text-teal', href: '/client/analytics', id: 'stat-approval' },
           ].map((stat) => (
             <motion.div 
               key={stat.label}
               className={layoutClasses.cardInteractive}
+              style={viewTransitionStyle(stat.id)}
               variants={fadeInUp}
               whileHover={prefersReducedMotion ? {} : { y: -4, transition: transitions.fast }}
+              onClick={() => navigateWithTransition(router, stat.href)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && navigateWithTransition(router, stat.href)}
             >
               <div className={layoutClasses.statLabel}>{stat.label}</div>
               <div className={`${layoutClasses.statNormal} ${stat.valueColor || 'text-navy'}`}>

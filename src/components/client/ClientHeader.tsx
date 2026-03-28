@@ -1,12 +1,14 @@
 // ABOUTME: Responsive header for SuprClient
-// ABOUTME: Desktop nav + mobile hamburger menu with new design system
+// ABOUTME: Desktop nav + mobile hamburger menu with spring animations
 
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
+import { springSlideRight, backdropFade, springs } from '@/lib/animations';
 
 interface ClientHeaderProps {
   hideNav?: boolean;
@@ -16,6 +18,7 @@ export default function ClientHeader({ hideNav }: ClientHeaderProps) {
   const { user, logout, canAccess } = useContractorAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   if (!user) return null;
 
@@ -129,62 +132,74 @@ export default function ClientHeader({ hideNav }: ClientHeaderProps) {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-30" onClick={() => setMobileMenuOpen(false)}>
-          <div className="absolute inset-0 bg-black/50" />
-          <div 
-            className="absolute top-14 right-0 w-64 bg-white shadow-xl rounded-bl-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* User Info */}
-            <div className="p-4 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-navy text-white rounded-full flex items-center justify-center font-semibold">
-                  {user.name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium text-gray-900 truncate">{user.name || user.email}</p>
-                  <p className="text-xs text-gray-500 truncate">{user.contractorName}</p>
+      {/* Mobile Menu Overlay with spring animation */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-30" onClick={() => setMobileMenuOpen(false)}>
+            <motion.div 
+              className="absolute inset-0 bg-black/50"
+              variants={prefersReducedMotion ? undefined : backdropFade}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            />
+            <motion.div 
+              className="absolute top-14 right-0 w-64 bg-white shadow-xl rounded-bl-2xl"
+              onClick={(e) => e.stopPropagation()}
+              initial={prefersReducedMotion ? { opacity: 0 } : { x: '100%', opacity: 0.8 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { x: 0, opacity: 1 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { x: '100%', opacity: 0 }}
+              transition={prefersReducedMotion ? { duration: 0.15 } : springs.bouncy}
+            >
+              {/* User Info */}
+              <div className="p-4 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-navy text-white rounded-full flex items-center justify-center font-semibold">
+                    {user.name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{user.name || user.email}</p>
+                    <p className="text-xs text-gray-500 truncate">{user.contractorName}</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Nav Links */}
-            <div className="py-2">
-              {canAccess('team:view') && (
+              {/* Nav Links */}
+              <div className="py-2">
+                {canAccess('team:view') && (
+                  <Link
+                    href="/client/team"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  >
+                    Team Management
+                  </Link>
+                )}
                 <Link
-                  href="/client/team"
+                  href="/client/settings"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block px-4 py-3 text-gray-700 hover:bg-gray-50"
                 >
-                  Team Management
+                  Settings
                 </Link>
-              )}
-              <Link
-                href="/client/settings"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-3 text-gray-700 hover:bg-gray-50"
-              >
-                Settings
-              </Link>
-            </div>
+              </div>
 
-            {/* Sign Out */}
-            <div className="border-t border-gray-100 py-2">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  logout();
-                }}
-                className="w-full text-left px-4 py-3 text-error hover:bg-error/5"
-              >
-                Sign Out
-              </button>
-            </div>
+              {/* Sign Out */}
+              <div className="border-t border-gray-100 py-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="w-full text-left px-4 py-3 text-error hover:bg-error/5"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </>
   );
 }
