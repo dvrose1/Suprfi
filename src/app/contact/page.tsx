@@ -4,7 +4,7 @@
 import React from 'react';
 import Header from '@/components/marketing/Header';
 import Footer from '@/components/marketing/Footer';
-import Card from '@/components/ui/Card';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'Contact Us | SuprFi',
@@ -55,15 +55,15 @@ export default function ContactPage() {
   return (
     <>
       <Header />
-      <main>
+      <main className="pt-20">
         {/* Hero */}
-        <section className="section bg-gradient-to-br from-primary-50 to-white">
-          <div className="container-custom">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-teal/5 to-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold font-display text-navy mb-6">
                 Get in Touch
               </h1>
-              <p className="text-xl text-gray-600">
+              <p className="text-xl text-medium-gray">
                 We'd love to hear from you. Choose the best way to reach us below.
               </p>
             </div>
@@ -71,72 +71,72 @@ export default function ContactPage() {
         </section>
 
         {/* Contact Methods */}
-        <section className="section bg-white">
-          <div className="container-custom">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <section className="py-16 md:py-24 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {contactMethods.map((method, index) => (
-                <Card key={index} padding="lg" hover className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white mb-6 shadow-md">
+                <div key={index} className="bg-white rounded-2xl p-8 shadow-md border border-gray-100 text-center transition-all hover:shadow-xl hover:-translate-y-1">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-teal text-white mb-6 shadow-md">
                     {method.icon}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  <h3 className="text-xl font-bold font-display text-navy mb-3">
                     {method.title}
                   </h3>
-                  <p className="text-gray-600 mb-4 text-sm">
+                  <p className="text-medium-gray mb-4 text-sm">
                     {method.description}
                   </p>
                   <a
                     href={`mailto:${method.email}`}
-                    className="text-primary-600 hover:text-primary-700 font-medium"
+                    className="text-teal hover:text-teal/80 font-medium transition-colors"
                   >
                     {method.email}
                   </a>
-                </Card>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
         {/* FAQ Link */}
-        <section className="section bg-gray-50">
-          <div className="container-custom">
+        <section className="py-16 md:py-24 bg-light-gray">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-              <Card padding="lg" className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <div className="bg-white rounded-2xl p-8 shadow-md border border-gray-100 text-center">
+                <h2 className="text-2xl font-bold font-display text-navy mb-4">
                   Looking for Answers?
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-medium-gray mb-6">
                   Check out our How It Works page for frequently asked questions about the application process, approval times, and more.
                 </p>
-                <div className="flex flex-wrap justify-center gap-4">
+                <div className="flex flex-wrap justify-center gap-3">
                   {quickLinks.map((link, index) => (
-                    <a
+                    <Link
                       key={index}
                       href={link.href}
-                      className="px-6 py-3 rounded-lg bg-primary-100 text-primary-700 hover:bg-primary-200 font-medium transition-colors"
+                      className="px-6 py-3 rounded-xl bg-teal/10 text-teal hover:bg-teal/20 font-medium transition-colors"
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   ))}
                 </div>
-              </Card>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Office Info (placeholder) */}
-        <section className="section bg-white">
-          <div className="container-custom">
+        {/* Office Info */}
+        <section className="py-16 md:py-24 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl font-bold font-display text-navy mb-4">
                 Mailing Address
               </h2>
-              <p className="text-gray-600">
+              <p className="text-medium-gray">
                 SuprFi Financial Services<br />
                 [Address Line 1]<br />
                 [City, State ZIP]
               </p>
-              <p className="text-sm text-gray-500 mt-6">
+              <p className="text-sm text-medium-gray/70 mt-6">
                 Licensed lender in [states]. NMLS #[pending]
               </p>
             </div>

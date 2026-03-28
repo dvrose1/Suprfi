@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth/context';
 import { useRouter } from 'next/navigation';
 import { formatCurrency } from '@/lib/utils/format';
 import { transitions, staggerContainer, fadeInUp, layoutClasses } from '@/lib/animations';
+import { LoadingSpinner } from '@/components/shared';
 
 interface DashboardStats {
   totalApps: number;

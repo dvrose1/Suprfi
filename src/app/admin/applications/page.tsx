@@ -1,8 +1,13 @@
+// ABOUTME: Admin applications list page
+// ABOUTME: Displays all financing applications with filtering and pagination
+
 'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils/format'
+import { useAuth } from '@/lib/auth/context'
 
 interface Application {
   id: string
@@ -27,6 +32,7 @@ interface Application {
 
 export default function ApplicationsPage() {
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const [applications, setApplications] = useState<Application[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<Record<string, number>>({})
@@ -40,6 +46,12 @@ export default function ApplicationsPage() {
     total: 0,
     pages: 0,
   })
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/admin/login')
+    }
+  }, [authLoading, user, router])
 
   useEffect(() => {
     fetchApplications()
@@ -78,70 +90,89 @@ export default function ApplicationsPage() {
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      initiated: 'bg-gray-100 text-gray-800',
-      submitted: 'bg-blue-100 text-blue-800',
-      approved: 'bg-green-100 text-green-800',
-      declined: 'bg-red-100 text-red-800',
-      funded: 'bg-purple-100 text-purple-800',
+      initiated: 'bg-gray-100 text-medium-gray',
+      submitted: 'bg-cyan/10 text-cyan',
+      approved: 'bg-mint/10 text-mint',
+      declined: 'bg-error/10 text-error',
+      funded: 'bg-teal/10 text-teal',
     }
-    return styles[status] || 'bg-gray-100 text-gray-800'
+    return styles[status] || 'bg-gray-100 text-medium-gray'
   }
 
   const totalApplications = Object.values(stats).reduce((a, b) => a + b, 0)
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Applications</h1>
-              <p className="text-gray-600 mt-1">Manage and review financing applications</p>
-            </div>
-            <button
-              onClick={() => router.push('/admin')}
-              className="px-4 py-2 text-gray-600 hover:text-gray-900"
-            >
-              ← Back to Dashboard
-            </button>
-          </div>
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-light-gray flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-teal border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-medium-gray">Loading...</p>
         </div>
       </div>
+    )
+  }
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+  return (
+    <div className="min-h-screen bg-light-gray">
+      {/* Header */}
+      <header className="bg-navy sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/admin" className="flex items-center hover:opacity-80 transition-opacity">
+                <img
+                  src="/logos/wordmark white and mint.svg"
+                  alt="SuprFi"
+                  className="h-7 w-auto"
+                />
+                <span className="ml-2 text-white/40 text-sm font-medium hidden sm:inline">SuprOps</span>
+              </Link>
+              <span className="text-white/40">/</span>
+              <span className="text-white font-medium">Applications</span>
+            </div>
+            <Link
+              href="/admin"
+              className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg text-sm transition-colors"
+            >
+              ← Dashboard
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-gray-600">Total</div>
-            <div className="text-2xl font-bold text-gray-900">{totalApplications}</div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <div className="text-sm text-medium-gray">Total</div>
+            <div className="text-2xl font-bold font-display text-navy">{totalApplications}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-gray-600">Initiated</div>
-            <div className="text-2xl font-bold text-gray-700">{stats.initiated || 0}</div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <div className="text-sm text-medium-gray">Initiated</div>
+            <div className="text-2xl font-bold font-display text-medium-gray">{stats.initiated || 0}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-blue-600">Submitted</div>
-            <div className="text-2xl font-bold text-blue-900">{stats.submitted || 0}</div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <div className="text-sm text-cyan">Submitted</div>
+            <div className="text-2xl font-bold font-display text-navy">{stats.submitted || 0}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-green-600">Approved</div>
-            <div className="text-2xl font-bold text-green-900">{stats.approved || 0}</div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <div className="text-sm text-mint">Approved</div>
+            <div className="text-2xl font-bold font-display text-navy">{stats.approved || 0}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-red-600">Declined</div>
-            <div className="text-2xl font-bold text-red-900">{stats.declined || 0}</div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+            <div className="text-sm text-error">Declined</div>
+            <div className="text-2xl font-bold font-display text-navy">{stats.declined || 0}</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Status Filter */}
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent bg-white text-navy"
             >
               <option value="all">All Statuses</option>
               <option value="initiated">Initiated</option>
@@ -158,11 +189,11 @@ export default function ApplicationsPage() {
                 placeholder="Search by name, email, or ID..."
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent"
               />
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-6 py-2 bg-teal text-white rounded-xl hover:bg-teal/90 font-medium transition-colors"
               >
                 Search
               </button>
@@ -171,93 +202,100 @@ export default function ApplicationsPage() {
             {/* Refresh */}
             <button
               onClick={fetchApplications}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-light-gray transition-colors text-navy"
             >
-              🔄 Refresh
+              <svg className="w-5 h-5 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
             </button>
           </div>
         </div>
 
         {/* Applications Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
             <div className="text-center py-12">
-              <div className="text-4xl mb-4">⏳</div>
-              <div className="text-gray-600">Loading applications...</div>
+              <div className="w-8 h-8 border-4 border-teal border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="text-medium-gray">Loading applications...</div>
             </div>
           ) : applications.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-4xl mb-4">📋</div>
-              <div className="text-gray-600">No applications found</div>
-              <div className="text-sm text-gray-500 mt-2">
+              <div className="w-12 h-12 bg-light-gray rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-medium-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div className="text-navy font-medium">No applications found</div>
+              <div className="text-sm text-medium-gray mt-1">
                 Applications will appear here once submitted
               </div>
             </div>
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-100">
+                  <thead className="bg-light-gray">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-medium-gray uppercase tracking-wider">
                         Customer
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-medium-gray uppercase tracking-wider">
                         Amount
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-medium-gray uppercase tracking-wider">
                         Service
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-medium-gray uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-medium-gray uppercase tracking-wider">
                         Credit Score
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-medium-gray uppercase tracking-wider">
                         Created
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-medium-gray uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-100">
                     {applications.map((app) => (
-                      <tr key={app.id} className="hover:bg-gray-50">
+                      <tr key={app.id} className="hover:bg-light-gray/50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-navy">
                             {app.customer.name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-medium-gray">
                             {app.customer.email}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-gray-900">
+                          <div className="text-sm font-semibold text-navy">
                             {formatCurrency(app.job.amount)}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
+                          <div className="text-sm text-navy">
                             {app.job.serviceType || 'N/A'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(app.status)}`}>
+                          <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadge(app.status)}`}>
                             {app.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-navy">
                           {app.decision?.score || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-medium-gray">
                           {new Date(app.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
                             onClick={() => router.push(`/admin/applications/${app.id}`)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-teal hover:text-teal/80 font-medium transition-colors"
                           >
                             View Details
                           </button>
@@ -270,22 +308,22 @@ export default function ApplicationsPage() {
 
               {/* Pagination */}
               {pagination.pages > 1 && (
-                <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
-                  <div className="text-sm text-gray-700">
+                <div className="bg-light-gray px-6 py-4 flex items-center justify-between border-t border-gray-100">
+                  <div className="text-sm text-medium-gray">
                     Showing page {pagination.page} of {pagination.pages} ({pagination.total} total)
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
                       disabled={pagination.page === 1}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-navy transition-colors"
                     >
                       Previous
                     </button>
                     <button
                       onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
                       disabled={pagination.page === pagination.pages}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-navy transition-colors"
                     >
                       Next
                     </button>
@@ -295,7 +333,7 @@ export default function ApplicationsPage() {
             </>
           )}
         </div>
-      </div>
+      </main>
     </div>
   )
 }

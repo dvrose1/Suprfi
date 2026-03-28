@@ -4,8 +4,7 @@
 import React from 'react';
 import Header from '@/components/marketing/Header';
 import Footer from '@/components/marketing/Footer';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import Link from 'next/link';
 
 export const metadata = {
   title: 'How It Works | SuprFi',
@@ -108,15 +107,15 @@ export default function HowItWorksPage() {
   return (
     <>
       <Header />
-      <main>
+      <main className="pt-20">
         {/* Hero */}
-        <section className="section bg-gradient-to-br from-primary-50 to-white">
-          <div className="container-custom">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-teal/5 to-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold font-display text-navy mb-6">
                 How SuprFi Works
               </h1>
-              <p className="text-xl text-gray-600">
+              <p className="text-xl text-medium-gray">
                 Fast, simple financing for your home repair in 6 easy steps
               </p>
             </div>
@@ -124,33 +123,33 @@ export default function HowItWorksPage() {
         </section>
 
         {/* Steps */}
-        <section className="section bg-white">
-          <div className="container-custom">
+        <section className="py-16 md:py-24 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto space-y-12">
               {steps.map((step, index) => (
                 <div key={index} className="flex gap-6">
                   {/* Number */}
                   <div className="flex-shrink-0">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center text-2xl font-bold shadow-lg">
+                    <div className="w-16 h-16 rounded-full bg-teal text-white flex items-center justify-center text-2xl font-bold font-display shadow-lg">
                       {step.number}
                     </div>
                   </div>
 
                   {/* Content */}
                   <div className="flex-grow">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                    <h2 className="text-2xl font-bold font-display text-navy mb-3">
                       {step.title}
                     </h2>
-                    <p className="text-gray-600 mb-4 leading-relaxed">
+                    <p className="text-medium-gray mb-4 leading-relaxed">
                       {step.description}
                     </p>
                     <ul className="space-y-2">
                       {step.details.map((detail, i) => (
                         <li key={i} className="flex items-start">
-                          <svg className="w-5 h-5 text-primary-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <svg className="w-5 h-5 text-teal mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
-                          <span className="text-gray-700">{detail}</span>
+                          <span className="text-dark-gray">{detail}</span>
                         </li>
                       ))}
                     </ul>
@@ -162,22 +161,22 @@ export default function HowItWorksPage() {
         </section>
 
         {/* FAQ */}
-        <section className="section bg-gray-50">
-          <div className="container-custom">
+        <section className="py-16 md:py-24 bg-light-gray">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">
+              <h2 className="text-3xl md:text-4xl font-bold font-display text-navy mb-12 text-center">
                 Frequently Asked Questions
               </h2>
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {faqs.map((faq, index) => (
-                  <Card key={index} padding="lg">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  <div key={index} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-lg font-bold font-display text-navy mb-2">
                       {faq.question}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-medium-gray leading-relaxed">
                       {faq.answer}
                     </p>
-                  </Card>
+                  </div>
                 ))}
               </div>
             </div>
@@ -185,23 +184,21 @@ export default function HowItWorksPage() {
         </section>
 
         {/* CTA */}
-        <section className="section bg-primary-600">
-          <div className="container-custom">
+        <section className="py-16 md:py-24 bg-navy">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold font-display text-white mb-6">
                 Ready to Get Started?
               </h2>
-              <p className="text-xl text-primary-100 mb-8">
+              <p className="text-xl text-white/70 mb-8">
                 Join our waitlist or ask your contractor about SuprFi financing today.
               </p>
-              <Button 
-                variant="secondary" 
-                size="lg" 
+              <Link 
                 href="/waitlist"
-                className="bg-white text-primary-700 hover:bg-gray-100"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-teal text-white font-semibold text-lg transition-all hover:bg-teal/90 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal/50"
               >
                 Join Waitlist
-              </Button>
+              </Link>
             </div>
           </div>
         </section>
