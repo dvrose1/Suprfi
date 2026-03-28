@@ -202,11 +202,13 @@ const ChatWidgetControlled: React.FC<ChatWidgetControlledProps> = ({ isOpen, set
                 className="flex-1 px-4 py-2 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-teal focus:border-transparent disabled:bg-gray-50"
               />
               <button
+                type="button"
                 onClick={sendMessage}
                 disabled={!input.trim() || isLoading}
                 className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-teal text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-teal/90 active:scale-95 transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <span className="sr-only">Send message</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
               </button>

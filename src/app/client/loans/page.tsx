@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
+import { EmptyState, LoadingSpinner } from '@/components/shared';
 import { formatServiceType, formatCurrency } from '@/lib/utils/format';
 
 interface Loan {
@@ -215,23 +216,17 @@ export default function LoansPage() {
 
         {/* Loans List - Simplified Merchant View */}
         {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-teal border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading loans...</p>
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <LoadingSpinner message="Loading loans..." />
           </div>
         ) : loans.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-            <div className="text-5xl mb-4">💰</div>
-            <h3 className="text-xl font-semibold text-navy mb-2">No loans yet</h3>
-            <p className="text-gray-600 mb-6">
-              Loans will appear here once customers complete their financing.
-            </p>
-            <Link
-              href="/client/applications"
-              className="inline-flex items-center gap-2 bg-teal text-white rounded-lg font-semibold px-6 py-3 hover:bg-teal/90 transition-colors"
-            >
-              View Applications
-            </Link>
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <EmptyState
+              icon="💰"
+              title="No funded loans yet"
+              description="Once a customer accepts an offer and the loan is funded, it will appear here. Check your applications to see pending deals."
+              action={{ label: 'View Applications', href: '/client/applications' }}
+            />
           </div>
         ) : (
           <div className="space-y-4">

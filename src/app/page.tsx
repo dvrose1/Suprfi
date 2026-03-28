@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <ChatProvider>
       <InvestorHeader />
-      <main>
+      <main id="main-content">
         <InvestorHero />
         <ProductSection />
         <AgenticSection />

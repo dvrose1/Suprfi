@@ -196,7 +196,7 @@ export default function ApplicationDetailPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <button onClick={() => router.back()} className="text-gray-600 hover:text-navy">
+              <button type="button" onClick={() => router.back()} className="text-gray-600 hover:text-navy focus:outline-none focus:underline">
                 ← Back
               </button>
               <span className="text-gray-300">|</span>

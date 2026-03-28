@@ -1,5 +1,5 @@
 // ABOUTME: Responsive header for SuprClient
-// ABOUTME: Desktop nav + mobile hamburger menu
+// ABOUTME: Desktop nav + mobile hamburger menu with new design system
 
 'use client';
 
@@ -33,30 +33,32 @@ export default function ClientHeader({ hideNav }: ClientHeaderProps) {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
+      <header className="bg-navy sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo */}
-            <Link href="/client" className="flex items-center">
-              <span className="text-xl sm:text-2xl font-bold font-display">
-                <span className="text-navy">Supr</span>
-                <span className="text-teal">Client</span>
-              </span>
+            <Link href="/client" className="flex items-center hover:opacity-80 transition-opacity">
+              <img
+                src="/logos/wordmark white and mint.svg"
+                alt="SuprFi"
+                className="h-7 w-auto"
+              />
+              <span className="ml-2 text-white/40 text-sm font-medium hidden sm:inline">for Contractors</span>
             </Link>
 
             {/* Desktop Nav */}
             {!hideNav && (
-              <nav className="hidden md:flex items-center gap-6">
+              <nav className="hidden md:flex items-center gap-1">
                 {navItems.map((item) => {
                   if (item.permission && !canAccess(item.permission)) return null;
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`text-sm font-medium transition-colors ${
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         isActive(item.href)
-                          ? 'text-navy'
-                          : 'text-gray-600 hover:text-navy'
+                          ? 'text-white bg-white/10'
+                          : 'text-white/70 hover:text-white hover:bg-white/5'
                       }`}
                     >
                       {item.label}
@@ -80,30 +82,32 @@ export default function ClientHeader({ hideNav }: ClientHeaderProps) {
 
               {/* Desktop: User Menu */}
               <div className="hidden md:block relative group">
-                <button className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-navy text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                <button className="flex items-center gap-2 p-1 rounded-lg hover:bg-white/10 transition-colors">
+                  <div className="w-8 h-8 bg-teal text-white rounded-full flex items-center justify-center font-semibold text-sm">
                     {user.name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                   </div>
                 </button>
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                   <div className="p-3 border-b border-gray-100">
-                    <p className="text-sm font-medium text-gray-900 truncate">{user.name || user.email}</p>
-                    <p className="text-xs text-gray-500 truncate">{user.contractorName}</p>
+                    <p className="text-sm font-medium text-navy truncate">{user.name || user.email}</p>
+                    <p className="text-xs text-medium-gray truncate">{user.contractorName}</p>
                   </div>
                   {canAccess('team:view') && (
-                    <Link href="/client/team" className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    <Link href="/client/team" className="block px-3 py-2 text-sm text-navy hover:bg-light-gray rounded-lg mx-1 my-1">
                       Team
                     </Link>
                   )}
-                  <Link href="/client/settings" className="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                  <Link href="/client/settings" className="block px-3 py-2 text-sm text-navy hover:bg-light-gray rounded-lg mx-1 my-1">
                     Settings
                   </Link>
-                  <button
-                    onClick={() => logout()}
-                    className="w-full text-left px-3 py-2 text-sm text-error hover:bg-error/5"
-                  >
-                    Sign Out
-                  </button>
+                  <div className="border-t border-gray-100 mt-1 pt-1">
+                    <button
+                      onClick={() => logout()}
+                      className="w-full text-left px-3 py-2 text-sm text-error hover:bg-error/5 rounded-lg mx-1 my-1"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -112,7 +116,7 @@ export default function ClientHeader({ hideNav }: ClientHeaderProps) {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 -mr-2"
               >
-                <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   {mobileMenuOpen ? (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   ) : (

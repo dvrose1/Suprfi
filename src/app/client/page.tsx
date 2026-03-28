@@ -5,9 +5,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
 import { formatCurrency } from '@/lib/utils/format';
+import { transitions, staggerContainer, fadeInUp, layoutClasses } from '@/lib/animations';
+import { EmptyState } from '@/components/shared';
 
 interface DashboardStats {
   totalApplications: number;
@@ -50,6 +53,7 @@ export default function ClientDashboardPage() {
   const [activityFilter, setActivityFilter] = useState<ActivityFilter>('all');
   const [activitySort, setActivitySort] = useState<ActivitySortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -74,10 +78,10 @@ export default function ClientDashboardPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-warm-white flex items-center justify-center">
+      <div className="min-h-screen bg-light-gray flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-4 border-teal border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-medium-gray">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -101,59 +105,73 @@ export default function ClientDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-warm-white">
+    <div className="min-h-screen bg-light-gray">
       <ClientHeader />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main id="main-content" className={layoutClasses.pageContent}>
         {/* Welcome */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold font-display text-navy">
-            Welcome back, {user.name?.split(' ')[0] || 'there'}!
+        <motion.div 
+          className="mb-8"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={transitions.entrance}
+        >
+          <h1 className="text-2xl sm:text-3xl font-bold font-display text-navy">
+            Welcome back, {user.name?.split(' ')[0] || 'there'}
           </h1>
-          <p className="text-gray-600 mt-1">{user.contractorName}</p>
-        </div>
+          <p className="text-medium-gray mt-1">{user.contractorName}</p>
+        </motion.div>
 
-        {/* Stats Grid - Sold, Funded, Avg Loan Size, Approval Rate */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-sm text-gray-600 mb-1">Sold</div>
-            <div className="text-3xl font-bold font-display text-navy">
-              ${statsLoading ? '...' : (stats?.soldThisMonth || 0).toLocaleString()}
+        {/* Stats Grid - Hero stats with visual hierarchy */}
+        <motion.div 
+          className={layoutClasses.statsGrid}
+          initial={prefersReducedMotion ? false : "hidden"}
+          animate="visible"
+          variants={staggerContainer}
+        >
+          {/* Hero Stat - Sold */}
+          <motion.div 
+            className={`${layoutClasses.cardHero} hover:shadow-lg transition-all`}
+            variants={fadeInUp}
+            whileHover={prefersReducedMotion ? {} : { y: -4, transition: transitions.fast }}
+          >
+            <div className={layoutClasses.statLabel}>Sold</div>
+            <div className={`${layoutClasses.statHero} text-navy`}>
+              {statsLoading ? '...' : `$${(stats?.soldThisMonth || 0).toLocaleString()}`}
             </div>
-            <div className="text-xs text-teal mt-2">
+            <div className={`${layoutClasses.statSubtext} text-teal font-medium`}>
               {stats?.soldCount || 0} loans this month
             </div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-sm text-gray-600 mb-1">Funded</div>
-            <div className="text-3xl font-bold font-display text-navy">
-              ${statsLoading ? '...' : (stats?.fundedThisMonth || 0).toLocaleString()}
-            </div>
-            <div className="text-xs text-teal mt-2">
-              {stats?.fundedCount || 0} loans this month
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-sm text-gray-600 mb-1">Avg. Loan Size</div>
-            <div className="text-3xl font-bold font-display text-navy">
-              ${statsLoading ? '...' : (stats?.avgLoanSize || 0).toLocaleString()}
-            </div>
-            <div className="text-xs text-gray-500 mt-2">last 30 days</div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-sm text-gray-600 mb-1">Approval Rate</div>
-            <div className="text-3xl font-bold font-display text-teal">
-              {statsLoading ? '...' : `${stats?.approvalRate || 0}%`}
-            </div>
-            <div className="text-xs text-gray-500 mt-2">last 30 days</div>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Conversion Funnel - Moved up above Live Activity */}
+          {/* Secondary Stats */}
+          {[
+            { label: 'Funded', value: stats?.fundedThisMonth || 0, subtext: `${stats?.fundedCount || 0} loans this month`, subtextColor: 'text-mint', prefix: '$' },
+            { label: 'Avg. Loan Size', value: stats?.avgLoanSize || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', prefix: '$' },
+            { label: 'Approval Rate', value: stats?.approvalRate || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', suffix: '%', valueColor: 'text-teal' },
+          ].map((stat) => (
+            <motion.div 
+              key={stat.label}
+              className={layoutClasses.cardInteractive}
+              variants={fadeInUp}
+              whileHover={prefersReducedMotion ? {} : { y: -4, transition: transitions.fast }}
+            >
+              <div className={layoutClasses.statLabel}>{stat.label}</div>
+              <div className={`${layoutClasses.statNormal} ${stat.valueColor || 'text-navy'}`}>
+                {statsLoading ? '...' : `${stat.prefix || ''}${stat.value.toLocaleString()}${stat.suffix || ''}`}
+              </div>
+              <div className={`${layoutClasses.statSubtext} ${stat.subtextColor}`}>
+                {stat.subtext}
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Conversion Funnel */}
         {stats?.conversionFunnel && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold font-display text-navy mb-6">Conversion Funnel (30 days)</h2>
+          <div className={`${layoutClasses.cardPrimary} mt-8`}>
+            <h2 className="text-lg font-semibold font-display text-navy mb-6">Conversion Funnel (30 days)</h2>
             <div className="flex items-center justify-between gap-4">
               {['initiated', 'submitted', 'approved', 'funded'].map((stage, index) => (
                 <div key={stage} className="flex-1 text-center">
@@ -182,24 +200,26 @@ export default function ClientDashboardPage() {
           </div>
         )}
 
-        {/* Mid-Funnel Alert - Applications needing follow-up */}
+        {/* Mid-Funnel Alert */}
         {stats?.midFunnelCount && stats.midFunnelCount > 0 && (
-          <div className="bg-warning/10 border border-warning/30 rounded-2xl p-4 mb-8">
+          <div className="bg-warning/10 border border-warning/20 rounded-2xl p-4 mt-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-warning/20 rounded-full flex items-center justify-center text-warning">
-                ⚠️
+              <div className="w-10 h-10 bg-warning/20 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
               </div>
               <div className="flex-1">
                 <div className="font-semibold text-navy">
                   {stats.midFunnelCount} application{stats.midFunnelCount !== 1 ? 's' : ''} in progress
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-medium-gray">
                   Customers have started but not completed their application. Consider following up.
                 </div>
               </div>
               <Link
                 href="/client/applications?status=initiated"
-                className="px-4 py-2 bg-warning text-white rounded-lg hover:bg-warning/90 transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-warning text-white rounded-xl hover:bg-warning/90 transition-colors text-sm font-medium"
               >
                 View
               </Link>
@@ -207,10 +227,10 @@ export default function ClientDashboardPage() {
           </div>
         )}
 
-        {/* Live Activity Feed - Single Column with Sorting */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        {/* Live Activity Feed */}
+        <div className={`${layoutClasses.cardPrimary} mt-8`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <h2 className="text-xl font-semibold font-display text-navy">Live Activity</h2>
+            <h2 className="text-lg font-semibold font-display text-navy">Live Activity</h2>
             <div className="flex items-center gap-3 flex-wrap">
               <select
                 value={activityFilter}
@@ -244,13 +264,12 @@ export default function ClientDashboardPage() {
           </div>
           
           {recentActivity.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-3">📋</div>
-              <p className="text-gray-500">No recent activity</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Activity will appear here when customers apply
-              </p>
-            </div>
+            <EmptyState
+              icon="📋"
+              title="No recent activity"
+              description="Activity will appear here when customers apply"
+              compact
+            />
           ) : (
             <>
               {recentActivity.filter(a => activityFilter === 'all' || a.type === activityFilter).length === 0 ? (

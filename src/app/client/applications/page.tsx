@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
+import { EmptyState, LoadingSpinner } from '@/components/shared';
 import { formatServiceType, formatCurrency } from '@/lib/utils/format';
 
 interface Application {
@@ -183,27 +184,19 @@ export default function ApplicationsPage() {
 
         {/* Applications List - Linear Layout */}
         {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-teal border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading applications...</p>
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <LoadingSpinner message="Loading applications..." />
           </div>
         ) : applications.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-            <div className="text-5xl mb-4">📋</div>
-            <h3 className="text-xl font-semibold text-navy mb-2">No applications found</h3>
-            <p className="text-gray-600 mb-6">
-              {statusFilter !== 'all'
-                ? `No ${statusFilter} applications yet.`
-                : 'Send a financing link to get started.'}
-            </p>
-            {canAccess('application:send_link') && (
-              <Link
-                href="/client/new"
-                className="inline-flex items-center gap-2 bg-teal text-white rounded-lg font-semibold px-6 py-3 hover:bg-teal/90 transition-colors"
-              >
-                Send Financing Link
-              </Link>
-            )}
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <EmptyState
+              icon="📋"
+              title={statusFilter !== 'all' ? `No ${statusFilter} applications` : 'No applications yet'}
+              description={statusFilter !== 'all'
+                ? `You don't have any applications with "${statusFilter}" status. Try a different filter or check back later.`
+                : 'Send a financing link to a customer to start their application. Once they apply, you\'ll see their progress here.'}
+              action={canAccess('application:send_link') ? { label: 'Send Financing Link', href: '/client/new' } : undefined}
+            />
           </div>
         ) : (
           <div className="space-y-4">

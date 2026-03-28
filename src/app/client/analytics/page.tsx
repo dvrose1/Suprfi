@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
+import { EmptyState, LoadingSpinner } from '@/components/shared';
 import { formatCurrency } from '@/lib/utils/format';
 
 interface AnalyticsData {
@@ -365,10 +366,13 @@ export default function AnalyticsPage() {
             </div>
           </>
         ) : (
-          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
-            <div className="text-5xl mb-4">📊</div>
-            <h3 className="text-xl font-semibold text-navy mb-2">No data yet</h3>
-            <p className="text-gray-600">Analytics will appear once you have applications.</p>
+          <div className="bg-white rounded-2xl shadow-lg p-12">
+            <EmptyState
+              icon="📊"
+              title="No activity to analyze yet"
+              description="Send your first financing offer to start tracking performance. Your conversion rates, funded amounts, and trends will appear here."
+              action={{ label: 'Send Financing Link', href: '/client/new' }}
+            />
           </div>
         )}
       </main>

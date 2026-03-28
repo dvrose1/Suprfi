@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { PersonalInfoStep } from './steps/PersonalInfoStep'
 import { BankLinkStep } from './steps/BankLinkStep'
 import { KYCStep } from './steps/KYCStep'
 import { ReviewStep } from './steps/ReviewStep'
+import { transitions, layoutClasses } from '@/lib/animations'
 
 interface ApplicationFormProps {
   customer: {
@@ -86,6 +88,8 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [direction, setDirection] = useState(1) // 1 = forward, -1 = back
+  const prefersReducedMotion = useReducedMotion()
 
   const updateFormData = (data: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...data }))
@@ -93,14 +97,32 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
 
   const goToNextStep = () => {
     if (currentStep < steps.length) {
+      setDirection(1)
       setCurrentStep(currentStep + 1)
     }
   }
 
   const goToPreviousStep = () => {
     if (currentStep > 1) {
+      setDirection(-1)
       setCurrentStep(currentStep - 1)
     }
+  }
+
+  // Step transition variants
+  const stepVariants = {
+    enter: (direction: number) => ({
+      x: prefersReducedMotion ? 0 : direction > 0 ? 50 : -50,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      x: prefersReducedMotion ? 0 : direction > 0 ? -50 : 50,
+      opacity: 0,
+    }),
   }
 
   const handleSubmit = async () => {
@@ -141,13 +163,13 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-0">
-      {/* Progress Bar */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex justify-between mb-2">
-          {steps.map((step) => (
+      {/* Progress Bar with better visual hierarchy */}
+      <div className="mb-8 sm:mb-10">
+        <div className="flex justify-between mb-3">
+          {steps.map((step, index) => (
             <div
               key={step.id}
-              className={`flex-1 text-center ${
+              className={`flex-1 text-center relative ${
                 step.id === currentStep
                   ? 'text-teal font-semibold'
                   : step.id < currentStep
@@ -155,77 +177,139 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
                   : 'text-gray-400'
               }`}
             >
-              <div className="flex items-center justify-center mb-1">
+              {/* Connector line between steps */}
+              {index > 0 && (
+                <div 
+                  className={`absolute top-3 sm:top-4 right-1/2 w-full h-0.5 -z-10 ${
+                    step.id <= currentStep ? 'bg-teal' : 'bg-gray-200'
+                  }`} 
+                />
+              )}
+              <div className="flex items-center justify-center mb-2">
                 <div
-                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${
+                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm relative z-10 ${
                     step.id === currentStep
-                      ? 'bg-teal text-white'
+                      ? 'bg-teal text-white ring-4 ring-teal/20'
                       : step.id < currentStep
                       ? 'bg-mint text-white'
-                      : 'bg-gray-300 text-gray-600'
+                      : 'bg-gray-200 text-gray-500'
                   }`}
                 >
                   {step.id < currentStep ? '✓' : step.id}
                 </div>
               </div>
-              <div className="hidden sm:block text-xs">{step.name}</div>
+              <div className="hidden sm:block text-xs leading-tight">{step.name}</div>
             </div>
           ))}
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
-          <div
-            className="bg-teal h-1.5 sm:h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
+        <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden mt-4">
+          <motion.div
+            className="bg-gradient-to-r from-teal to-mint h-2 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
           />
+        </div>
+        <div className="text-center mt-2">
+          <span className="text-xs text-medium-gray">Step {currentStep} of {steps.length}</span>
         </div>
       </div>
 
       {/* Main Form Card */}
-      <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 md:p-8">
+      <motion.div 
+        className={`${layoutClasses.formCard} shadow-xl`}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={transitions.entrance}
+      >
         {/* Step Content */}
-        {currentStep === 1 && (
-          <PersonalInfoStep
-            formData={formData}
-            updateFormData={updateFormData}
-            onNext={goToNextStep}
-          />
-        )}
+        <AnimatePresence mode="wait" custom={direction}>
+          {currentStep === 1 && (
+            <motion.div
+              key="step1"
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={transitions.normal}
+            >
+              <PersonalInfoStep
+                formData={formData}
+                updateFormData={updateFormData}
+                onNext={goToNextStep}
+              />
+            </motion.div>
+          )}
 
-        {currentStep === 2 && (
-          <BankLinkStep
-            formData={formData}
-            updateFormData={updateFormData}
-            onNext={goToNextStep}
-            onBack={goToPreviousStep}
-          />
-        )}
+          {currentStep === 2 && (
+            <motion.div
+              key="step2"
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={transitions.normal}
+            >
+              <BankLinkStep
+                formData={formData}
+                updateFormData={updateFormData}
+                onNext={goToNextStep}
+                onBack={goToPreviousStep}
+              />
+            </motion.div>
+          )}
 
-        {currentStep === 3 && (
-          <KYCStep
-            formData={formData}
-            updateFormData={updateFormData}
-            onNext={goToNextStep}
-            onBack={goToPreviousStep}
-          />
-        )}
+          {currentStep === 3 && (
+            <motion.div
+              key="step3"
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={transitions.normal}
+            >
+              <KYCStep
+                formData={formData}
+                updateFormData={updateFormData}
+                onNext={goToNextStep}
+                onBack={goToPreviousStep}
+              />
+            </motion.div>
+          )}
 
-        {currentStep === 4 && (
-          <ReviewStep
-            formData={formData}
-            updateFormData={updateFormData}
-            job={job}
-            onSubmit={handleSubmit}
-            onBack={goToPreviousStep}
-            isSubmitting={isSubmitting}
-          />
-        )}
-      </div>
+          {currentStep === 4 && (
+            <motion.div
+              key="step4"
+              custom={direction}
+              variants={stepVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={transitions.normal}
+            >
+              <ReviewStep
+                formData={formData}
+                updateFormData={updateFormData}
+                job={job}
+                onSubmit={handleSubmit}
+                onBack={goToPreviousStep}
+                isSubmitting={isSubmitting}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Security Notice */}
-      <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-600">
-        <div className="flex items-center justify-center space-x-2">
-          <span className="text-green-600">🔒</span>
-          <span>256-bit SSL encryption • Your data is secure</span>
+      <div className="mt-6 sm:mt-8 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/50 rounded-full border border-gray-100">
+          <svg className="w-4 h-4 text-mint" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+          </svg>
+          <span className="text-xs sm:text-sm text-medium-gray">256-bit SSL encryption • Your data is secure</span>
         </div>
       </div>
     </div>

@@ -1,13 +1,15 @@
 // ABOUTME: Admin dashboard page
-// ABOUTME: Shows stats and quick actions for SuprOps
+// ABOUTME: Shows stats and quick actions for SuprOps with animations
 
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '@/lib/auth/context';
 import { useRouter } from 'next/navigation';
 import { formatCurrency } from '@/lib/utils/format';
+import { transitions, staggerContainer, fadeInUp, layoutClasses } from '@/lib/animations';
 
 interface DashboardStats {
   totalApps: number;
@@ -58,8 +60,11 @@ export default function AdminPage() {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">Loading...</p>
+      <div className="min-h-screen bg-light-gray flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-teal border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-medium-gray">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -71,92 +76,135 @@ export default function AdminPage() {
   const totalFunded = stats?.totalFunded ?? 0;
   const manualReviews = stats?.manualReviews ?? 0;
   const recentApps = stats?.recentApps ?? [];
+  const prefersReducedMotion = useReducedMotion();
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">SuprOps Dashboard</h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">Welcome back, {user?.name || 'Admin'}!</p>
+    <div className="min-h-screen bg-light-gray">
+      {/* Header */}
+      <header className="bg-navy sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/admin" className="flex items-center hover:opacity-80 transition-opacity">
+                <img
+                  src="/logos/wordmark white and mint.svg"
+                  alt="SuprFi"
+                  className="h-7 w-auto"
+                />
+                <span className="ml-2 text-white/40 text-sm font-medium hidden sm:inline">SuprOps</span>
+              </Link>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
-                <div className="text-sm font-medium text-gray-900">{user?.email}</div>
-                <div className="text-xs text-gray-500 capitalize">{user?.role} Role</div>
+                <div className="text-sm font-medium text-white">{user?.email}</div>
+                <div className="text-xs text-white/60 capitalize">{user?.role}</div>
               </div>
               <button
+                type="button"
                 onClick={() => logout()}
-                className="px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg text-sm transition-colors"
+                className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-white/50"
               >
-                Logout
+                Sign Out
               </button>
             </div>
           </div>
         </div>
+      </header>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
-          <Link href="/admin/applications" className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow">
-            <div className="text-xs sm:text-sm text-gray-600">Total Applications</div>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{totalApps}</div>
-            <div className="text-xs text-blue-600 mt-1">Click to view all →</div>
-          </Link>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-600">Approval Rate</div>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{approvalRate}%</div>
-            <div className="text-xs text-gray-500 mt-1">{approvedApps} of {totalApps}</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-600">Total Funded</div>
-            <div className="text-xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">
+      <main id="main-content" className={layoutClasses.pageContent}>
+        {/* Welcome */}
+        <motion.div 
+          className="mb-8"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={transitions.entrance}
+        >
+          <h1 className="text-2xl sm:text-3xl font-bold font-display text-navy">
+            Welcome back, {user?.name || 'Admin'}
+          </h1>
+          <p className="text-medium-gray mt-1">SuprOps Dashboard</p>
+        </motion.div>
+
+        {/* Stats Grid - Hero stat first, then secondary */}
+        <motion.div 
+          className={layoutClasses.statsGrid}
+          initial={prefersReducedMotion ? false : "hidden"}
+          animate="visible"
+          variants={staggerContainer}
+        >
+          {/* Hero Stat - Total Applications */}
+          <motion.div variants={fadeInUp}>
+            <Link href="/admin/applications" className={`${layoutClasses.cardHero} hover:shadow-lg transition-all block`}>
+              <div className={layoutClasses.statLabel}>Total Applications</div>
+              <div className={`${layoutClasses.statHero} text-navy`}>{totalApps}</div>
+              <div className={`${layoutClasses.statSubtext} text-teal font-medium`}>View all →</div>
+            </Link>
+          </motion.div>
+          
+          {/* Secondary Stats */}
+          <motion.div variants={fadeInUp} className={layoutClasses.cardInteractive}>
+            <div className={layoutClasses.statLabel}>Approval Rate</div>
+            <div className={`${layoutClasses.statNormal} text-teal`}>{approvalRate}%</div>
+            <div className={`${layoutClasses.statSubtext} text-medium-gray`}>{approvedApps} of {totalApps}</div>
+          </motion.div>
+          <motion.div variants={fadeInUp} className={layoutClasses.cardInteractive}>
+            <div className={layoutClasses.statLabel}>Total Funded</div>
+            <div className={`${layoutClasses.statNormal} text-navy`}>
               {formatCurrency(totalFunded || 0)}
             </div>
-            <div className="text-xs text-gray-500 mt-1">Lifetime</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-600">Manual Reviews</div>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{manualReviews}</div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className={`${layoutClasses.statSubtext} text-medium-gray`}>Lifetime</div>
+          </motion.div>
+          <motion.div variants={fadeInUp} className={`${layoutClasses.cardInteractive} ${manualReviews > 0 ? 'border-l-4 border-l-warning bg-warning/5' : ''}`}>
+            <div className={layoutClasses.statLabel}>Manual Reviews</div>
+            <div className={`${layoutClasses.statNormal} ${manualReviews > 0 ? 'text-warning' : 'text-navy'}`}>{manualReviews}</div>
+            <div className={`${layoutClasses.statSubtext} ${manualReviews > 0 ? 'text-warning font-medium' : 'text-medium-gray'}`}>
               {manualReviews > 0 ? 'Needs attention' : 'No pending'}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Feature Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <h2 className="text-base sm:text-xl font-semibold">📋 Recent Applications</h2>
-              <Link href="/admin/applications" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
+        <motion.div 
+          className={`${layoutClasses.twoColGrid} mt-8`}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...transitions.entrance, delay: 0.2 }}
+        >
+          <div className={layoutClasses.cardPrimary}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold font-display text-navy">Recent Applications</h2>
+              <Link href="/admin/applications" className="text-sm text-teal hover:text-teal/80 font-medium">
                 View All →
               </Link>
             </div>
             {recentApps.length === 0 ? (
-              <div className="text-center py-6 sm:py-8 text-gray-500">
-                <p className="text-sm sm:text-base">No applications yet</p>
-                <p className="text-xs sm:text-sm mt-2">Applications will appear here once submitted</p>
+              <div className="text-center py-8">
+                <div className="w-12 h-12 bg-light-gray rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6 text-medium-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-medium-gray font-medium">No applications yet</p>
+                <p className="text-sm text-medium-gray/70 mt-1">When customers apply through your contractors, their applications will appear here.</p>
               </div>
             ) : (
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-2">
                 {recentApps.map((app) => (
                   <Link
                     key={app.id}
                     href={`/admin/applications/${app.id}`}
-                    className="block p-2.5 sm:p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                    className="block p-3 rounded-xl border border-gray-100 hover:border-teal/30 hover:bg-teal/5 transition-all"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-gray-900 text-sm sm:text-base">
+                        <div className="font-medium text-navy">
                           {app.customer.firstName} {app.customer.lastName}
                         </div>
-                        <div className="text-xs sm:text-sm text-gray-500">
+                        <div className="text-sm text-medium-gray">
                           {formatCurrency(Number(app.job.estimateAmount))}
                         </div>
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-medium-gray">
                         {new Date(app.createdAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -166,106 +214,61 @@ export default function AdminPage() {
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <h2 className="text-base sm:text-xl font-semibold mb-3 sm:mb-4">⚡ Quick Actions</h2>
-            <div className="space-y-2 sm:space-y-3">
+          <div className={layoutClasses.cardPrimary}>
+            <h2 className="text-lg font-semibold font-display text-navy mb-4">Quick Actions</h2>
+            
+            {/* Primary Actions - Always visible */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
               <Link 
                 href="/admin/applications?status=submitted"
-                className="block w-full px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-left"
+                className="px-4 py-3 bg-cyan/10 text-navy rounded-xl hover:bg-cyan/20 border border-cyan/20 transition-colors"
               >
-                <div className="font-medium">View Submitted Applications</div>
-                <div className="text-sm text-blue-600">{submittedApps} waiting for review</div>
-              </Link>
-              <Link
-                href="/admin/applications"
-                className="block w-full px-4 py-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 text-left"
-              >
-                <div className="font-medium">All Applications</div>
-                <div className="text-sm text-green-600">Manage all financing requests</div>
+                <div className="font-medium">Review Submitted</div>
+                <div className="text-sm text-medium-gray">{submittedApps} waiting</div>
               </Link>
               <Link
                 href="/admin/manual-review"
-                className={`block w-full px-4 py-3 rounded-lg text-left ${
+                className={`px-4 py-3 rounded-xl border transition-colors ${
                   manualReviews > 0 
-                    ? 'bg-red-50 text-red-700 hover:bg-red-100' 
-                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    ? 'bg-warning/10 border-warning/20 hover:bg-warning/20' 
+                    : 'bg-light-gray border-gray-100 hover:bg-gray-200'
                 }`}
               >
-                <div className="font-medium">Manual Review Queue</div>
-                <div className={`text-sm ${manualReviews > 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                  {manualReviews > 0 ? `${manualReviews} pending reviews` : 'No pending reviews'}
+                <div className="font-medium text-navy">Manual Reviews</div>
+                <div className={`text-sm ${manualReviews > 0 ? 'text-warning font-medium' : 'text-medium-gray'}`}>
+                  {manualReviews > 0 ? `${manualReviews} pending` : 'None'}
                 </div>
               </Link>
-              <Link
-                href="/admin/waitlist"
-                className="block w-full px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-left"
-              >
-                <div className="font-medium">Waitlist Management</div>
-                <div className="text-sm text-purple-600">View and manage signups</div>
+            </div>
+
+            {/* Secondary Actions - Compact links */}
+            <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-100">
+              <Link href="/admin/applications" className="px-3 py-1.5 text-sm text-navy hover:text-teal transition-colors">
+                All Applications
               </Link>
-              <Link
-                href="/admin/contractors"
-                className="block w-full px-4 py-3 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 text-left"
-              >
-                <div className="font-medium">Contractor Partners</div>
-                <div className="text-sm text-teal-600">Manage approved contractors</div>
+              <Link href="/admin/contractors" className="px-3 py-1.5 text-sm text-navy hover:text-teal transition-colors">
+                Contractors
+              </Link>
+              <Link href="/admin/waitlist" className="px-3 py-1.5 text-sm text-navy hover:text-teal transition-colors">
+                Waitlist
               </Link>
               {(user?.role === 'god' || user?.role === 'admin') && (
-                <Link
-                  href="/admin/users"
-                  className="block w-full px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 text-left"
-                >
-                  <div className="font-medium">User Management</div>
-                  <div className="text-sm text-indigo-600">Manage admin users</div>
+                <Link href="/admin/users" className="px-3 py-1.5 text-sm text-navy hover:text-teal transition-colors">
+                  Users
                 </Link>
               )}
-              {user?.role === 'god' && (
-                <Link
-                  href="/admin/audit"
-                  className="block w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-left"
-                >
-                  <div className="font-medium">Audit Log</div>
-                  <div className="text-sm text-gray-600">View all admin actions</div>
-                </Link>
-              )}
-              <Link
-                href="/admin/settings/integrations"
-                className="block w-full px-4 py-3 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 text-left"
-              >
-                <div className="font-medium">CRM Integrations</div>
-                <div className="text-sm text-orange-600">Connect Jobber, FieldRoutes, and more</div>
+              <Link href="/admin/settings/integrations" className="px-3 py-1.5 text-sm text-navy hover:text-teal transition-colors">
+                Integrations
               </Link>
+              {user?.role === 'god' && (
+                <Link href="/admin/audit" className="px-3 py-1.5 text-sm text-navy hover:text-teal transition-colors">
+                  Audit Log
+                </Link>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* Phase Status */}
-        <div className="mt-6 bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">🚀 Development Progress</h2>
-          <div className="space-y-3">
-            <div className="flex items-center">
-              <span className="text-green-600 font-bold mr-2">✓</span>
-              <span className="font-medium">Phase 0: Foundation</span>
-              <span className="ml-auto text-sm text-green-600">Complete</span>
-            </div>
-            <div className="flex items-center">
-              <span className="text-yellow-600 font-bold mr-2">⏳</span>
-              <span className="font-medium">Phase 1: Borrower Flow</span>
-              <span className="ml-auto text-sm text-yellow-600">Up Next (Week 3-5)</span>
-            </div>
-            <div className="flex items-center">
-              <span className="text-gray-400 font-bold mr-2">○</span>
-              <span className="font-medium text-gray-400">Phase 2: Decisioning Engine</span>
-              <span className="ml-auto text-sm text-gray-400">Week 6-7</span>
-            </div>
-            <div className="flex items-center">
-              <span className="text-gray-400 font-bold mr-2">○</span>
-              <span className="font-medium text-gray-400">Phase 3: CRM Integration</span>
-              <span className="ml-auto text-sm text-gray-400">Week 8-9</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      </main>
     </div>
   )
 }
