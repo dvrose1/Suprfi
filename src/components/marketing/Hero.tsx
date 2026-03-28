@@ -51,7 +51,7 @@ const Hero: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8">
               <Link 
                 href="/apply"
-                className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-white font-semibold text-base sm:text-lg transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg bg-gradient-primary"
+                className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-white font-semibold text-base sm:text-lg transition-all hover:bg-teal/90 flex items-center justify-center gap-2 shadow-lg bg-teal"
               >
                 Check Your Rate
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,7 +118,7 @@ const Hero: React.FC = () => {
             
             <Link
               href="/apply"
-              className="block w-full py-3 sm:py-4 rounded-xl text-white font-semibold text-sm sm:text-base text-center transition-all hover:opacity-90 bg-gradient-accent"
+              className="block w-full py-3 sm:py-4 rounded-xl text-white font-semibold text-sm sm:text-base text-center transition-colors hover:bg-teal/90 bg-teal"
             >
               Get Your Personalized Rate
             </Link>

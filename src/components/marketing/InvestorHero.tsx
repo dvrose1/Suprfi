@@ -41,10 +41,14 @@ const InvestorHero: React.FC = () => {
         style={{ opacity: contentOpacity, y: contentY }}
       >
         <div className="max-w-4xl">
-          {/* Headline */}
+          {/* Headline - fluid sizing with tight tracking for display */}
           <motion.h1 
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 font-display" 
-            style={{ fontVariantLigatures: 'none' }}
+            className="text-white mb-6 font-display tracking-display" 
+            style={{ 
+              fontSize: 'clamp(2.25rem, 6vw, 4.5rem)',
+              lineHeight: 'var(--leading-tight)',
+              fontVariantLigatures: 'none',
+            }}
             initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: 'easeOut' }}
@@ -52,9 +56,9 @@ const InvestorHero: React.FC = () => {
             Home repairs don&apos;t wait. Financing shouldn&apos;t either.
           </motion.h1>
           
-          {/* Subheadline */}
+          {/* Subheadline - prose-lg for optimal reading */}
           <motion.p 
-            className="text-lg sm:text-xl md:text-2xl text-white/80 leading-relaxed mb-10 max-w-3xl"
+            className="prose-lg text-white/80 mb-10 max-w-3xl"
             initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: 'easeOut', delay: prefersReducedMotion ? 0 : 0.15 }}

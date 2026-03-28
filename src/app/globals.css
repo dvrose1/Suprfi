@@ -25,6 +25,42 @@
   --gradient-primary: linear-gradient(135deg, #0F2D4A 0%, #2A9D8F 100%);
   --gradient-accent: linear-gradient(90deg, #2A9D8F 0%, #6EC6A7 100%);
   
+  /* ========================================
+     TYPE SCALE - 1.25 ratio (Major Third)
+     Base: 16px = 1rem
+     ======================================== */
+  --text-xs: 0.75rem;      /* 12px - captions, timestamps */
+  --text-sm: 0.875rem;     /* 14px - secondary text, labels */
+  --text-base: 1rem;       /* 16px - body text */
+  --text-lg: 1.125rem;     /* 18px - lead paragraphs */
+  --text-xl: 1.25rem;      /* 20px - subheadings */
+  --text-2xl: 1.5rem;      /* 24px - section headings */
+  --text-3xl: 1.875rem;    /* 30px - page headings */
+  --text-4xl: 2.25rem;     /* 36px - hero headings */
+  --text-5xl: 3rem;        /* 48px - display */
+  --text-6xl: 3.75rem;     /* 60px - large display */
+  
+  /* LINE HEIGHTS - context-specific */
+  --leading-none: 1;
+  --leading-tight: 1.15;   /* headings, display */
+  --leading-snug: 1.3;     /* subheadings */
+  --leading-normal: 1.5;   /* UI text */
+  --leading-relaxed: 1.65; /* body paragraphs */
+  --leading-loose: 1.8;    /* long-form reading */
+  
+  /* LETTER SPACING */
+  --tracking-tighter: -0.025em;  /* large display text */
+  --tracking-tight: -0.015em;    /* headings */
+  --tracking-normal: 0;          /* body */
+  --tracking-wide: 0.025em;      /* small caps, labels */
+  --tracking-wider: 0.05em;      /* uppercase text */
+  
+  /* FONT WEIGHTS - semantic roles */
+  --font-normal: 400;    /* body text */
+  --font-medium: 500;    /* labels, secondary emphasis */
+  --font-semibold: 600;  /* buttons, nav, card titles */
+  --font-bold: 700;      /* headings only */
+  
   /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -56,35 +92,69 @@
   body {
     @apply bg-warm-white text-dark-gray antialiased;
     font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    font-kerning: normal;
   }
 
+  /* Headings: Plus Jakarta Sans, bold, tight line-height */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display), 'Plus Jakarta Sans', system-ui, sans-serif;
-    @apply font-semibold text-navy;
+    color: var(--color-navy);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
   }
 
   h1 {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold leading-tight;
+    font-size: clamp(var(--text-3xl), 5vw, var(--text-5xl));
   }
 
   h2 {
-    @apply text-3xl md:text-4xl font-semibold leading-tight;
+    font-size: clamp(var(--text-2xl), 4vw, var(--text-4xl));
+    font-weight: var(--font-semibold);
   }
 
   h3 {
-    @apply text-2xl md:text-3xl font-semibold;
+    font-size: clamp(var(--text-xl), 3vw, var(--text-3xl));
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-snug);
   }
 
   h4 {
-    @apply text-xl md:text-2xl font-medium;
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-snug);
   }
 
   h5 {
-    @apply text-lg md:text-xl font-medium;
+    font-size: var(--text-lg);
+    font-weight: var(--font-medium);
+    line-height: var(--leading-snug);
   }
 
   h6 {
-    @apply text-base md:text-lg font-medium;
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    line-height: var(--leading-normal);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+  }
+
+  /* Body text defaults */
+  p {
+    line-height: var(--leading-relaxed);
+  }
+  
+  /* Small text */
+  small {
+    font-size: var(--text-sm);
+  }
+  
+  /* Strong = semibold, not bold (cleaner in body text) */
+  strong, b {
+    font-weight: var(--font-semibold);
   }
 }
 
@@ -105,6 +175,70 @@
 
   .section-lg {
     @apply py-20 md:py-32;
+  }
+  
+  /* Prose - for long-form content with optimal line length */
+  .prose {
+    max-width: 65ch;
+    line-height: var(--leading-relaxed);
+  }
+  
+  .prose p {
+    margin-bottom: 1.25em;
+  }
+  
+  .prose p:last-child {
+    margin-bottom: 0;
+  }
+  
+  .prose-lg {
+    font-size: var(--text-lg);
+    line-height: var(--leading-loose);
+    max-width: 60ch;
+  }
+  
+  /* Lead paragraph - first paragraph emphasis */
+  .lead {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--color-medium-gray);
+  }
+  
+  /* Label text - consistent form labels and small headings */
+  .label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    line-height: var(--leading-normal);
+    letter-spacing: var(--tracking-wide);
+    color: var(--color-navy);
+  }
+  
+  /* Caption text */
+  .caption {
+    font-size: var(--text-xs);
+    line-height: var(--leading-normal);
+    color: var(--color-medium-gray);
+  }
+  
+  /* Stat/metric display */
+  .stat-value {
+    font-family: var(--font-display), 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-none);
+    letter-spacing: var(--tracking-tight);
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .stat-value-lg {
+    font-size: var(--text-4xl);
+  }
+  
+  .stat-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-medium-gray);
+    letter-spacing: var(--tracking-wide);
   }
 }
 
@@ -137,5 +271,30 @@
   /* Monospace for financial figures */
   .font-financial {
     font-family: var(--font-mono), 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* Tabular nums for aligned numbers */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* Tight tracking for large display text */
+  .tracking-display {
+    letter-spacing: var(--tracking-tighter);
+  }
+  
+  /* Wide tracking for labels/caps */
+  .tracking-label {
+    letter-spacing: var(--tracking-wide);
+  }
+  
+  /* Line height utilities */
+  .leading-heading {
+    line-height: var(--leading-tight);
+  }
+  
+  .leading-body {
+    line-height: var(--leading-relaxed);
   }
 }

@@ -10,6 +10,18 @@ export { default as Badge, StatusBadge } from './Badge';
 export { EmptyState } from './EmptyState';
 export { StatCard } from './StatCard';
 export { LoadingSpinner } from './LoadingSpinner';
+export { 
+  CheckIcon, 
+  DollarIcon, 
+  DocumentIcon, 
+  RocketIcon, 
+  ChartIcon, 
+  LockIcon, 
+  AlertIcon, 
+  LightbulbIcon,
+  ErrorIcon,
+  StatusDot 
+} from './Icons';
 
 // Animated components
 export {

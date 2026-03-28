@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
-import { EmptyState, LoadingSpinner } from '@/components/shared';
+import { EmptyState, LoadingSpinner, ChartIcon, LightbulbIcon } from '@/components/shared';
 import { formatCurrency } from '@/lib/utils/format';
 
 interface AnalyticsData {
@@ -345,7 +345,10 @@ export default function AnalyticsPage() {
 
             {/* Recommendations */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-lg font-semibold text-navy mb-4">💡 Smart Recommendations</h2>
+              <h2 className="text-lg font-semibold text-navy mb-4 flex items-center gap-2">
+                <LightbulbIcon size={18} className="text-warning" />
+                Smart Recommendations
+              </h2>
               <div className="space-y-4">
                 {data.recommendations.map((rec) => (
                   <div
@@ -368,10 +371,11 @@ export default function AnalyticsPage() {
         ) : (
           <div className="bg-white rounded-2xl shadow-lg p-12">
             <EmptyState
-              icon="📊"
+              icon={<ChartIcon size={24} />}
               title="No activity to analyze yet"
               description="Send your first financing offer to start tracking performance. Your conversion rates, funded amounts, and trends will appear here."
               action={{ label: 'Send Financing Link', href: '/client/new' }}
+              align="left"
             />
           </div>
         )}

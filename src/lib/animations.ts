@@ -15,15 +15,18 @@ export const spacing = {
   '4xl': '64px', // 16
 } as const;
 
-// Tailwind class mappings for consistent spacing
+// Tailwind class mappings for consistent spacing with rhythm variation
 export const layoutClasses = {
   // Page containers
   pageWrapper: 'min-h-screen bg-light-gray',
-  pageContent: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12',
+  pageContent: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10',
+  pageContentTight: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6',
+  pageContentGenerous: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16',
   
-  // Section spacing
-  sectionGap: 'space-y-8',
-  itemGap: 'space-y-4',
+  // Section spacing - varied rhythm
+  sectionGap: 'space-y-6 sm:space-y-10',
+  sectionGapTight: 'space-y-4 sm:space-y-6',
+  itemGap: 'space-y-3 sm:space-y-4',
   
   // Card variants
   cardPrimary: 'bg-white rounded-2xl shadow-sm border border-gray-100 p-6',
@@ -31,16 +34,16 @@ export const layoutClasses = {
   cardHero: 'bg-white rounded-2xl shadow-md border-l-4 border-l-teal border border-gray-100 p-6',
   cardInteractive: 'bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer',
   
-  // Stats variants
-  statHero: 'text-3xl sm:text-4xl font-bold font-display',
-  statNormal: 'text-2xl sm:text-3xl font-bold font-display',
-  statLabel: 'text-sm text-medium-gray mb-1',
-  statSubtext: 'text-xs mt-2',
+  // Stats variants - using tabular-nums for aligned numbers
+  statHero: 'stat-value-lg font-display text-navy tabular-nums',
+  statNormal: 'stat-value font-display text-navy tabular-nums',
+  statLabel: 'stat-label',
+  statSubtext: 'caption mt-2',
   
   // Form layouts
   formCard: 'bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8',
   formGroup: 'space-y-4',
-  formLabel: 'block text-sm font-medium text-navy mb-1.5',
+  formLabel: 'label mb-1.5',
   formInput: 'w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-teal focus:border-transparent transition-shadow',
   
   // Grid layouts

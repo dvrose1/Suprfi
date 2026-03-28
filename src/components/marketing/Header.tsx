@@ -57,7 +57,7 @@ const Header: React.FC = () => {
             </Link>
             <Link
               href="/get-started"
-              className="px-5 py-2.5 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90 bg-gradient-primary"
+              className="px-5 py-2.5 rounded-lg text-white text-sm font-semibold transition-colors hover:bg-teal/90 bg-teal"
             >
               Get Started
             </Link>
@@ -105,7 +105,7 @@ const Header: React.FC = () => {
                 </Link>
                 <Link
                   href="/get-started"
-                  className="text-center py-3 rounded-lg text-white font-semibold bg-gradient-primary"
+                  className="text-center py-3 rounded-lg text-white font-semibold bg-teal hover:bg-teal/90 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Get Started

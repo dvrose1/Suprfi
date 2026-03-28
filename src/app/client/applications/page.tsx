@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
-import { EmptyState, LoadingSpinner } from '@/components/shared';
+import { EmptyState, LoadingSpinner, DocumentIcon } from '@/components/shared';
 import { formatServiceType, formatCurrency } from '@/lib/utils/format';
 
 interface Application {
@@ -190,7 +190,7 @@ export default function ApplicationsPage() {
         ) : applications.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12">
             <EmptyState
-              icon="📋"
+              icon={<DocumentIcon size={24} />}
               title={statusFilter !== 'all' ? `No ${statusFilter} applications` : 'No applications yet'}
               description={statusFilter !== 'all'
                 ? `You don't have any applications with "${statusFilter}" status. Try a different filter or check back later.`

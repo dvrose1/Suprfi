@@ -10,7 +10,7 @@ import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
 import { formatCurrency } from '@/lib/utils/format';
 import { transitions, staggerContainer, fadeInUp, layoutClasses } from '@/lib/animations';
-import { EmptyState } from '@/components/shared';
+import { EmptyState, DocumentIcon, DollarIcon, CheckIcon, RocketIcon, ErrorIcon } from '@/components/shared';
 
 interface DashboardStats {
   totalApplications: number;
@@ -90,17 +90,17 @@ export default function ClientDashboardPage() {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'funded':
-        return { icon: '💰', color: 'bg-mint/20 text-mint' };
+        return { icon: <DollarIcon size={14} />, color: 'bg-mint/20 text-mint' };
       case 'approved':
-        return { icon: '✓', color: 'bg-teal/20 text-teal' };
+        return { icon: <CheckIcon size={14} />, color: 'bg-teal/20 text-teal' };
       case 'submitted':
-        return { icon: '📋', color: 'bg-cyan/20 text-cyan' };
+        return { icon: <DocumentIcon size={14} />, color: 'bg-cyan/20 text-cyan' };
       case 'initiated':
-        return { icon: '🚀', color: 'bg-warning/20 text-warning' };
+        return { icon: <RocketIcon size={14} />, color: 'bg-warning/20 text-warning' };
       case 'declined':
-        return { icon: '✗', color: 'bg-error/20 text-error' };
+        return { icon: <ErrorIcon size={14} />, color: 'bg-error/20 text-error' };
       default:
-        return { icon: '•', color: 'bg-gray-200 text-gray-600' };
+        return { icon: <span className="w-2 h-2 rounded-full bg-current" />, color: 'bg-navy/10 text-navy/40' };
     }
   };
 
@@ -192,7 +192,7 @@ export default function ClientDashboardPage() {
                     <div className="text-2xl font-bold text-navy">
                       {stats.conversionFunnel[stage as keyof typeof stats.conversionFunnel]}
                     </div>
-                    <div className="text-sm text-gray-500 capitalize">{stage}</div>
+                    <div className="text-sm text-navy/50 capitalize">{stage}</div>
                   </div>
                 </div>
               ))}
@@ -265,7 +265,7 @@ export default function ClientDashboardPage() {
           
           {recentActivity.length === 0 ? (
             <EmptyState
-              icon="📋"
+              icon={<DocumentIcon size={24} />}
               title="No recent activity"
               description="Activity will appear here when customers apply"
               compact
@@ -274,7 +274,7 @@ export default function ClientDashboardPage() {
             <>
               {recentActivity.filter(a => activityFilter === 'all' || a.type === activityFilter).length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">No {activityFilter} activity</p>
+                  <p className="text-navy/50">No {activityFilter} activity</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -303,7 +303,7 @@ export default function ClientDashboardPage() {
                             <p className="text-sm font-medium text-gray-900 truncate">
                               {activity.customerName}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-navy/50">
                               {formatCurrency(activity.amount)} • {activity.type}
                               {activity.technicianName && ` • ${activity.technicianName}`}
                             </p>

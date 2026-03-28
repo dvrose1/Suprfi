@@ -62,7 +62,7 @@ function ComingSoonSignUp() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/contractors"
-              className="px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
+              className="px-6 py-3 bg-teal text-white rounded-lg font-semibold hover:bg-teal/90 transition-colors"
             >
               I'm a Contractor
             </Link>
@@ -252,7 +252,7 @@ function SignUpForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-gradient-primary text-white rounded-lg font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full py-3 bg-teal text-white rounded-lg font-semibold hover:bg-teal/90 transition-colors disabled:opacity-50"
             >
               {loading ? 'Processing...' : 'Check Your Rate'}
             </button>

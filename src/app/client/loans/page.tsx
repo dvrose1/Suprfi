@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useContractorAuth } from '@/lib/auth/contractor-context';
 import ClientHeader from '@/components/client/ClientHeader';
-import { EmptyState, LoadingSpinner } from '@/components/shared';
+import { EmptyState, LoadingSpinner, DollarIcon } from '@/components/shared';
 import { formatServiceType, formatCurrency } from '@/lib/utils/format';
 
 interface Loan {
@@ -222,10 +222,11 @@ export default function LoansPage() {
         ) : loans.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12">
             <EmptyState
-              icon="💰"
+              icon={<DollarIcon size={24} />}
               title="No funded loans yet"
               description="Once a customer accepts an offer and the loan is funded, it will appear here. Check your applications to see pending deals."
               action={{ label: 'View Applications', href: '/client/applications' }}
+              align="left"
             />
           </div>
         ) : (
