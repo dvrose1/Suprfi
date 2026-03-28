@@ -31,6 +31,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -76,7 +77,6 @@ export default function AdminPage() {
   const totalFunded = stats?.totalFunded ?? 0;
   const manualReviews = stats?.manualReviews ?? 0;
   const recentApps = stats?.recentApps ?? [];
-  const prefersReducedMotion = useReducedMotion();
 
   return (
     <div className="min-h-screen bg-light-gray">
