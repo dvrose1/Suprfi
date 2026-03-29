@@ -165,70 +165,83 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
 
   const progress = (currentStep / steps.length) * 100
 
+  // Refined easing (from Impeccable animate skill)
+  const easeOutExpo: [number, number, number, number] = [0.16, 1, 0.3, 1]
+
   // Mode selector - let user choose between chat and form
   if (mode === 'selector') {
     return (
       <div className="max-w-2xl mx-auto px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="bg-white rounded-2xl shadow-xl p-8"
+          transition={{ duration: 0.4, ease: easeOutExpo }}
+          className="bg-white rounded-2xl shadow-lg border border-navy/5 p-8"
         >
           <h2 className="text-2xl font-bold text-navy text-center mb-2">
             How would you like to apply?
           </h2>
-          <p className="text-medium-gray text-center mb-8">
+          <p className="text-navy/50 text-center mb-8">
             Choose the experience that works best for you
           </p>
           
           <div className="grid gap-4 sm:grid-cols-2">
             {/* Chat Option */}
-            <button
+            <motion.button
               onClick={() => setMode('chat')}
-              className="group p-6 border-2 border-gray-200 rounded-xl hover:border-teal transition-all duration-200 text-left"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="group p-6 bg-navy/[0.02] border border-navy/[0.06] rounded-2xl hover:border-teal/30 hover:bg-teal/[0.02] text-left"
+              style={{ 
+                transition: 'border-color 0.2s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s cubic-bezier(0.25, 1, 0.5, 1)'
+              }}
             >
-              <div className="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mb-4 group-hover:bg-teal/20 transition-colors">
-                <svg className="w-6 h-6 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <div className="w-11 h-11 rounded-xl bg-teal/10 flex items-center justify-center mb-4 group-hover:bg-teal/15 transition-colors duration-200" style={{ transitionTimingFunction: 'cubic-bezier(0.25, 1, 0.5, 1)' }}>
+                <svg className="w-5 h-5 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-navy mb-2">Chat with assistant</h3>
-              <p className="text-sm text-medium-gray">
-                Answer questions one at a time with help along the way. Great if you have questions.
+              <h3 className="font-semibold text-navy text-[15px] mb-1.5">Chat with assistant</h3>
+              <p className="text-sm text-navy/50 leading-relaxed">
+                Answer questions one at a time with help along the way.
               </p>
               <div className="mt-4 flex items-center text-teal text-sm font-medium">
                 <span>Start chatting</span>
-                <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 ml-1.5 group-hover:translate-x-1 transition-transform duration-200" style={{ transitionTimingFunction: 'cubic-bezier(0.25, 1, 0.5, 1)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
-            </button>
+            </motion.button>
             
             {/* Form Option */}
-            <button
+            <motion.button
               onClick={() => setMode('form')}
-              className="group p-6 border-2 border-gray-200 rounded-xl hover:border-teal transition-all duration-200 text-left"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="group p-6 bg-navy/[0.02] border border-navy/[0.06] rounded-2xl hover:border-teal/30 hover:bg-teal/[0.02] text-left"
+              style={{ 
+                transition: 'border-color 0.2s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.2s cubic-bezier(0.25, 1, 0.5, 1)'
+              }}
             >
-              <div className="w-12 h-12 rounded-full bg-mint/10 flex items-center justify-center mb-4 group-hover:bg-mint/20 transition-colors">
-                <svg className="w-6 h-6 text-mint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <div className="w-11 h-11 rounded-xl bg-mint/10 flex items-center justify-center mb-4 group-hover:bg-mint/15 transition-colors duration-200" style={{ transitionTimingFunction: 'cubic-bezier(0.25, 1, 0.5, 1)' }}>
+                <svg className="w-5 h-5 text-mint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-navy mb-2">Fill out form</h3>
-              <p className="text-sm text-medium-gray">
-                See all fields at once and complete at your own pace. Best if you know what to expect.
+              <h3 className="font-semibold text-navy text-[15px] mb-1.5">Fill out form</h3>
+              <p className="text-sm text-navy/50 leading-relaxed">
+                See all fields at once and complete at your own pace.
               </p>
               <div className="mt-4 flex items-center text-teal text-sm font-medium">
                 <span>Go to form</span>
-                <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 ml-1.5 group-hover:translate-x-1 transition-transform duration-200" style={{ transitionTimingFunction: 'cubic-bezier(0.25, 1, 0.5, 1)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
-            </button>
+            </motion.button>
           </div>
           
-          <p className="text-xs text-medium-gray/60 text-center mt-6">
+          <p className="text-xs text-navy/35 text-center mt-6">
             Both options collect the same information. You can switch anytime.
           </p>
         </motion.div>
