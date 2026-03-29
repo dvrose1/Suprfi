@@ -6,7 +6,10 @@ import { PersonalInfoStep } from './steps/PersonalInfoStep'
 import { BankLinkStep } from './steps/BankLinkStep'
 import { KYCStep } from './steps/KYCStep'
 import { ReviewStep } from './steps/ReviewStep'
+import { BorrowerAgentChat } from './BorrowerAgentChat'
 import { transitions, layoutClasses } from '@/lib/animations'
+
+type ApplicationMode = 'selector' | 'chat' | 'form'
 
 interface ApplicationFormProps {
   customer: {
@@ -67,6 +70,7 @@ const steps = [
 ]
 
 export function ApplicationForm({ customer, job, applicationId, token }: ApplicationFormProps) {
+  const [mode, setMode] = useState<ApplicationMode>('selector')
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState<FormData>({
     // Pre-fill from customer data
@@ -161,8 +165,110 @@ export function ApplicationForm({ customer, job, applicationId, token }: Applica
 
   const progress = (currentStep / steps.length) * 100
 
+  // Mode selector - let user choose between chat and form
+  if (mode === 'selector') {
+    return (
+      <div className="max-w-2xl mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white rounded-2xl shadow-xl p-8"
+        >
+          <h2 className="text-2xl font-bold text-navy text-center mb-2">
+            How would you like to apply?
+          </h2>
+          <p className="text-medium-gray text-center mb-8">
+            Choose the experience that works best for you
+          </p>
+          
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Chat Option */}
+            <button
+              onClick={() => setMode('chat')}
+              className="group p-6 border-2 border-gray-200 rounded-xl hover:border-teal transition-all duration-200 text-left"
+            >
+              <div className="w-12 h-12 rounded-full bg-teal/10 flex items-center justify-center mb-4 group-hover:bg-teal/20 transition-colors">
+                <svg className="w-6 h-6 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-navy mb-2">Chat with assistant</h3>
+              <p className="text-sm text-medium-gray">
+                Answer questions one at a time with help along the way. Great if you have questions.
+              </p>
+              <div className="mt-4 flex items-center text-teal text-sm font-medium">
+                <span>Start chatting</span>
+                <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </button>
+            
+            {/* Form Option */}
+            <button
+              onClick={() => setMode('form')}
+              className="group p-6 border-2 border-gray-200 rounded-xl hover:border-teal transition-all duration-200 text-left"
+            >
+              <div className="w-12 h-12 rounded-full bg-mint/10 flex items-center justify-center mb-4 group-hover:bg-mint/20 transition-colors">
+                <svg className="w-6 h-6 text-mint" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="font-semibold text-navy mb-2">Fill out form</h3>
+              <p className="text-sm text-medium-gray">
+                See all fields at once and complete at your own pace. Best if you know what to expect.
+              </p>
+              <div className="mt-4 flex items-center text-teal text-sm font-medium">
+                <span>Go to form</span>
+                <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </button>
+          </div>
+          
+          <p className="text-xs text-medium-gray/60 text-center mt-6">
+            Both options collect the same information. You can switch anytime.
+          </p>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // Chat mode
+  if (mode === 'chat') {
+    return (
+      <div className="max-w-2xl mx-auto px-4">
+        <BorrowerAgentChat
+          customer={customer}
+          job={job}
+          applicationId={applicationId}
+          token={token}
+          onSwitchToForm={() => setMode('form')}
+          formData={formData}
+          updateFormData={updateFormData}
+        />
+      </div>
+    )
+  }
+
+  // Form mode (original)
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-0">
+      {/* Mode switcher */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => setMode('chat')}
+          className="text-sm text-teal hover:text-teal/80 transition-colors flex items-center gap-1"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          Switch to chat
+        </button>
+      </div>
+
       {/* Progress Bar with better visual hierarchy */}
       <div className="mb-8 sm:mb-10">
         <div className="flex justify-between mb-3">
