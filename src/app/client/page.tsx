@@ -139,10 +139,10 @@ export default function ClientDashboardPage() {
             style={viewTransitionStyle('stat-sold')}
             variants={fadeInUp}
             whileHover={prefersReducedMotion ? {} : { y: -4, transition: transitions.fast }}
-            onClick={() => navigateWithTransition(router, '/client/loans')}
+            onClick={() => navigateWithTransition(router, '/client/analytics')}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && navigateWithTransition(router, '/client/loans')}
+            onKeyDown={(e) => e.key === 'Enter' && navigateWithTransition(router, '/client/analytics')}
           >
             <div className={layoutClasses.statLabel}>Sold</div>
             <div className={`${layoutClasses.statHero} text-navy`}>
@@ -155,7 +155,7 @@ export default function ClientDashboardPage() {
 
           {/* Secondary Stats (clickable with view transitions) */}
           {[
-            { label: 'Funded', value: stats?.fundedThisMonth || 0, subtext: `${stats?.fundedCount || 0} loans this month`, subtextColor: 'text-mint', prefix: '$', href: '/client/loans', id: 'stat-funded' },
+            { label: 'Funded', value: stats?.fundedThisMonth || 0, subtext: `${stats?.fundedCount || 0} loans this month`, subtextColor: 'text-mint', prefix: '$', href: '/client/analytics', id: 'stat-funded' },
             { label: 'Avg. Loan Size', value: stats?.avgLoanSize || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', prefix: '$', href: '/client/analytics', id: 'stat-avg' },
             { label: 'Approval Rate', value: stats?.approvalRate || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', suffix: '%', valueColor: 'text-teal', href: '/client/analytics', id: 'stat-approval' },
           ].map((stat) => (

@@ -427,14 +427,7 @@ export default function ApplicationDetailPage() {
                     Cancel Application
                   </button>
                 )}
-                {application.loan && (
-                  <Link
-                    href={`/client/loans/${application.loan.id}`}
-                    className="block w-full bg-navy text-white rounded-lg font-semibold px-4 py-3 hover:bg-navy/90 transition-colors text-center"
-                  >
-                    View Loan Details
-                  </Link>
-                )}
+
               </div>
             </div>
 

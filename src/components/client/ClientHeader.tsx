@@ -25,7 +25,6 @@ export default function ClientHeader({ hideNav }: ClientHeaderProps) {
   const navItems = [
     { href: '/client', label: 'Dashboard' },
     { href: '/client/applications', label: 'Applications' },
-    { href: '/client/loans', label: 'Loans' },
     { href: '/client/analytics', label: 'Analytics', permission: 'analytics:view' },
   ];
 
