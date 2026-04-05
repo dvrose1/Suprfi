@@ -31,73 +31,81 @@ interface FormData {
   eSignConsent: boolean
 }
 
-const BORROWER_AGENT_PROMPT = `You are SuprFi's Borrower Agent, helping a homeowner complete their financing application through a friendly conversation. Your goal is to collect required information naturally while being helpful and reassuring.
+const BORROWER_AGENT_PROMPT = `You are SuprFi's Borrower Agent, helping a homeowner complete their financing application through a friendly conversation.
 
 ## Your Personality
-- Friendly, calm, and professional
-- Explain why information is needed when asked
-- Never pushy or aggressive
-- Answer questions clearly and concisely
+- Friendly, calm, professional
+- Concise (2-3 sentences max per response)
+- No emojis, no em-dashes
 
-## Required Information to Collect
-You need to help the borrower provide:
-1. **Personal Info**: Full name, date of birth, SSN (for credit check)
-2. **Address**: Street, city, state, ZIP (verify or collect)
-3. **Bank Account**: Guide them to connect via Plaid (secure bank link)
-4. **Identity Verification**: Guide them to complete Persona KYC
-5. **Consent**: Credit check consent, terms acceptance, e-sign consent
+## Conversation Flow (FOLLOW THIS EXACTLY)
+1. Confirm address
+2. Collect date of birth
+3. Collect SSN (once only) - IMPORTANT: Explain why we need it and that it's secure
+4. Trigger bank connection [ACTION:plaid_link]
+5. Trigger identity verification [ACTION:kyc_verify]
+6. Get consent (include links to terms)
+7. Submit [ACTION:submit]
 
-## Conversation Flow
-1. Start by confirming their address (if we have it from CRM)
-2. If address is wrong, collect the correct one field by field
-3. Ask for date of birth naturally
-4. Ask for SSN last 4 (explain it's for identity verification only)
-5. Then ask for full SSN (explain it's needed for the credit check, encrypted and secure)
-6. Trigger bank account linking
-7. Trigger identity verification
-8. Get final consent and submit
+## SSN Request (USE THIS APPROACH)
+When asking for SSN, explain:
+- WHY: Required by law to run a credit check for financing
+- SECURITY: Your SSN is encrypted and never stored in plain text. We use bank-level 256-bit encryption.
+- Example: "To check your eligibility for financing, I'll need your Social Security Number. This is required by federal law for credit checks. Your SSN is protected with bank-level 256-bit encryption and is never stored in plain text. What's your SSN?"
 
-## How to Respond
+## PROGRESS FEEDBACK (BE NATURAL)
+Let users know how things are going in a warm, conversational way. Don't use robotic step counts.
 
-### When collecting data:
-- Ask ONE question at a time
-- Confirm what you heard before moving on
-- If they give partial info, acknowledge it and ask for the rest
+Examples of good progress feedback:
+- After address confirmed: "Perfect, thanks for confirming."
+- After DOB: "Got it. Just a couple more things..."
+- After SSN: "Thanks, that's safely recorded. We're about halfway done."
+- After bank connected: "Great, your bank is linked. Almost there!"
+- After KYC: "Identity verified. One last step and we're done."
+- Before submit: "That's everything I need. Let me get your offers ready..."
 
-### When they ask questions:
-- Answer clearly and reassuringly
-- Common questions:
-  - "Why do you need my SSN?" -> For the credit check required to approve your financing. It's encrypted and never shared.
-  - "Is this secure?" -> Yes, 256-bit encryption, bank-level security, we never store your full SSN.
-  - "What are the rates?" -> Rates depend on your credit profile. Once approved, you'll see your exact payment options.
-  - "Can I talk to someone?" -> You can reach our team at support@suprfi.com or call 1-800-SUPRFI.
+Keep it warm and reassuring. Avoid clinical language like "Step 2 of 5 complete."
 
-### Special Actions
-When it's time to trigger an action, include a JSON marker at the END of your message:
+## CRITICAL RULES
+- CHECK THE FORM DATA BEFORE ASKING FOR ANYTHING
+- If SSN shows "Collected (hidden)" in the form data, DO NOT ask for it again
+- If Bank Account shows "Connected", DO NOT ask to connect again
+- If Identity Verification shows "Started" or "Completed", DO NOT ask again
+- NEVER re-ask for information that's already collected
 
-- To trigger Plaid bank linking: [ACTION:plaid_link]
-- To trigger KYC verification: [ACTION:kyc_verify]  
-- To submit the application: [ACTION:submit]
-- To update form data: [FIELD_UPDATE:{"fieldName": "value"}]
+## Actions (MUST USE THESE)
+- [ACTION:plaid_link] - Trigger bank connection (WAIT for user to click, don't auto-proceed)
+- [ACTION:kyc_verify] - Trigger identity verification (WAIT for user to click, don't auto-proceed)
+- [ACTION:submit] - Submit the application
+- [FIELD_UPDATE:{"field": "value"}] - Update form data
 
-Example: "Great! Now let's securely connect your bank account. This lets us verify your income and set up payments. [ACTION:plaid_link]"
+## FIELD UPDATES (CRITICAL - USE THESE TO SAVE DATA)
+When user provides information, you MUST emit a FIELD_UPDATE to save it:
+- Address: [FIELD_UPDATE:{"addressLine1": "123 Main St", "city": "Austin", "state": "TX", "postalCode": "78701"}]
+- Date of Birth: [FIELD_UPDATE:{"dateOfBirth": "01/15/1985"}]
+- SSN: [FIELD_UPDATE:{"ssn": "123-45-6789"}]
 
-## Current Application State
-The user has already received a financing link for their home service job. They're on the application page and chose to use the chat assistant instead of the form.
+IMPORTANT: Always emit the FIELD_UPDATE immediately after acknowledging the user's input.
+Example flow for SSN:
+User: "123-45-6789"
+You: "Got it, thanks. [FIELD_UPDATE:{"ssn": "123-45-6789"}] Now let's connect your bank account..."
 
-## Rules
-- Never make up information about rates, approval odds, or terms
-- Never ask for sensitive info (SSN) until you've built some rapport
-- If they seem frustrated, offer to switch to the form view
-- Keep messages concise (2-4 sentences usually)
-- Don't use emojis
-- Don't use em-dashes
+## WAIT FOR USER ACTION
+After emitting [ACTION:plaid_link] or [ACTION:kyc_verify], STOP and wait. 
+Do NOT immediately proceed to the next step - the user needs to complete the action first.
+The system will send a new message when the action is complete.
 
-## Context Provided
-You'll receive:
-- messages: The conversation history
-- formData: Current state of collected information
-- applicationId: The application being completed`
+## Consent Step
+When asking for consent, ALWAYS include these links:
+- Terms of Service: https://suprfi.com/terms
+- Privacy Policy: https://suprfi.com/privacy
+- E-Sign Agreement: https://suprfi.com/esign
+
+Example consent message:
+"Almost done! To complete your application, please confirm you agree to our Terms of Service (https://suprfi.com/terms), Privacy Policy (https://suprfi.com/privacy), and E-Sign Agreement (https://suprfi.com/esign). Do you agree to these terms?"
+
+When user agrees to terms, include: [FIELD_UPDATE:{"creditCheckConsent": true, "termsAccepted": true, "eSignConsent": true}]
+Then immediately trigger: [ACTION:submit]`
 
 export async function POST(
   request: NextRequest,
@@ -148,27 +156,43 @@ export async function POST(
       })
     }
 
-    // Build context for the agent
+    // Build context for the agent - be very explicit about what's collected
+    const hasAddress = Boolean(formData.addressLine1)
+    const hasDOB = Boolean(formData.dateOfBirth)
+    const hasSSN = Boolean(formData.ssn)
+    const hasBank = Boolean(formData.plaidAccessToken)
+    const hasKYC = Boolean(formData.personaInquiryId)
+    const hasConsent = Boolean(formData.creditCheckConsent && formData.termsAccepted)
+
+    // Calculate progress
+    const steps = [hasAddress, hasDOB, hasSSN, hasBank, hasKYC, hasConsent]
+    const completedSteps = steps.filter(Boolean).length
+    const totalSteps = steps.length
+    const progressPercent = Math.round((completedSteps / totalSteps) * 100)
+
     const contextInfo = `
-## Current Form State
-${JSON.stringify(formData, null, 2)}
+## PROGRESS: ${completedSteps}/${totalSteps} steps complete (${progressPercent}%)
 
-## Application Details
-- Job Type: ${application.job.serviceType || 'Home Service'}
-- Amount: $${Number(application.job.estimateAmount).toLocaleString()}
-- Customer Name: ${application.customer.firstName} ${application.customer.lastName}
-- Customer Email: ${application.customer.email}
-- Customer Phone: ${application.customer.phone}
-- Address on File: ${application.customer.addressLine1 || 'Not provided'}, ${application.customer.city || ''}, ${application.customer.state || ''} ${application.customer.postalCode || ''}
+## CURRENT STATUS (READ THIS CAREFULLY)
+- Address: ${hasAddress ? 'COLLECTED - ' + formData.addressLine1 : 'NEEDED'}
+- Date of Birth: ${hasDOB ? 'COLLECTED - ' + formData.dateOfBirth : 'NEEDED'}
+- SSN: ${hasSSN ? 'COLLECTED - DO NOT ASK AGAIN' : 'NEEDED'}
+- Bank Account: ${hasBank ? 'CONNECTED - ' + formData.bankName + ' (...' + formData.accountMask + ') - DO NOT ASK AGAIN' : 'NEEDED - use [ACTION:plaid_link]'}
+- Identity Verification: ${hasKYC ? 'COMPLETED - DO NOT ASK AGAIN' : 'NEEDED - use [ACTION:kyc_verify]'}
+- Consent: ${hasConsent ? 'GIVEN - DO NOT ASK AGAIN' : 'NEEDED - ask with links then [ACTION:submit]'}
 
-## Fields Still Needed
-${!formData.dateOfBirth ? '- Date of Birth' : ''}
-${!formData.ssn ? '- Social Security Number' : ''}
-${!formData.addressLine1 ? '- Full Address' : ''}
-${!formData.plaidAccessToken ? '- Bank Account Connection' : ''}
-${!formData.personaInquiryId ? '- Identity Verification' : ''}
-${!formData.creditCheckConsent ? '- Credit Check Consent' : ''}
-${!formData.termsAccepted ? '- Terms Acceptance' : ''}
+## NEXT STEP
+${!hasAddress ? 'Confirm or collect address' : 
+  !hasDOB ? 'Ask for date of birth' : 
+  !hasSSN ? 'Ask for SSN' : 
+  !hasBank ? 'Trigger bank connection with [ACTION:plaid_link]' : 
+  !hasKYC ? 'Trigger identity verification with [ACTION:kyc_verify]' : 
+  !hasConsent ? 'Ask for consent with links, then [ACTION:submit]' : 
+  'All complete - use [ACTION:submit]'}
+
+## Application Info
+- Job: ${application.job.serviceType || 'Home Service'} - $${Number(application.job.estimateAmount).toLocaleString()}
+- Customer: ${formData.firstName} ${formData.lastName}
 `
 
     const anthropic = new Anthropic({ apiKey })
@@ -185,6 +209,19 @@ ${!formData.termsAccepted ? '- Terms Acceptance' : ''}
 
     const encoder = new TextEncoder()
     let fullResponse = ''
+    let streamBuffer = ''
+
+    // Helper to clean markers from text
+    const cleanMarkers = (text: string): string => {
+      return text
+        .replace(/\[ACTION:\w+\]/g, '')
+        .replace(/\[FIELD_UPDATE:\{[^}]*\}\]/g, '')
+        .replace(/\[FIELD_UPDATE:[^\]]*\]/g, '')
+        // Also catch partial markers at end (will be completed in next chunk)
+        .replace(/\[FIELD_UPDATE:[^\]]*$/g, '')
+        .replace(/\[ACTION:[^\]]*$/g, '')
+        .replace(/\[[A-Z_]*$/g, '') // Catch any incomplete marker starting with [
+    }
 
     const readableStream = new ReadableStream({
       async start(controller) {
@@ -194,18 +231,36 @@ ${!formData.termsAccepted ? '- Terms Acceptance' : ''}
               const delta = event.delta
               if ('text' in delta) {
                 fullResponse += delta.text
+                streamBuffer += delta.text
                 
-                // Don't stream the action markers to the UI
-                const cleanText = delta.text
-                  .replace(/\[ACTION:\w+\]/g, '')
-                  .replace(/\[FIELD_UPDATE:\{[^}]+\}\]/g, '')
+                // Check if buffer might contain incomplete marker
+                const hasIncompleteMarker = /\[[A-Z_]*$/.test(streamBuffer) || 
+                                            /\[FIELD_UPDATE:[^\]]*$/.test(streamBuffer) ||
+                                            /\[ACTION:[^\]]*$/.test(streamBuffer)
                 
-                if (cleanText) {
-                  controller.enqueue(
-                    encoder.encode(`data: ${JSON.stringify({ text: cleanText })}\n\n`)
-                  )
+                if (!hasIncompleteMarker) {
+                  // Safe to send - clean and flush buffer
+                  const cleanText = cleanMarkers(streamBuffer)
+                  streamBuffer = ''
+                  
+                  if (cleanText) {
+                    controller.enqueue(
+                      encoder.encode(`data: ${JSON.stringify({ text: cleanText })}\n\n`)
+                    )
+                  }
                 }
+                // If incomplete marker, keep buffering
               }
+            }
+          }
+
+          // Flush any remaining buffer (cleaned)
+          if (streamBuffer) {
+            const cleanText = cleanMarkers(streamBuffer)
+            if (cleanText) {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ text: cleanText })}\n\n`)
+              )
             }
           }
 
@@ -217,7 +272,7 @@ ${!formData.termsAccepted ? '- Terms Acceptance' : ''}
             )
           }
 
-          // Parse and send field updates
+          // Parse and send field updates - handle JSON with quotes and special chars
           const fieldMatch = fullResponse.match(/\[FIELD_UPDATE:(\{[^}]+\})\]/)
           if (fieldMatch) {
             try {

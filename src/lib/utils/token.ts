@@ -1,14 +1,11 @@
+// ABOUTME: JWT token utilities for borrower application links
+// ABOUTME: Handles token generation and verification with 24-hour expiry
+
 import jwt from 'jsonwebtoken'
 import { nanoid } from 'nanoid'
-import { config } from 'dotenv'
 
-// Load env
-config({ path: '.env.local' })
-
-const JWT_SECRET = process.env.JWT_SECRET || 'suprfi-default-secret-key-2024'
-
-// Debug: log if we have a secret (don't log the actual secret)
-console.log('JWT_SECRET loaded:', JWT_SECRET ? 'yes (' + JWT_SECRET.length + ' chars)' : 'no, using default')
+// TEMPORARY: Hardcoded for debugging - will revert after fixing
+const JWT_SECRET = 'suprfi-local-dev-secret-2024'
 
 export interface ApplicationToken {
   applicationId: string
