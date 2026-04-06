@@ -133,10 +133,10 @@ export default function ClientDashboardPage() {
           animate="visible"
           variants={staggerContainer}
         >
-          {/* Hero Stat - Sold (clickable with view transition) */}
+          {/* Hero Stat - Earnings (clickable with view transition) */}
           <motion.div 
             className={`${layoutClasses.cardHero} hover:shadow-lg transition-all cursor-pointer`}
-            style={viewTransitionStyle('stat-sold')}
+            style={viewTransitionStyle('stat-earnings')}
             variants={fadeInUp}
             whileHover={prefersReducedMotion ? {} : { y: -4, transition: transitions.fast }}
             onClick={() => navigateWithTransition(router, '/client/analytics')}
@@ -144,18 +144,17 @@ export default function ClientDashboardPage() {
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && navigateWithTransition(router, '/client/analytics')}
           >
-            <div className={layoutClasses.statLabel}>Sold</div>
+            <div className={layoutClasses.statLabel}>Earnings</div>
             <div className={`${layoutClasses.statHero} text-navy`}>
-              {statsLoading ? '...' : `$${(stats?.soldThisMonth || 0).toLocaleString()}`}
+              {statsLoading ? '...' : `$${(stats?.fundedThisMonth || 0).toLocaleString()}`}
             </div>
             <div className={`${layoutClasses.statSubtext} text-teal font-medium`}>
-              {stats?.soldCount || 0} deals this month
+              {stats?.fundedCount || 0} deals this month
             </div>
           </motion.div>
 
           {/* Secondary Stats (clickable with view transitions) */}
           {[
-            { label: 'Funded', value: stats?.fundedThisMonth || 0, subtext: `${stats?.fundedCount || 0} deals this month`, subtextColor: 'text-mint', prefix: '$', href: '/client/analytics', id: 'stat-funded' },
             { label: 'Avg. Deal Size', value: stats?.avgLoanSize || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', prefix: '$', href: '/client/analytics', id: 'stat-avg' },
             { label: 'Approval Rate', value: stats?.approvalRate || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', suffix: '%', valueColor: 'text-teal', href: '/client/analytics', id: 'stat-approval' },
           ].map((stat) => (

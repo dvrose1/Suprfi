@@ -15,11 +15,8 @@ interface AnalyticsData {
     totalApplications: number;
     approvalRate: number;
     avgLoanAmount: number;
-    avgTimeToFund: number;
     totalFunded: number;
-    totalSold: number;
     fundedCount: number;
-    soldCount: number;
   };
   trends: {
     approvalRateByMonth: Array<{ month: string; rate: number }>;
@@ -160,54 +157,39 @@ export default function AnalyticsPage() {
         ) : data ? (
           <>
             {/* Earnings Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-teal to-mint rounded-2xl p-6 text-white sm:col-span-2 lg:col-span-1">
-                <div className="text-sm text-white/80 mb-1">Total Sold</div>
-                <div className="text-3xl font-bold">{formatCurrency(data.overview.totalSold || 0)}</div>
-                <div className="text-sm text-white/60 mt-1">{data.overview.soldCount || 0} deals</div>
-              </div>
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <div className="text-sm text-gray-600 mb-1">Total Funded</div>
-                <div className="text-3xl font-bold text-mint">{formatCurrency(data.overview.totalFunded || 0)}</div>
-                <div className="text-sm text-gray-400 mt-1">{data.overview.fundedCount || 0} deals</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-teal to-mint rounded-2xl p-6 text-white">
+                <div className="text-sm text-white/80 mb-1">Total Earnings</div>
+                <div className="text-3xl font-bold">{formatCurrency(data.overview.totalFunded || 0)}</div>
+                <div className="text-sm text-white/60 mt-1">{data.overview.fundedCount || 0} deals funded</div>
               </div>
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="text-sm text-gray-600 mb-1">Avg Deal Size</div>
                 <div className="text-3xl font-bold text-navy">{formatCurrency(data.overview.avgLoanAmount)}</div>
               </div>
               <div className="bg-white rounded-2xl shadow-lg p-6">
-                <div className="text-sm text-gray-600 mb-1">Avg Time to Fund</div>
-                <div className="text-3xl font-bold text-navy">{data.overview.avgTimeToFund} days</div>
-              </div>
-            </div>
-
-            {/* Performance Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <div className="text-sm text-gray-600 mb-1">Total Applications</div>
-                <div className="text-3xl font-bold text-navy">{data.overview.totalApplications}</div>
-              </div>
-              <div className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="text-sm text-gray-600 mb-1">Approval Rate</div>
                 <div className="text-3xl font-bold text-teal">{data.overview.approvalRate}%</div>
               </div>
-              <div className="bg-white rounded-2xl shadow-lg p-6 col-span-2 lg:col-span-2">
-                <div className="text-sm text-gray-600 mb-2">Conversion Funnel</div>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-navy">{data.overview.totalApplications}</div>
-                    <div className="text-xs text-gray-500">Applied</div>
-                  </div>
-                  <div className="text-gray-300">→</div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-teal">{Math.round(data.overview.totalApplications * (data.overview.approvalRate / 100))}</div>
-                    <div className="text-xs text-gray-500">Approved</div>
-                  </div>
-                  <div className="text-gray-300">→</div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-mint">{data.overview.fundedCount || 0}</div>
-                    <div className="text-xs text-gray-500">Funded</div>
-                  </div>
+            </div>
+
+            {/* Conversion Funnel */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+              <div className="text-sm text-gray-600 mb-4">Conversion Funnel</div>
+              <div className="flex items-center justify-between text-sm max-w-md">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-navy">{data.overview.totalApplications}</div>
+                  <div className="text-xs text-gray-500">Applied</div>
+                </div>
+                <div className="text-gray-300 text-xl">→</div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-teal">{Math.round(data.overview.totalApplications * (data.overview.approvalRate / 100))}</div>
+                  <div className="text-xs text-gray-500">Approved</div>
+                </div>
+                <div className="text-gray-300 text-xl">→</div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-mint">{data.overview.fundedCount || 0}</div>
+                  <div className="text-xs text-gray-500">Funded</div>
                 </div>
               </div>
             </div>
@@ -234,61 +216,13 @@ export default function AnalyticsPage() {
                     )}
                   </div>
                 </div>
-                <div>
-                  <div className="text-white/80 text-sm mb-2">Time to Fund</div>
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <div>
-                      <div className="text-4xl font-bold">{data.benchmarks.yourAvgTimeToFund}</div>
-                      <div className="text-sm text-white/60">Your avg (days)</div>
-                    </div>
-                    <div className="text-white/60">
-                      <div className="text-2xl">{data.benchmarks.networkAvgTimeToFund}</div>
-                      <div className="text-sm">Network avg</div>
-                    </div>
-                    {data.benchmarks.yourAvgTimeToFund < data.benchmarks.networkAvgTimeToFund && (
-                      <span className="px-2 py-1 bg-mint/20 text-mint rounded-full text-sm flex items-center justify-center whitespace-nowrap">
-                        {Math.round((1 - data.benchmarks.yourAvgTimeToFund / data.benchmarks.networkAvgTimeToFund) * 100)}% faster
-                      </span>
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8 mb-8">
-              {/* Sold by Month */}
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
+              {/* Earnings by Month */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">Sold by Month</h2>
-                <div className="h-48 flex items-end justify-between gap-2">
-                  {data.trends.soldByMonth.map((item, index) => {
-                    const maxAmount = Math.max(...data.trends.soldByMonth.map(i => i.amount));
-                    const heightPercent = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
-                    return (
-                      <div key={index} className="flex-1 flex flex-col items-center justify-end h-full">
-                        {item.amount > 0 && (
-                          <div className="text-xs text-navy font-medium mb-1">
-                            {formatCurrency(item.amount)}
-                          </div>
-                        )}
-                        <div
-                          className={`w-full rounded-t transition-all ${
-                            item.amount > 0 ? 'bg-teal hover:bg-teal/80' : 'bg-gray-100'
-                          }`}
-                          style={{ 
-                            height: item.amount > 0 ? `${Math.max(heightPercent, 15)}%` : '4px'
-                          }}
-                        />
-                        <div className="text-xs text-gray-500 mt-2">{item.month}</div>
-                        <div className="text-xs text-gray-400">{item.count} deals</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Funding by Month */}
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-navy mb-4">Funded by Month</h2>
+                <h2 className="text-lg font-semibold text-navy mb-4">Earnings by Month</h2>
                 <div className="h-48 flex items-end justify-between gap-2">
                   {data.trends.fundingByMonth.map((item, index) => {
                     const maxAmount = Math.max(...data.trends.fundingByMonth.map(i => i.amount));
