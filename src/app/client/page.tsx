@@ -149,14 +149,14 @@ export default function ClientDashboardPage() {
               {statsLoading ? '...' : `$${(stats?.soldThisMonth || 0).toLocaleString()}`}
             </div>
             <div className={`${layoutClasses.statSubtext} text-teal font-medium`}>
-              {stats?.soldCount || 0} loans this month
+              {stats?.soldCount || 0} deals this month
             </div>
           </motion.div>
 
           {/* Secondary Stats (clickable with view transitions) */}
           {[
-            { label: 'Funded', value: stats?.fundedThisMonth || 0, subtext: `${stats?.fundedCount || 0} loans this month`, subtextColor: 'text-mint', prefix: '$', href: '/client/analytics', id: 'stat-funded' },
-            { label: 'Avg. Loan Size', value: stats?.avgLoanSize || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', prefix: '$', href: '/client/analytics', id: 'stat-avg' },
+            { label: 'Funded', value: stats?.fundedThisMonth || 0, subtext: `${stats?.fundedCount || 0} deals this month`, subtextColor: 'text-mint', prefix: '$', href: '/client/analytics', id: 'stat-funded' },
+            { label: 'Avg. Deal Size', value: stats?.avgLoanSize || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', prefix: '$', href: '/client/analytics', id: 'stat-avg' },
             { label: 'Approval Rate', value: stats?.approvalRate || 0, subtext: 'last 30 days', subtextColor: 'text-medium-gray', suffix: '%', valueColor: 'text-teal', href: '/client/analytics', id: 'stat-approval' },
           ].map((stat) => (
             <motion.div 

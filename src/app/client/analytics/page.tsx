@@ -16,6 +16,10 @@ interface AnalyticsData {
     approvalRate: number;
     avgLoanAmount: number;
     avgTimeToFund: number;
+    totalFunded: number;
+    totalSold: number;
+    fundedCount: number;
+    soldCount: number;
   };
   trends: {
     approvalRateByMonth: Array<{ month: string; rate: number }>;
@@ -155,7 +159,29 @@ export default function AnalyticsPage() {
           </div>
         ) : data ? (
           <>
-            {/* Overview Stats */}
+            {/* Earnings Summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-teal to-mint rounded-2xl p-6 text-white sm:col-span-2 lg:col-span-1">
+                <div className="text-sm text-white/80 mb-1">Total Sold</div>
+                <div className="text-3xl font-bold">{formatCurrency(data.overview.totalSold || 0)}</div>
+                <div className="text-sm text-white/60 mt-1">{data.overview.soldCount || 0} deals</div>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="text-sm text-gray-600 mb-1">Total Funded</div>
+                <div className="text-3xl font-bold text-mint">{formatCurrency(data.overview.totalFunded || 0)}</div>
+                <div className="text-sm text-gray-400 mt-1">{data.overview.fundedCount || 0} deals</div>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="text-sm text-gray-600 mb-1">Avg Deal Size</div>
+                <div className="text-3xl font-bold text-navy">{formatCurrency(data.overview.avgLoanAmount)}</div>
+              </div>
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="text-sm text-gray-600 mb-1">Avg Time to Fund</div>
+                <div className="text-3xl font-bold text-navy">{data.overview.avgTimeToFund} days</div>
+              </div>
+            </div>
+
+            {/* Performance Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="text-sm text-gray-600 mb-1">Total Applications</div>
@@ -165,13 +191,24 @@ export default function AnalyticsPage() {
                 <div className="text-sm text-gray-600 mb-1">Approval Rate</div>
                 <div className="text-3xl font-bold text-teal">{data.overview.approvalRate}%</div>
               </div>
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <div className="text-sm text-gray-600 mb-1">Avg Loan Amount</div>
-                <div className="text-3xl font-bold text-navy">{formatCurrency(data.overview.avgLoanAmount)}</div>
-              </div>
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <div className="text-sm text-gray-600 mb-1">Avg Time to Fund</div>
-                <div className="text-3xl font-bold text-navy">{data.overview.avgTimeToFund} days</div>
+              <div className="bg-white rounded-2xl shadow-lg p-6 col-span-2 lg:col-span-2">
+                <div className="text-sm text-gray-600 mb-2">Conversion Funnel</div>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-navy">{data.overview.totalApplications}</div>
+                    <div className="text-xs text-gray-500">Applied</div>
+                  </div>
+                  <div className="text-gray-300">→</div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-teal">{Math.round(data.overview.totalApplications * (data.overview.approvalRate / 100))}</div>
+                    <div className="text-xs text-gray-500">Approved</div>
+                  </div>
+                  <div className="text-gray-300">→</div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-mint">{data.overview.fundedCount || 0}</div>
+                    <div className="text-xs text-gray-500">Funded</div>
+                  </div>
+                </div>
               </div>
             </div>
 

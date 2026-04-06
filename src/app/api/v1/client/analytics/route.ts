@@ -68,6 +68,14 @@ export async function GET(request: NextRequest) {
       ? Math.round(fundingTimes.reduce((a, b) => a + b, 0) / fundingTimes.length)
       : 0;
 
+    // Calculate total funded amount
+    const totalFunded = fundedApps.reduce((sum, a) => sum + Number(a.loan!.fundedAmount), 0);
+    const fundedCount = fundedApps.length;
+
+    // Calculate total sold (approved deals by job estimate amount)
+    const totalSold = approvedApps.reduce((sum, a) => sum + Number(a.job.estimateAmount), 0);
+    const soldCount = approvedApps.length;
+
     // Generate monthly trends
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const approvalRateByMonth = [];
@@ -142,6 +150,10 @@ export async function GET(request: NextRequest) {
         approvalRate,
         avgLoanAmount,
         avgTimeToFund,
+        totalFunded,
+        totalSold,
+        fundedCount,
+        soldCount,
       },
       trends: {
         approvalRateByMonth,
@@ -175,6 +187,10 @@ function getEmptyAnalytics() {
       approvalRate: 0,
       avgLoanAmount: 0,
       avgTimeToFund: 0,
+      totalFunded: 0,
+      totalSold: 0,
+      fundedCount: 0,
+      soldCount: 0,
     },
     trends: {
       approvalRateByMonth: [],
